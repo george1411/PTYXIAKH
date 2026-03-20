@@ -1,0 +1,519 @@
+/* Workout Container */
+.workout-container {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    padding-bottom: 2rem;
+}
+
+/* Header Section */
+.workout-header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 1.5rem;
+    background-color: #f3f4f6;
+    /* gray-100/lighter for header? or maintain black style */
+    border-radius: 12px 12px 0 0;
+    /* adapting to "Black/White" - maybe dark header */
+    background-color: var(--bg-dark);
+    color: white;
+}
+
+.workout-header-title {
+    font-size: 0.875rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.workout-header-info {
+    font-size: 0.75rem;
+    color: #a1a1aa;
+    /* zinc-400 */
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+/* Exercise List */
+.exercise-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    background-color: var(--bg-dark-alt);
+    /* divider color */
+    border-radius: 0 0 12px 12px;
+    overflow-y: auto;
+    flex: 1;
+}
+
+.exercise-row {
+    display: grid;
+    grid-template-columns: 2fr 3fr;
+    /* Name vs Sets */
+    background-color: var(--bg-dark);
+    /* zinc-900 */
+    padding: 1rem 1.5rem;
+    align-items: center;
+    gap: 1rem;
+    transition: background-color 0.2s;
+    cursor: pointer;
+}
+
+.exercise-row:hover {
+    background-color: var(--bg-dark-alt);
+    /* zinc-800 */
+}
+
+.exercise-details {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.exercise-name {
+    font-weight: 600;
+    color: white;
+    font-size: 0.95rem;
+}
+
+.exercise-meta {
+    font-size: 0.75rem;
+    color: #71717a;
+    /* zinc-500 */
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+/* Sets Visualizer in List */
+.sets-preview {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.set-pill-preview {
+    background-color: rgba(255, 255, 255, 0.05);
+    /* very subtle */
+    border-radius: 4px;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+    color: #a1a1aa;
+    display: flex;
+    justify-content: space-between;
+}
+
+.set-pill-preview.completed {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: white;
+    font-weight: 600;
+}
+
+/* Log Button in List */
+.btn-log-exercise {
+    justify-self: end;
+    background-color: transparent;
+    border: 1px solid rgba(255,255,255,0.12);
+    color: #a1a1aa;
+    padding: 0.4rem 1rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-log-exercise:hover {
+    border-color: white;
+    color: white;
+}
+
+/* Modal Specifics */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(4px);
+    z-index: 50;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+}
+
+.modal-content {
+    background-color: var(--bg-dark);
+    /* zinc-950 */
+    border: 1px solid rgba(255,255,255,0.08);
+    width: 100%;
+    max-width: 500px;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    display: flex;
+    flex-direction: column;
+    max-height: 90vh;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: start;
+    padding: 1.5rem;
+    border-bottom: 1px solid #27272a;
+}
+
+.modal-title-group h2 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: white;
+    margin-bottom: 0.25rem;
+}
+
+.modal-subtitle {
+    font-size: 0.75rem;
+    color: white;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
+.modal-close-btn {
+    color: #71717a;
+    cursor: pointer;
+}
+
+.modal-close-btn:hover {
+    color: white;
+}
+
+.modal-body {
+    padding: 1.5rem;
+    overflow-y: auto;
+}
+
+.workout-trainer-target {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: #f0f0f0;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    padding: 0.5rem 0.75rem;
+    margin-bottom: 1rem;
+    font-size: 0.8rem;
+}
+
+.workout-trainer-target-label {
+    color: #555;
+    font-weight: 600;
+}
+
+.workout-trainer-target-value {
+    color: #444;
+}
+
+.sets-header {
+    display: grid;
+    grid-template-columns: 3rem 1fr 1fr;
+    gap: 1rem;
+    margin-bottom: 0.75rem;
+    text-align: center;
+    font-size: 0.7rem;
+    color: #71717a;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+}
+
+.set-row {
+    display: grid;
+    grid-template-columns: 3rem 1fr 1fr;
+    gap: 1rem;
+    margin-bottom: 0.75rem;
+    align-items: center;
+}
+
+.set-number {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--bg-dark-alt);
+    color: #a1a1aa;
+    height: 3rem;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.875rem;
+}
+
+.workout-input {
+    background-color: var(--bg-dark);
+    border: 1px solid rgba(255,255,255,0.08);
+    color: white;
+    height: 3rem;
+    border-radius: 8px;
+    text-align: center;
+    font-size: 1.125rem;
+    font-weight: 600;
+    width: 100%;
+}
+
+.workout-input:focus {
+    outline: none;
+    border-color: white;
+}
+
+/* Tip Box */
+.tip-box {
+    background-color: rgba(39, 39, 42, 0.5);
+    /* zinc-800/50 */
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 8px;
+    padding: 1rem;
+    margin-top: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.tip-title {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #666;
+    /* Blue for info */
+}
+
+.tip-text {
+    font-size: 0.875rem;
+    color: #d4d4d8;
+    line-height: 1.5;
+}
+
+/* Notes */
+.notes-section {
+    margin-top: 1.5rem;
+}
+
+.notes-label {
+    font-size: 0.75rem;
+    color: #71717a;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    display: block;
+}
+
+.notes-area {
+    width: 100%;
+    background-color: var(--bg-dark);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 8px;
+    padding: 0.75rem;
+    color: white;
+    font-size: 0.875rem;
+    min-height: 80px;
+}
+
+/* Footer Action */
+.modal-footer {
+    padding: 1.5rem;
+    border-top: 1px solid #27272a;
+    background-color: var(--bg-dark);
+}
+
+.btn-save-primary {
+    width: 100%;
+    background-color: white;
+    /* B&W Theme */
+    color: black;
+    font-weight: 700;
+    padding: 0.875rem;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    transition: background-color 0.2s;
+}
+
+.btn-save-primary:hover {
+    background-color: #e5e5e5;
+}
+
+.btn-save-bottom-list {
+    margin-top: 1rem;
+    background-color: white;
+    color: black;
+    width: 100%;
+    padding: 1rem;
+    border-radius: 12px;
+    font-weight: 700;
+    border: none;
+    cursor: pointer;
+}
+
+/* Rest Timer */
+.rest-timer-section {
+    margin-top: 1.5rem;
+    background-color: var(--bg-dark);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 10px;
+    padding: 1rem 1.25rem;
+}
+
+.rest-timer-label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.7rem;
+    color: #71717a;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.75rem;
+}
+
+.rest-timer-display {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.rest-timer-time {
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 2.25rem;
+    font-weight: 700;
+    color: #a1a1aa;
+    letter-spacing: 0.05em;
+    transition: color 0.3s;
+}
+
+.rest-timer-time.active {
+    color: white;
+    animation: pulse-glow 2s ease-in-out infinite;
+}
+
+@keyframes pulse-glow {
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.7;
+    }
+}
+
+.rest-timer-controls {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.rest-timer-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.75rem;
+    height: 2.75rem;
+    border-radius: 50%;
+    border: 1px solid rgba(255,255,255,0.12);
+    background-color: transparent;
+    color: white;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.rest-timer-btn:hover {
+    background-color: white;
+    color: black;
+    border-color: white;
+}
+
+.rest-timer-btn.reset {
+    width: 2.25rem;
+    height: 2.25rem;
+    color: #71717a;
+    border-color: rgba(255,255,255,0.08);
+}
+
+.rest-timer-btn.reset:hover {
+    color: white;
+    border-color: #3f3f46;
+    background-color: var(--bg-dark-alt);
+}
+
+/* ─── Day Navigation ──────────────────────────────────────── */
+.workout-day-nav {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 16px;
+    padding: 8px 0;
+}
+
+.workout-day-nav-btn {
+    background: #18181b;
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 8px;
+    color: #aaa;
+    cursor: pointer;
+    padding: 6px 10px;
+    display: flex;
+    align-items: center;
+    transition: all 0.2s;
+}
+
+.workout-day-nav-btn:hover {
+    background: #27272a;
+    color: #fff;
+}
+
+.workout-day-nav-label {
+    flex: 1;
+    text-align: center;
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #111;
+}
+
+.workout-day-today-btn {
+    background: #111;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 6px 16px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: opacity 0.2s;
+}
+
+.workout-day-today-btn:hover {
+    opacity: 0.8;
+}
+
+/* ─── Past Day Banner ─────────────────────────────────────── */
+.workout-past-banner {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #f3f3f3;
+    border: 1px solid #ccc;
+    color: #333;
+    padding: 10px 16px;
+    border-radius: 10px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    margin-bottom: 12px;
+}

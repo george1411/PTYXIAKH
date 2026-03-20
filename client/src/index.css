@@ -1,0 +1,91 @@
+@import "tailwindcss";
+
+@theme {
+  --animate-fade-in: fade-in 0.8s ease-out forwards;
+  --animate-slide-up: slide-up 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+
+  @keyframes fade-in {
+    0% {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes slide-up {
+    0% {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+}
+
+:root {
+  font-family: 'Inter', system-ui, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+
+  color-scheme: light;
+  color: #111;
+  background-color: #f5f5f5;
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+
+  /* ─── Monochrome Palette ─────────────────────────────────── */
+  --bg:            #f5f5f5;
+  --bg-card:       #ffffff;
+  --bg-dark:       #111111;
+  --bg-dark-hover: #222222;
+  --bg-dark-alt:   #1a1a1a;
+  --bg-input:      #fafafa;
+  --border:        #e5e5e5;
+  --border-light:  #f0f0f0;
+  --text:          #111111;
+  --text-secondary:#555555;
+  --text-muted:    #999999;
+  --text-light:    #cccccc;
+  --accent:        #333333;
+  --accent-hover:  #111111;
+  --accent-light:  rgba(0,0,0,0.05);
+  --success:       #666666;
+  --success-light: rgba(0,0,0,0.04);
+  --success-border:#d4d4d4;
+  --info:          #444444;
+  --info-light:    #fafafa;
+  --info-border:   #d4d4d4;
+  --white:         #ffffff;
+  --sidebar-bg:    #ffffff;
+  --sidebar-active:#f5f5f5;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+}
+
+@layer utilities {
+  .animate-delay-100 {
+    animation-delay: 100ms;
+  }
+
+  .animate-delay-200 {
+    animation-delay: 200ms;
+  }
+
+  .animate-delay-300 {
+    animation-delay: 300ms;
+  }
+}

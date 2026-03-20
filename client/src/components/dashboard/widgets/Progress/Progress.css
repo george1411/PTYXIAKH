@@ -1,0 +1,740 @@
+/* ─── Progress Page Layout ─────────────────────────────────── */
+.progress-page {
+    width: 100%;
+    min-height: 100%;
+}
+
+.progress-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 28px;
+    justify-content: flex-start;
+}
+
+.progress-header svg {
+    color: var(--accent);
+}
+
+.progress-header h2 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #111;
+    margin: 0;
+}
+
+/* ─── 2×2 Grid ─────────────────────────────────────────────── */
+.progress-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+}
+
+@media (max-width: 900px) {
+    .progress-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* ─── Card ─────────────────────────────────────────────────── */
+.progress-card {
+    background: #fafafa;
+    border: 1px solid #e5e7eb;
+    border-radius: 16px;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    min-height: 340px;
+}
+
+.progress-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+}
+
+.progress-card-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.progress-card-title svg {
+    color: var(--accent);
+}
+
+.progress-card-title h3 {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #111;
+    margin: 0;
+}
+
+/* ─── Range Toggle ─────────────────────────────────────────── */
+.progress-range-toggle {
+    display: flex;
+    gap: 4px;
+    background: #f0f0f0;
+    border-radius: 8px;
+    padding: 3px;
+}
+
+.progress-range-btn {
+    padding: 4px 12px;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    cursor: pointer;
+    background: transparent;
+    color: #888;
+    transition: all 0.2s ease;
+}
+
+.progress-range-btn.active {
+    background: var(--accent);
+    color: #fff;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+}
+
+.progress-range-btn:hover:not(.active) {
+    color: #111;
+}
+
+/* ─── Weight Stats Row ─────────────────────────────────────── */
+.progress-weight-stats {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.progress-weight-current {
+    font-size: 2rem;
+    font-weight: 800;
+    color: #111;
+    letter-spacing: -0.02em;
+}
+
+.progress-weight-unit {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: #999;
+}
+
+.progress-weight-diff {
+    font-size: 0.85rem;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 6px;
+}
+
+.progress-weight-diff.positive {
+    color: #888;
+    background: #fef2f2;
+}
+
+.progress-weight-diff.negative {
+    color: #666;
+    background: #f0fdf4;
+}
+
+.progress-weight-diff.neutral {
+    color: #888;
+    background: #f5f5f5;
+}
+
+/* ─── Chart Container ──────────────────────────────────────── */
+.progress-chart-container {
+    flex: 1;
+    min-height: 0;
+    width: 100%;
+}
+
+/* ─── PR List ──────────────────────────────────────────────── */
+.progress-pr-list {
+    flex: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.progress-pr-item {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 12px 14px;
+    background: #fff;
+    border: 1px solid #eee;
+    border-radius: 12px;
+    transition: box-shadow 0.2s ease;
+}
+
+.progress-pr-item:hover {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.progress-pr-rank {
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    font-weight: 800;
+    flex-shrink: 0;
+}
+
+.progress-pr-rank.gold {
+    background: linear-gradient(135deg, #555, #555);
+    color: #fff;
+}
+
+.progress-pr-rank.silver {
+    background: linear-gradient(135deg, #d1d5db, #9ca3af);
+    color: #fff;
+}
+
+.progress-pr-rank.bronze {
+    background: linear-gradient(135deg, #555, #444);
+    color: #fff;
+}
+
+.progress-pr-rank.default {
+    background: #f0f0f0;
+    color: #888;
+}
+
+.progress-pr-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.progress-pr-exercise {
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: #111;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.progress-pr-muscles {
+    font-size: 0.72rem;
+    color: #999;
+    margin-top: 2px;
+}
+
+.progress-pr-weight {
+    text-align: right;
+    flex-shrink: 0;
+}
+
+.progress-pr-kg {
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: #111;
+}
+
+.progress-pr-date {
+    font-size: 0.7rem;
+    color: #aaa;
+    margin-top: 2px;
+}
+
+/* ─── Heatmap Calendar ─────────────────────────────────────── */
+.progress-heatmap-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.progress-heatmap-months {
+    display: flex;
+    gap: 2px;
+    margin-bottom: 4px;
+    padding-left: 28px;
+}
+
+.progress-heatmap-month-label {
+    font-size: 0.68rem;
+    color: #999;
+    font-weight: 600;
+}
+
+.progress-heatmap-grid-wrapper {
+    display: flex;
+    gap: 4px;
+}
+
+.progress-heatmap-day-labels {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding-top: 0;
+}
+
+.progress-heatmap-day-label {
+    height: 14px;
+    font-size: 0.62rem;
+    color: #999;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    line-height: 1;
+}
+
+.progress-heatmap-grid {
+    display: flex;
+    gap: 2px;
+    flex: 1;
+    overflow-x: auto;
+}
+
+.progress-heatmap-week {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.progress-heatmap-cell {
+    width: 14px;
+    height: 14px;
+    border-radius: 3px;
+    transition: transform 0.15s ease;
+}
+
+.progress-heatmap-cell:hover {
+    transform: scale(1.3);
+}
+
+.progress-heatmap-cell.empty {
+    background: transparent;
+}
+
+.progress-heatmap-cell.level-0 {
+    background: #ebedf0;
+}
+
+.progress-heatmap-cell.level-1 {
+    background: #555;
+}
+
+.progress-heatmap-cell.future {
+    background: #f5f5f5;
+    opacity: 0.5;
+}
+
+.progress-heatmap-legend {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 12px;
+    justify-content: flex-end;
+}
+
+.progress-heatmap-legend-text {
+    font-size: 0.68rem;
+    color: #999;
+}
+
+.progress-heatmap-legend-cell {
+    width: 12px;
+    height: 12px;
+    border-radius: 2px;
+}
+
+/* ─── Empty States ─────────────────────────────────────────── */
+.progress-empty {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    color: #bbb;
+    padding: 32px 0;
+}
+
+.progress-empty svg {
+    opacity: 0.4;
+}
+
+.progress-empty p {
+    font-size: 0.85rem;
+    font-weight: 500;
+    margin: 0;
+}
+
+/* ─── Loading ──────────────────────────────────────────────── */
+.progress-loading {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.progress-spinner {
+    width: 24px;
+    height: 24px;
+    border: 3px solid #e5e7eb;
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: progress-spin 0.7s linear infinite;
+}
+
+@keyframes progress-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* ─── AI Weight Prediction Widget ─────────────────────────── */
+.progress-card-prediction {
+    border: 1px solid var(--border);
+    background: linear-gradient(135deg, #fafafe 0%, #f0f0ff 100%);
+}
+
+.prediction-form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.prediction-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.prediction-field label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #555;
+}
+
+.prediction-slider {
+    width: 100%;
+    height: 6px;
+    -webkit-appearance: none;
+    appearance: none;
+    background: #e0e0ef;
+    border-radius: 3px;
+    outline: none;
+    cursor: pointer;
+}
+
+.prediction-input {
+    padding: 8px 12px;
+    border: 1px solid #e0e0ef;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    color: #333;
+    background: #fff;
+    outline: none;
+    width: 100%;
+    transition: border-color 0.2s;
+    box-sizing: border-box;
+}
+
+.prediction-input:focus {
+    border-color: var(--accent);
+}
+
+.prediction-stat-box {
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    text-align: center;
+    background: #f5f5f5;
+    color: #888;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+}
+
+.prediction-stat-box.surplus {
+    background: #fef2f2;
+    color: #888;
+}
+
+.prediction-stat-box.deficit {
+    background: #f0fdf4;
+    color: #666;
+}
+
+.prediction-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: var(--accent);
+    cursor: pointer;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+.prediction-slider-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.68rem;
+    color: #aaa;
+}
+
+.prediction-select {
+    padding: 8px 12px;
+    border: 1px solid #e0e0ef;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    color: #333;
+    background: #fff;
+    outline: none;
+    cursor: pointer;
+    transition: border-color 0.2s;
+}
+
+.prediction-select:focus {
+    border-color: var(--accent);
+}
+
+.prediction-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 10px 20px;
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    font-size: 0.88rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+    margin-top: 4px;
+}
+
+.prediction-btn:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+}
+
+.prediction-btn:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+.prediction-error {
+    margin-top: 12px;
+    padding: 10px 14px;
+    background: #fef2f2;
+    color: #888;
+    border-radius: 8px;
+    font-size: 0.82rem;
+    font-weight: 500;
+    border: 1px solid #fecaca;
+}
+
+.prediction-result {
+    margin-top: 16px;
+    padding: 16px;
+    background: #fff;
+    border-radius: 12px;
+    border: 1px solid #e5e7eb;
+}
+
+.prediction-result-header {
+    font-size: 0.82rem;
+    color: #666;
+    margin-bottom: 12px;
+    text-align: center;
+}
+
+.prediction-result-body {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+}
+
+.prediction-weight-current,
+.prediction-weight-predicted {
+    text-align: center;
+}
+
+.prediction-weight-label {
+    display: block;
+    font-size: 0.7rem;
+    color: #999;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 4px;
+}
+
+.prediction-weight-value {
+    font-size: 1.4rem;
+    font-weight: 800;
+    color: #111;
+}
+
+.prediction-arrow {
+    font-size: 1.4rem;
+    color: var(--accent);
+    font-weight: 700;
+}
+
+.prediction-change {
+    text-align: center;
+    margin-top: 10px;
+    font-size: 0.95rem;
+    font-weight: 700;
+    padding: 4px 12px;
+    border-radius: 8px;
+    display: inline-block;
+    width: 100%;
+}
+
+.prediction-change.positive {
+    color: #888;
+    background: #fef2f2;
+}
+
+.prediction-change.negative {
+    color: #666;
+    background: #f0fdf4;
+}
+
+.prediction-change.neutral {
+    color: #888;
+    background: #f5f5f5;
+}
+
+.prediction-meta {
+    text-align: center;
+    margin-top: 8px;
+    font-size: 0.72rem;
+    color: #aaa;
+}
+
+/* ─── BMI Calculator Widget ──────────────────────────────────── */
+.bmi-card {
+    border: 1px solid var(--border);
+    background: linear-gradient(135deg, #fafafe 0%, #f5f0ff 100%);
+}
+
+.bmi-inputs {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 4px;
+}
+
+.bmi-input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.bmi-input-group label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #555;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.bmi-input-group label svg {
+    color: var(--accent);
+}
+
+.bmi-gauge-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 0 auto;
+    width: 100%;
+    max-width: 240px;
+}
+
+.bmi-gauge-svg {
+    width: 100%;
+    height: auto;
+}
+
+.bmi-value-display {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: -20px;
+    gap: 2px;
+}
+
+.bmi-value {
+    font-size: 2rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    line-height: 1;
+    transition: color 0.3s ease;
+}
+
+.bmi-label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #666;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+
+.bmi-placeholder {
+    font-size: 0.82rem;
+    color: #aaa;
+    font-weight: 500;
+}
+
+.bmi-tip {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 10px 14px;
+    background: #fff;
+    border-radius: 10px;
+    border-left: 3px solid #444;
+    font-size: 0.8rem;
+    color: #555;
+    line-height: 1.5;
+    margin-top: 8px;
+}
+
+.bmi-tip span {
+    flex: 1;
+}
+
+.bmi-categories-bar {
+    display: flex;
+    gap: 6px;
+    margin-top: 12px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.bmi-cat-chip {
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 20px;
+    transition: all 0.3s ease;
+    cursor: default;
+}
+
+.bmi-cat-chip.active {
+    transform: scale(1.08);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+}

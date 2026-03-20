@@ -1,0 +1,43 @@
+.qa-row {
+    display: flex;
+    gap: 16px;
+}
+
+.qa-btn {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 18px 20px;
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 16px;
+    cursor: pointer;
+    transition: box-shadow 0.2s, transform 0.15s;
+}
+
+.qa-btn:hover {
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+    transform: translateY(-2px);
+}
+
+.qa-btn:active {
+    transform: translateY(0);
+}
+
+.qa-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    flex-shrink: 0;
+}
+
+.qa-label {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #111;
+}

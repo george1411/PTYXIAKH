@@ -1,0 +1,17 @@
+import express from 'express';
+import { getUserStats, getWeightHistory, getExercisePRs, getWorkoutCalendar, predictWeight, getPredictionBaseline } from '../controllers/stats.controller.js';
+import { getWeeklyMeasurements, updateWeeklyMeasurement } from '../controllers/WeeklyMeasurements.controller.js';
+import authorize from '../middlewares/auth.middleware.js';
+
+const statsRouter = express.Router();
+
+statsRouter.get('/', authorize, getUserStats);
+statsRouter.get('/weekly-measurements', authorize, getWeeklyMeasurements);
+statsRouter.post('/weekly-measurements', authorize, updateWeeklyMeasurement);
+statsRouter.get('/weight-history', authorize, getWeightHistory);
+statsRouter.get('/exercise-prs', authorize, getExercisePRs);
+statsRouter.get('/workout-calendar', authorize, getWorkoutCalendar);
+statsRouter.post('/predict-weight', authorize, predictWeight);
+statsRouter.get('/predict-baseline', authorize, getPredictionBaseline);
+
+export default statsRouter;

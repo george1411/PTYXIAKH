@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(grep -rn \"#[0-9a-fA-F]\\\\{3,6\\\\}\" /c/Users/georg/Downloads/PTYXIAKH/client/src/components/dashboard --include=\"*.jsx\")",
+      "Bash(grep -rn \"rgba\\\\|linear-gradient\" /c/Users/georg/Downloads/PTYXIAKH/client/src/components/dashboard --include=*.jsx)",
+      "Bash(grep -v \"#[0-9a-fA-F]\\\\{3,4\\\\}\\\\|#000\\\\|#111\\\\|#222\\\\|#333\\\\|#444\\\\|#555\\\\|#666\\\\|#777\\\\|#888\\\\|#999\\\\|#aaa\\\\|#bbb\\\\|#ccc\\\\|#ddd\\\\|#eee\\\\|#fff\")",
+      "Bash(\"c:\\\\Users\\\\georg\\\\Downloads\\\\PTYXIAKH\\\\client\\\\src\\\\components\\\\dashboard\\\\trainer\\\\TrainerClients.css\":*)",
+      "Bash(grep -r multer /c/Users/georg/Downloads/PTYXIAKH --include=*.js --include=*.json)",
+      "Bash(grep -r upload /c/Users/georg/Downloads/PTYXIAKH --include=*.js --exclude-dir=node_modules)",
+      "Bash(xargs grep:*)"
+    ]
+  }
+}
