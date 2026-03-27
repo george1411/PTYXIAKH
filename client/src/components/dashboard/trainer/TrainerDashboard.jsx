@@ -4,9 +4,9 @@ import TrainerSidebar from './TrainerSidebar';
 import TrainerProfile from './TrainerProfile';
 import TrainerOverview from './TrainerOverview';
 import TrainerClients from './TrainerClients';
-import Schedule from '../widgets/Schedule/Schedule';
-import Settings from '../Settings/Settings';
-import CustomerMessages from '../Messages/CustomerMessages';
+import Schedule from '../common/widgets/Schedule/Schedule';
+import Settings from '../common/Settings/Settings';
+import CustomerMessages from '../common/Messages/CustomerMessages';
 import { Search, Bell } from 'lucide-react';
 
 // ─── Notification Bell ────────────────────────────────────────

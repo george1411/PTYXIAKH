@@ -1,18 +1,18 @@
 import { DataTypes } from 'sequelize';
 import { sequelize } from '../database/mysql.js';
-import User from './user.model.js';
-import Exercise from './exercise.model.js';
-import Workout from './workout.model.js';
-import WorkoutExercise from './workoutExercise.model.js';
-import WorkoutLog from './workoutLog.model.js';
-import DailyLog from './dailylog.model.js';
-import DailyGoal from './dailyGoal.model.js';
-import UserStat from './userStat.model.js';
-import WeeklyMeasurements from './WeeklyMeasurements.model.js';
-import Message from './message.model.js';
-import ScheduleEvent from './scheduleEvent.model.js';
-import TrainerProfile from './trainerProfile.model.js';
-import Meal from './meal.model.js';
+import User from './common/user.model.js';
+import Exercise from './common/exercise.model.js';
+import Workout from './common/workout.model.js';
+import WorkoutExercise from './common/workoutExercise.model.js';
+import WorkoutLog from './customer/workoutLog.model.js';
+import DailyLog from './customer/dailylog.model.js';
+import DailyGoal from './common/dailyGoal.model.js';
+import UserStat from './customer/userStat.model.js';
+import WeeklyMeasurements from './customer/WeeklyMeasurements.model.js';
+import Message from './common/message.model.js';
+import ScheduleEvent from './common/scheduleEvent.model.js';
+import TrainerProfile from './trainer/trainerProfile.model.js';
+import Meal from './common/meal.model.js';
 
 // Associations
 

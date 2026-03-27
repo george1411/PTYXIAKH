@@ -6,7 +6,7 @@ import { Check } from 'lucide-react';
 import SignIn from './components/SignIn';
 import VisualPanel from './components/onboarding/VisualPanel';
 import axios from 'axios';
-import CustomerDashboard from './components/dashboard/CustomerDashboard';
+import CustomerDashboard from './components/dashboard/customer/CustomerDashboard';
 import TrainerDashboard from './components/dashboard/trainer/TrainerDashboard';
 
 function App() {

@@ -20,7 +20,29 @@
       "Bash(grep -n \"app\\\\.\\\\\\(get\\\\|post\\\\|put\\\\|delete\\\\\\)\" c:UsersGeorgDownloadsPTYXIAKHapp.js c:UsersGeorgDownloadsPTYXIAKHroutes*.js)",
       "Bash(npm install:*)",
       "Bash(node -e \"console.log\\(require\\(''crypto''\\).randomBytes\\(32\\).toString\\(''hex''\\)\\)\")",
-      "Bash(node --input-type=module:*)"
+      "Bash(node --input-type=module:*)",
+      "Bash(for f:*)",
+      "Bash(do echo:*)",
+      "Read(//c/Users/georg/Downloads/PTYXIAKH/**)",
+      "Bash(done)",
+      "Bash(ROOT=/c/Users/georg/Downloads/PTYXIAKH __NEW_LINE_e91e0e5b711b53de__ for f in \"$ROOT/models/common/\"*.js \"$ROOT/models/customer/\"*.js \"$ROOT/models/trainer/\"*.js)",
+      "Bash(do sed:*)",
+      "Bash(grep -rn \"from ''\\\\.\" /c/Users/georg/Downloads/PTYXIAKH/client/src/components/dashboard/common/Messages/ --include=\"*.jsx\")",
+      "Bash(grep -rn \"from ''\\\\.\" /c/Users/georg/Downloads/PTYXIAKH/client/src/components/dashboard/common/Settings/ --include=\"*.jsx\")",
+      "Bash(grep -rn \"from ''\\\\.\" /c/Users/georg/Downloads/PTYXIAKH/client/src/components/dashboard/common/widgets/Schedule/ --include=\"*.jsx\")",
+      "Bash(grep -rn \"from ''\\\\.\" /c/Users/georg/Downloads/PTYXIAKH/client/src/components/dashboard/customer/Workout/ --include=\"*.jsx\")",
+      "Bash(grep -rn \"from ''\\\\.\" /c/Users/georg/Downloads/PTYXIAKH/client/src/components/dashboard/customer/Nutrition/ --include=\"*.jsx\")",
+      "Bash(grep -rn \"from ''\\\\.\" /c/Users/georg/Downloads/PTYXIAKH/client/src/components/dashboard/customer/FindTrainer/ --include=\"*.jsx\")",
+      "Bash(grep -r \"create_db\\\\|check_db\\\\|copy_workouts\\\\|seed\" /c/Users/georg/Downloads/PTYXIAKH --include=*.js --include=*.json ! -path */node_modules/* ! -path */.git/*)",
+      "Bash(grep -r \"Void\" /c/Users/georg/Downloads/PTYXIAKH/client/src --include=\"*.jsx\" --include=\"*.js\" ! -path \"*/node_modules/*\")",
+      "Bash(grep -r \"import.*controller\\\\|require.*controller\" /c/Users/georg/Downloads/PTYXIAKH --include=\"*.js\" ! -path \"*/node_modules/*\" ! -path \"*/.git/*\")",
+      "Bash(grep -h import.*from.*controller /c/Users/georg/Downloads/PTYXIAKH/routes/**/*.js)",
+      "Bash(grep -r UserStat /c/Users/georg/Downloads/PTYXIAKH --include=*.js ! -path */node_modules/* ! -path */.git/*)",
+      "Bash(grep -r \"import.*DailyTargets\\\\|FindTrainer\\\\|WeeklySteps\" /c/Users/georg/Downloads/PTYXIAKH/client/src --include=*.jsx)",
+      "Bash(grep -r \"fitness-regression\\\\|PREDICTION\" /c/Users/georg/Downloads/PTYXIAKH --include=\"*.js\" --include=\"*.jsx\" ! -path \"*/node_modules/*\" ! -path \"*/.git/*\")",
+      "Bash(grep -r \"UserStat\" /c/Users/georg/Downloads/PTYXIAKH --include=\"*.js\" --include=\"*.jsx\" ! -path \"*/node_modules/*\" ! -path \"*/.git/*\")",
+      "Bash(grep -r \"^[[:space:]]*//[[:space:]]*app.use\\\\|^[[:space:]]*//[[:space:]]*import\" /c/Users/georg/Downloads/PTYXIAKH/app.js)",
+      "Bash(ls -lh /c/Users/georg/Downloads/PTYXIAKH/*.js)"
     ]
   }
 }

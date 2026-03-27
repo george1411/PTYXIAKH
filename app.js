@@ -8,23 +8,23 @@ import cors from 'cors';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-import userRouter from './routes/user.routes.js';
-import authRouter from './routes/auth.routes.js';
+import userRouter from './routes/common/user.routes.js';
+import authRouter from './routes/common/auth.routes.js';
 import connectToDatabase from './database/mysql.js';
 import errorMiddleware from './middlewares/error.middleware.js';
 import cookieParser from 'cookie-parser';
 import arcjetMiddleware from './middlewares/arcjet.middleware.js';
-import exerciseRouter from './routes/exercise.routes.js';
-import workoutRouter from './routes/workout.routes.js';
-import dailyLogRouter from './routes/dailylog.routes.js';
-import dailyGoalRouter from './routes/dailyGoal.routes.js';
-import statsRouter from './routes/stats.routes.js';
-import chatRouter from './routes/chat.routes.js';
-import scheduleRouter from './routes/schedule.routes.js';
-import trainerRouter from './routes/trainer.routes.js';
-import mealRouter from './routes/meal.routes.js';
-import nutritionRouter from './routes/nutrition.routes.js';
-import inviteRouter from './routes/invite.routes.js';
+import exerciseRouter from './routes/common/exercise.routes.js';
+import workoutRouter from './routes/common/workout.routes.js';
+import dailyLogRouter from './routes/common/dailylog.routes.js';
+import dailyGoalRouter from './routes/common/dailyGoal.routes.js';
+import statsRouter from './routes/common/stats.routes.js';
+import chatRouter from './routes/common/chat.routes.js';
+import scheduleRouter from './routes/common/schedule.routes.js';
+import trainerRouter from './routes/trainer/trainer.routes.js';
+import mealRouter from './routes/common/meal.routes.js';
+import nutritionRouter from './routes/common/nutrition.routes.js';
+import inviteRouter from './routes/common/invite.routes.js';
 
 const app = express();
 
