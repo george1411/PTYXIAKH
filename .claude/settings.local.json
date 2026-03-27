@@ -7,7 +7,20 @@
       "Bash(\"c:\\\\Users\\\\georg\\\\Downloads\\\\PTYXIAKH\\\\client\\\\src\\\\components\\\\dashboard\\\\trainer\\\\TrainerClients.css\":*)",
       "Bash(grep -r multer /c/Users/georg/Downloads/PTYXIAKH --include=*.js --include=*.json)",
       "Bash(grep -r upload /c/Users/georg/Downloads/PTYXIAKH --include=*.js --exclude-dir=node_modules)",
-      "Bash(xargs grep:*)"
+      "Bash(xargs grep:*)",
+      "Bash(grep -r \"WeeklyMeasurements\\\\|weight\" c:UsersgeorgDownloadsPTYXIAKHcontrollers --include=*.js)",
+      "Bash(grep -r WorkoutLog c:UsersgeorgDownloadsPTYXIAKHcontrollers --include=*.js)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "Bash(find /c/Users/georg/Downloads/PTYXIAKH -type f -path */middleware* -name *.js)",
+      "Bash(grep -r \"req\\\\.params\\\\|req\\\\.query\\\\|req\\\\.body\" /c/Users/georg/Downloads/PTYXIAKH/controllers/*.js)",
+      "Bash(grep -E \"$\\\\{|template|concat\")",
+      "Bash(wc -l /c/Users/georg/Downloads/PTYXIAKH/controllers/*.js)",
+      "Bash(grep -r \"if.*!.*PORT\\\\|if.*!.*JWT_SECRET\\\\|if.*!.*DB_\" c:UsersGeorgDownloadsPTYXIAKH --include=*.js)",
+      "Bash(grep -rn \"app.get\\\\|app.post\" c:UsersGeorgDownloadsPTYXIAKHapp.js c:UsersGeorgDownloadsPTYXIAKHroutes --include=*.js)",
+      "Bash(grep -n \"app\\\\.\\\\\\(get\\\\|post\\\\|put\\\\|delete\\\\\\)\" c:UsersGeorgDownloadsPTYXIAKHapp.js c:UsersGeorgDownloadsPTYXIAKHroutes*.js)",
+      "Bash(npm install:*)",
+      "Bash(node -e \"console.log\\(require\\(''crypto''\\).randomBytes\\(32\\).toString\\(''hex''\\)\\)\")",
+      "Bash(node --input-type=module:*)"
     ]
   }
 }

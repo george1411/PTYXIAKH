@@ -4,6 +4,7 @@ import {
     ResponsiveContainer, CartesianGrid, ReferenceLine
 } from 'recharts';
 import axios from 'axios';
+import WeeklySteps from '../WeeklySteps/WeeklySteps';
 import './Progress.css';
 
 // ─── Range Toggle ────────────────────────────────────────────
@@ -27,19 +28,40 @@ const WeightHistory = () => {
     const [data, setData] = useState(null);
     const [loading, setLoading] = useState(true);
     const [weightGoal, setWeightGoal] = useState(null);
+    const [showLog, setShowLog] = useState(false);
+    const [logValue, setLogValue] = useState('');
+    const [logSaving, setLogSaving] = useState(false);
 
     useEffect(() => {
         const goal = localStorage.getItem('weightGoal');
         if (goal) setWeightGoal(parseFloat(goal));
     }, []);
 
-    useEffect(() => {
+    const fetchData = () => {
         setLoading(true);
         axios.get(`/api/v1/stats/weight-history?range=${range}`, { withCredentials: true })
             .then(res => setData(res.data.data))
             .catch(err => console.error('Weight history error:', err))
             .finally(() => setLoading(false));
-    }, [range]);
+    };
+
+    useEffect(() => { fetchData(); }, [range]);
+
+    const handleLogWeight = async (e) => {
+        e.preventDefault();
+        if (!logValue) return;
+        setLogSaving(true);
+        try {
+            await axios.post('/api/v1/stats/weekly-measurements', { weight: parseFloat(logValue) }, { withCredentials: true });
+            setShowLog(false);
+            setLogValue('');
+            fetchData();
+        } catch (err) {
+            console.error('Log weight error:', err);
+        } finally {
+            setLogSaving(false);
+        }
+    };
 
     const chartData = useMemo(() => {
         if (!data?.history) return [];
@@ -57,6 +79,37 @@ const WeightHistory = () => {
             <div className="progress-card-header">
                 <div className="progress-card-title">
                     <h3>Weight History</h3>
+                    <div className="wh-log-anchor">
+                        <button
+                            className={`wh-log-btn ${showLog ? 'active' : ''}`}
+                            onClick={() => { setShowLog(v => !v); setLogValue(''); }}
+                            title="Log today's weight"
+                        >
+                            {showLog ? '×' : '+'}
+                        </button>
+                        {showLog && (
+                            <form onSubmit={handleLogWeight} className="wh-log-popup">
+                                <input
+                                    type="number"
+                                    min="20"
+                                    max="300"
+                                    step="0.1"
+                                    placeholder="kg"
+                                    value={logValue}
+                                    onChange={e => setLogValue(e.target.value)}
+                                    autoFocus
+                                    className="wh-log-input"
+                                />
+                                <button
+                                    type="submit"
+                                    disabled={logSaving || !logValue}
+                                    className="wh-log-save"
+                                >
+                                    {logSaving ? '…' : 'Save'}
+                                </button>
+                            </form>
+                        )}
+                    </div>
                 </div>
                 <RangeToggle
                     value={range}
@@ -86,8 +139,8 @@ const WeightHistory = () => {
                     <div className="progress-chart-container">
                         <ResponsiveContainer width="100%" height="100%">
                             <LineChart data={chartData}>
-                                <CartesianGrid stroke="#f0f0f0" strokeDasharray="3 3" />
-                                <XAxis dataKey="date" tick={{ fontSize: 11, fill: '#999' }} tickLine={false} axisLine={false} interval="preserveStartEnd" />
+                                <CartesianGrid stroke="rgba(255,255,255,0.05)" strokeDasharray="0" vertical={false} />
+                                <XAxis dataKey="date" tick={{ fontSize: 11, fill: '#555' }} tickLine={false} axisLine={false} interval="preserveStartEnd" />
                                 <YAxis
                                     domain={[
                                         (dataMin) => {
@@ -99,14 +152,15 @@ const WeightHistory = () => {
                                             return Math.ceil(max + 5);
                                         }
                                     ]}
-                                    tick={{ fontSize: 11, fill: '#999' }} tickLine={false} axisLine={false} width={40}
+                                    tick={{ fontSize: 11, fill: '#555' }} tickLine={false} axisLine={false} width={40}
                                 />
                                 <Tooltip
-                                    contentStyle={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 10, boxShadow: '0 4px 12px rgba(0,0,0,0.08)' }}
+                                    contentStyle={{ background: '#1a1a1a', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 10, boxShadow: '0 4px 20px rgba(0,0,0,0.5)' }}
                                     labelStyle={{ color: '#888', fontSize: 12 }}
+                                    itemStyle={{ color: '#e0e0e0' }}
                                     formatter={(v) => [`${v} kg`, 'Weight']}
                                 />
-                                <Line type="monotone" dataKey="weight" stroke="#444" strokeWidth={2.5} dot={{ r: 3, fill: '#fff', stroke: '#444', strokeWidth: 2 }} activeDot={{ r: 5, fill: '#444' }} />
+                                <Line type="monotone" dataKey="weight" stroke="#e0e0e0" strokeWidth={2.5} dot={{ r: 3, fill: '#111', stroke: '#e0e0e0', strokeWidth: 2 }} activeDot={{ r: 5, fill: '#fff' }} />
                                 {weightGoal && (
                                     <ReferenceLine
                                         y={weightGoal}
@@ -195,7 +249,7 @@ const ExercisePRs = () => {
 };
 
 // ─── Consistency Calendar Section ────────────────────────────
-const ConsistencyCalendar = () => {
+export const ConsistencyCalendar = () => {
     const [workoutDates, setWorkoutDates] = useState(new Set());
     const [loading, setLoading] = useState(true);
 
@@ -318,8 +372,8 @@ const ConsistencyCalendar = () => {
                     {/* Legend */}
                     <div className="progress-heatmap-legend">
                         <span className="progress-heatmap-legend-text">Less</span>
-                        <div className="progress-heatmap-legend-cell" style={{ background: '#ebedf0' }} />
-                        <div className="progress-heatmap-legend-cell" style={{ background: '#9be9a8' }} />
+                        <div className="progress-heatmap-legend-cell" style={{ background: '#2a2a2a' }} />
+                        <div className="progress-heatmap-legend-cell" style={{ background: '#e0e0e0' }} />
                         <span className="progress-heatmap-legend-text">More</span>
                     </div>
                 </div>
@@ -329,7 +383,7 @@ const ConsistencyCalendar = () => {
 };
 
 // ─── Weight Prediction (AI) ──────────────────────────────────
-const WeightPrediction = () => {
+export const WeightPrediction = () => {
     // Prediction configuration
     const [duration, setDuration] = useState(4);
     const [activityLevel, setActivityLevel] = useState('Moderately Active');
@@ -531,7 +585,7 @@ const BMI_CATEGORIES = [
     { label: 'Obese', range: [30, 100], color: '#888', tip: 'Consult with your trainer for a personalized plan.' },
 ];
 
-const BMICalculator = () => {
+export const BMICalculator = () => {
     const [height, setHeight] = useState('');
     const [weight, setWeight] = useState('');
     const [bmi, setBmi] = useState(null);
@@ -632,7 +686,7 @@ const BMICalculator = () => {
         return (
             <svg viewBox={`0 0 ${size} ${size / 2 + 40}`} className="bmi-gauge-svg">
                 {/* Background arc */}
-                <path d={arcPath(startAngle, endAngle)} fill="none" stroke="#f0f0f0" strokeWidth="14" strokeLinecap="round" />
+                <path d={arcPath(startAngle, endAngle)} fill="none" stroke="#2a2a2a" strokeWidth="14" strokeLinecap="round" />
                 {/* Category arcs */}
                 {segments.map((seg, i) => (
                     <path key={i} d={arcPath(seg.segStart, seg.segEnd)} fill="none" stroke={seg.color} strokeWidth="14" strokeLinecap="butt" opacity="0.85" />
@@ -640,9 +694,9 @@ const BMICalculator = () => {
                 {/* Needle */}
                 {bmi !== null && (
                     <>
-                        <line x1={cx} y1={cy} x2={nx} y2={ny} stroke="#111" strokeWidth="2.5" strokeLinecap="round" />
-                        <circle cx={cx} cy={cy} r="5" fill="#111" />
-                        <circle cx={cx} cy={cy} r="2.5" fill="#fff" />
+                        <line x1={cx} y1={cy} x2={nx} y2={ny} stroke="#e0e0e0" strokeWidth="2.5" strokeLinecap="round" />
+                        <circle cx={cx} cy={cy} r="5" fill="#e0e0e0" />
+                        <circle cx={cx} cy={cy} r="2.5" fill="#111" />
                     </>
                 )}
                 {/* Labels */}
@@ -687,7 +741,7 @@ const BMICalculator = () => {
                 {renderGauge()}
                 {bmi !== null && (
                     <div className="bmi-value-display">
-                        <span className="bmi-value" style={{ color: category?.color || '#111' }}>{bmi}</span>
+                        <span className="bmi-value" style={{ color: category?.color || '#e0e0e0' }}>{bmi}</span>
                         <span className="bmi-label">{category?.label}</span>
                     </div>
                 )}
@@ -698,26 +752,6 @@ const BMICalculator = () => {
                 )}
             </div>
 
-            {category && (
-                <div className="bmi-tip" style={{ borderLeftColor: category.color }}>
-                    <span>{category.tip}</span>
-                </div>
-            )}
-
-            <div className="bmi-categories-bar">
-                {BMI_CATEGORIES.map((cat, i) => (
-                    <div
-                        key={i}
-                        className={`bmi-cat-chip ${category?.label === cat.label ? 'active' : ''}`}
-                        style={{
-                            background: category?.label === cat.label ? cat.color : '#f0f0f0',
-                            color: category?.label === cat.label ? '#fff' : '#888'
-                        }}
-                    >
-                        {cat.label}
-                    </div>
-                ))}
-            </div>
         </div>
     );
 };
@@ -731,10 +765,11 @@ const Progress = () => {
             </div>
 
             <div className="progress-grid">
+                {/* Row 1: Weight History | Personal Records */}
                 <WeightHistory />
-                <WeightPrediction />
                 <ExercisePRs />
-                <ConsistencyCalendar />
+                {/* Row 2: Weekly Steps | BMI Calculator */}
+                <WeeklySteps />
                 <BMICalculator />
             </div>
         </div>

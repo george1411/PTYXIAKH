@@ -1,0 +1,105 @@
+.tm-card {
+    background: #111111;
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 1rem;
+    padding: 1.25rem 1.25rem 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    height: 100%;
+}
+
+.tm-title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #f0f0f0;
+    margin: 0;
+}
+
+.tm-loading {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.tm-spinner {
+    width: 24px;
+    height: 24px;
+    border: 3px solid rgba(255,255,255,0.08);
+    border-top-color: #e0e0e0;
+    border-radius: 50%;
+    animation: tm-spin 0.7s linear infinite;
+}
+
+@keyframes tm-spin {
+    to { transform: rotate(360deg); }
+}
+
+.tm-empty {
+    font-size: 0.82rem;
+    color: #555;
+    margin: 0;
+}
+
+.tm-rows {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.tm-row {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.tm-row-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+}
+
+.tm-label {
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: #888;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.tm-values {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #aaa;
+}
+
+.tm-bar-track {
+    height: 7px;
+    background: #222;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.tm-bar-fill {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 0.6s ease;
+}
+
+.tm-bar-cal   { background: linear-gradient(90deg, #555, #e0e0e0); }
+.tm-bar-prot  { background: linear-gradient(90deg, #334, #a5b4fc); }
+.tm-bar-water { background: linear-gradient(90deg, #1e3a5f, #38bdf8); }
+
+.tm-status {
+    font-size: 0.78rem;
+    font-weight: 700;
+    padding: 6px 12px;
+    border-radius: 8px;
+    text-align: center;
+    margin-top: 2px;
+}
+
+.tm-status-surplus   { background: rgba(248,113,113,0.1); color: #f87171; }
+.tm-status-deficit   { background: rgba(74,222,128,0.1);  color: #4ade80; }
+.tm-status-on_target { background: rgba(255,255,255,0.06); color: #888; }

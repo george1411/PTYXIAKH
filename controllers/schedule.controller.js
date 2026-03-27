@@ -7,7 +7,7 @@ export const getScheduleEvents = async (req, res, next) => {
         const userId = req.user.id;
 
         const events = await sequelize.query(
-            `SELECT id, userId, title, day, startTime, endTime, color, createdAt, updatedAt
+            `SELECT id, userId, title, day, date, startTime, endTime, color, createdAt, updatedAt
              FROM ScheduleEvents
              WHERE userId = :userId
              ORDER BY day, startTime`,

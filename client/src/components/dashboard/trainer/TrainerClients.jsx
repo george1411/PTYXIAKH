@@ -709,8 +709,8 @@ const InvitePanel = () => {
             <button className="tc-invite-toggle" onClick={() => setOpen(o => !o)}>
                 <span>Invite Codes</span>
                 <div className="tc-invite-toggle-right">
-                    {codes.filter(c => !c.usedBy).length > 0 && (
-                        <span className="tc-invite-count">{codes.filter(c => !c.usedBy).length}</span>
+                    {codes.length > 0 && (
+                        <span className="tc-invite-count">{codes.length}</span>
                     )}
                     <span className="tc-invite-chevron">{open ? '▲' : '▼'}</span>
                 </div>
@@ -722,15 +722,15 @@ const InvitePanel = () => {
                     ) : (
                         <div className="tc-invite-list">
                             {codes.map(ic => (
-                                <div key={ic.id} className={`tc-invite-row ${ic.usedBy ? 'used' : ''}`}>
+                                <div key={ic.id} className="tc-invite-row">
                                     <span className="tc-invite-code">{ic.code}</span>
-                                    {ic.usedBy && <span className="tc-invite-label used">Used</span>}
+                                    {ic.usedCount > 0 && (
+                                        <span className="tc-invite-label">{ic.usedCount} client{ic.usedCount !== 1 ? 's' : ''}</span>
+                                    )}
                                     <div className="tc-invite-actions">
-                                        {!ic.usedBy && (
-                                            <button className="tc-invite-btn" onClick={() => handleCopy(ic.id, ic.code)} title="Copy">
-                                                {copiedId === ic.id ? <CheckCircle size={12} /> : <Copy size={12} />}
-                                            </button>
-                                        )}
+                                        <button className="tc-invite-btn" onClick={() => handleCopy(ic.id, ic.code)} title="Copy">
+                                            {copiedId === ic.id ? <CheckCircle size={12} /> : <Copy size={12} />}
+                                        </button>
                                         <button className="tc-invite-btn del" onClick={() => handleDelete(ic.id)} title="Delete">
                                             <Trash2 size={12} />
                                         </button>

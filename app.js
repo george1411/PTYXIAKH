@@ -1,7 +1,9 @@
 import express from 'express';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { PORT } from './config/env.js';
+import { PORT, NODE_ENV } from './config/env.js';
+import helmet from 'helmet';
+import cors from 'cors';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -23,20 +25,25 @@ import trainerRouter from './routes/trainer.routes.js';
 import mealRouter from './routes/meal.routes.js';
 import nutritionRouter from './routes/nutrition.routes.js';
 import inviteRouter from './routes/invite.routes.js';
-// import programRouter from './routes/program.routes.js'; // Removed as file is missing
-// import limiter from './middlewares/limiter.middleware.js'; // Removed as file is missing
 
 const app = express();
 
-app.use(express.json());
+app.use(helmet());
+app.use(cors({
+    origin: NODE_ENV === 'production'
+        ? process.env.CLIENT_URL
+        : ['http://localhost:5173', 'http://localhost:3000'],
+    credentials: true
+}));
+
+app.use(express.json({ limit: '1mb' }));
 app.use(cookieParser());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.urlencoded({ extended: true, limit: '1mb' }));
 
 // Serve uploaded files
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-// app.use(limiter);
-// app.use(arcjetMiddleware);
+app.use(arcjetMiddleware);
 
 app.use('/api/v1/auth', authRouter);
 app.use('/api/v1/users', userRouter);

@@ -8,17 +8,18 @@ const aj = arcjet({
   rules: [
     shield({ mode: "LIVE" }),
     detectBot({
-      mode: "LIVE", 
+      mode: "DRY_RUN",
       allow: [
         "CATEGORY:SEARCH_ENGINE",
+        "CATEGORY:BROWSER",
       ],
     }),
 
     tokenBucket({
       mode: "LIVE",
-      refillRate: 5,
+      refillRate: 60,
       interval: 10,
-      capacity: 10, 
+      capacity: 120,
     }),
   ],
 });

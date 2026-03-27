@@ -1,16 +1,17 @@
 import { Router } from "express";
 import { getExercise, getExercises, createExercise, updateExercise, deleteExercise } from "../controllers/exercise.controller.js";
+import authorize from '../middlewares/auth.middleware.js';
 const exerciseRouter = Router();
 
-exerciseRouter.get('/', getExercises);
+exerciseRouter.get('/', authorize, getExercises);
 
-exerciseRouter.get('/:id', getExercise);
+exerciseRouter.get('/:id', authorize, getExercise);
 
-exerciseRouter.post('/', createExercise);
+exerciseRouter.post('/', authorize, createExercise);
 
-exerciseRouter.put('/:id', updateExercise);
+exerciseRouter.put('/:id', authorize, updateExercise);
 
-exerciseRouter.delete('/:id', deleteExercise);
+exerciseRouter.delete('/:id', authorize, deleteExercise);
 
 
 

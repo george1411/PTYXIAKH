@@ -2,20 +2,20 @@
 .cm-wrap {
     display: flex;
     height: calc(100vh - 10rem);
-    border: 1px solid #e5e7eb;
+    border: 1px solid rgba(255,255,255,0.08);
     border-radius: 16px;
     overflow: hidden;
-    background: #fff;
+    background: #111111;
 }
 
 /* ─── Sidebar ──────────────────────────────────────────────────── */
 .cm-sidebar {
     width: 280px;
     flex-shrink: 0;
-    border-right: 1px solid #f0f0f0;
+    border-right: 1px solid rgba(255,255,255,0.06);
     display: flex;
     flex-direction: column;
-    background: #fafafa;
+    background: #0f0f0f;
     overflow-y: auto;
 }
 
@@ -23,9 +23,9 @@
     padding: 20px 18px 12px;
     font-size: 1rem;
     font-weight: 800;
-    color: #111;
+    color: #f0f0f0;
     flex-shrink: 0;
-    border-bottom: 1px solid #f0f0f0;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
 }
 
 .cm-sidebar-empty {
@@ -34,7 +34,7 @@
     align-items: center;
     justify-content: center;
     font-size: 0.83rem;
-    color: #aaa;
+    color: #555;
     padding: 24px;
     text-align: center;
 }
@@ -50,18 +50,18 @@
     text-align: left;
     width: 100%;
     transition: background 0.15s;
-    border-bottom: 1px solid #f5f5f5;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
 }
 
-.cm-convo-item:hover    { background: #f3f4f6; }
-.cm-convo-item.active   { background: #f0f0f0; }
+.cm-convo-item:hover  { background: rgba(255,255,255,0.04); }
+.cm-convo-item.active { background: rgba(255,255,255,0.08); }
 
 .cm-convo-avatar {
     width: 40px;
     height: 40px;
     border-radius: 50%;
-    background: linear-gradient(135deg, var(--bg-dark), #333);
-    color: #fff;
+    background: linear-gradient(135deg, #2a2a2a, #444);
+    color: #e0e0e0;
     font-weight: 700;
     font-size: 1rem;
     display: flex;
@@ -85,7 +85,7 @@
 .cm-convo-name {
     font-size: 0.85rem;
     font-weight: 700;
-    color: #111;
+    color: #e0e0e0;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -93,13 +93,13 @@
 
 .cm-convo-time {
     font-size: 0.7rem;
-    color: #aaa;
+    color: #555;
     flex-shrink: 0;
 }
 
 .cm-convo-preview {
     font-size: 0.75rem;
-    color: #888;
+    color: #666;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -109,8 +109,8 @@
 .cm-convo-badge {
     min-width: 18px;
     height: 18px;
-    background: var(--accent);
-    color: #fff;
+    background: #e0e0e0;
+    color: #111;
     font-size: 0.65rem;
     font-weight: 700;
     border-radius: 999px;
@@ -127,7 +127,7 @@
     display: flex;
     flex-direction: column;
     overflow: hidden;
-    background: #fff;
+    background: #111111;
 }
 
 /* ─── Header ───────────────────────────────────────────────────── */
@@ -136,8 +136,8 @@
     align-items: center;
     gap: 14px;
     padding: 18px 24px;
-    border-bottom: 1px solid #f3f4f6;
-    background: #fafafa;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    background: #0f0f0f;
     flex-shrink: 0;
 }
 
@@ -145,8 +145,8 @@
     width: 46px;
     height: 46px;
     border-radius: 50%;
-    background: linear-gradient(135deg, var(--bg-dark), #333);
-    color: #fff;
+    background: linear-gradient(135deg, #2a2a2a, #444);
+    color: #e0e0e0;
     font-weight: 700;
     font-size: 1.2rem;
     display: flex;
@@ -159,12 +159,12 @@
     font-size: 1rem;
     font-weight: 700;
     margin: 0 0 2px;
-    color: #111;
+    color: #f0f0f0;
 }
 
 .cm-header-info span {
     font-size: 0.75rem;
-    color: #9ca3af;
+    color: #666;
 }
 
 /* ─── Messages area ────────────────────────────────────────────── */
@@ -184,7 +184,7 @@
     align-items: center;
     justify-content: center;
     gap: 12px;
-    color: #9ca3af;
+    color: #555;
     font-size: 0.9rem;
     height: 100%;
 }
@@ -196,15 +196,15 @@
     gap: 8px;
 }
 
-.cm-msg-row.me   { flex-direction: row-reverse; }
-.cm-msg-row.them { flex-direction: row; }
+.cm-msg-row.me   { flex-direction: row; }
+.cm-msg-row.them { flex-direction: row-reverse; }
 
 .cm-avatar {
     width: 32px;
     height: 32px;
     border-radius: 50%;
-    background: linear-gradient(135deg, var(--bg-dark), #333);
-    color: #fff;
+    background: linear-gradient(135deg, #2a2a2a, #444);
+    color: #e0e0e0;
     font-size: 0.8rem;
     font-weight: 700;
     display: flex;
@@ -224,15 +224,15 @@
 .cm-bubble p { margin: 0 0 4px; }
 
 .cm-bubble.me {
-    background: var(--accent);
-    color: #fff;
-    border-bottom-right-radius: 4px;
+    background: #ffffff;
+    color: #111111;
+    border-bottom-left-radius: 4px;
 }
 
 .cm-bubble.them {
-    background: #f3f4f6;
-    color: #111;
-    border-bottom-left-radius: 4px;
+    background: #a5b4fc;
+    color: #111111;
+    border-bottom-right-radius: 4px;
 }
 
 .cm-time {
@@ -242,38 +242,41 @@
     text-align: right;
 }
 
-.cm-bubble.them .cm-time { text-align: left; }
+.cm-bubble.me   .cm-time { text-align: left; }
+.cm-bubble.them .cm-time { text-align: right; }
 
 /* ─── Input row ────────────────────────────────────────────────── */
 .cm-input-row {
     display: flex;
     gap: 10px;
     padding: 16px 24px;
-    border-top: 1px solid #f3f4f6;
+    border-top: 1px solid rgba(255,255,255,0.06);
     flex-shrink: 0;
-    background: #fafafa;
+    background: #0f0f0f;
 }
 
 .cm-input {
     flex: 1;
     padding: 11px 18px;
-    border: 1px solid #e5e7eb;
+    border: 1px solid rgba(255,255,255,0.08);
     border-radius: 999px;
     font-size: 0.9rem;
     outline: none;
-    background: #fff;
+    background: #1a1a1a;
+    color: #e0e0e0;
     transition: border-color 0.15s;
 }
 
-.cm-input:focus { border-color: var(--accent); }
-.cm-input:disabled { background: #f9fafb; color: #9ca3af; }
+.cm-input::placeholder { color: #555; }
+.cm-input:focus { border-color: rgba(255,255,255,0.25); }
+.cm-input:disabled { background: #161616; color: #444; }
 
 .cm-send {
     width: 44px;
     height: 44px;
     border-radius: 50%;
-    background: var(--accent);
-    color: #fff;
+    background: #ffffff;
+    color: #111111;
     border: none;
     cursor: pointer;
     display: flex;
@@ -283,9 +286,9 @@
     transition: background 0.15s, transform 0.1s;
 }
 
-.cm-send:hover    { background: var(--accent-hover); }
-.cm-send:active   { transform: scale(0.95); }
-.cm-send:disabled { background: #d1d5db; cursor: not-allowed; }
+.cm-send:hover  { background: #e5e5e5; }
+.cm-send:active { transform: scale(0.95); }
+.cm-send:disabled { background: #2a2a2a; color: #555; cursor: not-allowed; }
 
 /* ─── Spinner ──────────────────────────────────────────────────── */
 @keyframes cm-spin {

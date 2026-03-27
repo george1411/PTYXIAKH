@@ -1,10 +1,10 @@
-import React, { useEffect, useState, useMemo } from 'react';
-import { Plus, X, Trash2, Edit3, Clock, Save, ChevronLeft, ChevronRight } from 'lucide-react';
+import React, { useEffect, useState, useMemo, useRef } from 'react';
+import { Plus, X, Trash2, Edit3, Clock, ChevronLeft, ChevronRight } from 'lucide-react';
 import axios from 'axios';
 import './Schedule.css';
 
-const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
-const DAY_ABBR = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
+const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+const DAY_ABBR = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
 // Get the Monday of the current ISO week, then offset by `weekOffset` weeks
 function getMondayOfWeek(weekOffset = 0) {
@@ -16,13 +16,13 @@ function getMondayOfWeek(weekOffset = 0) {
 }
 
 function formatWeekRange(monday) {
-    const friday = new Date(monday);
-    friday.setDate(friday.getDate() + 4);
+    const sunday = new Date(monday);
+    sunday.setDate(sunday.getDate() + 6);
     const opts = { month: 'short', day: 'numeric' };
     const monStr = monday.toLocaleDateString('en-US', opts);
-    const friStr = friday.toLocaleDateString('en-US', opts);
+    const sunStr = sunday.toLocaleDateString('en-US', opts);
     const year = monday.getFullYear();
-    return `${monStr} – ${friStr}, ${year}`;
+    return `${monStr} – ${sunStr}, ${year}`;
 }
 
 function getDateForDay(monday, dayIndex) {
@@ -43,10 +43,10 @@ const SLOT_HEIGHT = 50; // pixels per 30 min
 const SLOTS_COUNT = (TIME_END - TIME_START) * 2; // 36 half-hour slots
 
 const EVENT_COLORS = [
-    { id: 'event-1', bg: '#555', label: 'Teal' },
-    { id: 'event-2', bg: '#444', label: 'Purple' },
-    { id: 'event-3', bg: '#888', label: 'Sage' },
-    { id: 'event-4', bg: '#666', label: 'Orange' },
+    { id: 'event-1', bg: '#e0e0e0', label: 'Gray' },
+    { id: 'event-2', bg: '#a5b4fc', label: 'Purple' },
+    { id: 'event-3', bg: '#38bdf8', label: 'Cyan' },
+    { id: 'event-4', bg: '#60a5fa', label: 'Blue' },
 ];
 
 // Color assigned to workout program events
@@ -177,7 +177,7 @@ const EventModal = ({ event, onSave, onDelete, onClose, isNew }) => {
                         </button>
                     )}
                     <button className="sched-btn sched-btn-save" onClick={handleSave}>
-                        <Save size={14} /> {isNew ? 'Add' : 'Save'}
+                        {isNew ? 'Add' : 'Save'}
                     </button>
                 </div>
             </div>
@@ -448,76 +448,36 @@ const Schedule = ({ onNavigate, fullPage, hideTitle }) => {
 // ─── Overview Widget (card-based view with week nav) ─────────
 const ScheduleWidget = ({ onNavigate, hideTitle }) => {
     const [scheduleData, setScheduleData] = useState([]);
-    const [weekOffset, setWeekOffset] = useState(0);
-    const [showPopup, setShowPopup] = useState(null);
-    const [popupLoading, setPopupLoading] = useState(false);
+    const scrollRef = useRef(null);
 
     const daysOfWeek = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 
-    const widgetMonday = useMemo(() => getMondayOfWeek(weekOffset), [weekOffset]);
-    const weekLabel = useMemo(() => formatWeekRange(widgetMonday), [widgetMonday]);
-    const isCurrentWeek = weekOffset === 0;
-
-    const getDateStr = (dayIndex) => {
-        const d = new Date(widgetMonday);
-        d.setDate(d.getDate() + dayIndex);
-        return d.toISOString().split('T')[0];
-    };
+    const currentDayIndex = new Date().getDay();
+    const todayIndex = currentDayIndex === 0 ? 6 : currentDayIndex - 1; // Mon=0 … Sun=6
 
     useEffect(() => {
         const fetchWorkouts = async () => {
             try {
-                const response = await axios.get('/api/v1/workouts', { withCredentials: true });
-                const workouts = response.data.data;
-                const currentDayIndex = new Date().getDay();
-                const adjustedDayIndex = currentDayIndex === 0 ? 6 : currentDayIndex - 1;
+                const res = await axios.get('/api/v1/workouts', { withCredentials: true });
+                const workouts = res.data.data || [];
 
                 const calendarData = daysOfWeek.map((day, index) => {
-                    const workoutForDay = workouts.find(w => w.day === day);
-                    const isToday = isCurrentWeek && index === adjustedDayIndex;
+                    const w = workouts.find(w => w.day === day);
                     return {
-                        id: workoutForDay ? workoutForDay.id : `rest-${day}`,
+                        id: w ? w.id : `rest-${day}`,
                         label: day,
-                        title: workoutForDay ? workoutForDay.name : 'Rest Day',
-                        hasWorkout: !!workoutForDay,
-                        isToday,
-                        dayIndex: index,
+                        title: w ? w.name : null,
+                        exercises: w?.exercises || [],
+                        isToday: index === todayIndex,
                     };
                 });
                 setScheduleData(calendarData);
-            } catch (error) {
-                console.error("Error fetching schedule:", error);
+            } catch (err) {
+                console.error('Error fetching schedule:', err);
             }
         };
         fetchWorkouts();
-    }, [weekOffset, isCurrentWeek]);
-
-    const handleShowWorkout = async (item) => {
-        setPopupLoading(true);
-        setShowPopup({ day: item.label, exercises: [] });
-        try {
-            const dateStr = getDateStr(item.dayIndex);
-            const res = await axios.get(`/api/v1/workouts?date=${dateStr}`, { withCredentials: true });
-            const workouts = res.data.data;
-            const workoutForDay = workouts.find(w => w.day === item.label);
-            if (workoutForDay && workoutForDay.exercises) {
-                const exercises = workoutForDay.exercises.map(ex => ({
-                    name: ex.exerciseName,
-                    targetSets: parseInt(ex.sets) || 3,
-                    targetReps: ex.reps || null,
-                    targetKg: ex.weight || null,
-                    logs: ex.logs || [],
-                }));
-                setShowPopup({ day: item.label, date: dateStr, exercises });
-            } else {
-                setShowPopup({ day: item.label, date: dateStr, exercises: [] });
-            }
-        } catch (error) {
-            console.error("Error fetching workout logs:", error);
-        } finally {
-            setPopupLoading(false);
-        }
-    };
+    }, []);
 
     return (
         <div className="schedule-container">
@@ -527,100 +487,45 @@ const ScheduleWidget = ({ onNavigate, hideTitle }) => {
                 </div>
             )}
 
-            {/* Week navigation */}
-            <div className="widget-week-nav">
-                <button className="widget-nav-btn" onClick={() => setWeekOffset(prev => prev - 1)}>
-                    <ChevronLeft size={14} />
-                </button>
-                <span className="widget-week-label">{weekLabel}</span>
-                <button className="widget-nav-btn" onClick={() => setWeekOffset(prev => prev + 1)}>
-                    <ChevronRight size={14} />
-                </button>
-                {weekOffset !== 0 && (
-                    <button className="widget-today-btn" onClick={() => setWeekOffset(0)}>Today</button>
-                )}
-            </div>
-
-            <div className="schedule-list custom-scrollbar">
+            <div className="schedule-list">
                 {scheduleData.map((item) => (
                     <div
                         key={item.id}
-                        className={`schedule-card ${item.isToday ? 'is-today' : 'not-today'} ${item.hasWorkout ? 'has-workout' : ''}`}
+                        className={`schedule-card ${item.isToday ? 'is-today' : 'not-today'}`}
                     >
+                        {/* Top: day + dot */}
                         <div className="card-header">
-                            <span className="card-label">{item.label}</span>
-                            {item.isToday && <div className="today-indicator"></div>}
+                            <span className="card-label">{item.label.toUpperCase()}</span>
+                            {item.isToday && <div className="today-indicator" />}
                         </div>
-                        <div className="card-content">
-                            <h4 className={`card-title ${item.isToday ? 'today' : 'not-today'}`}>
-                                {item.title}
-                            </h4>
+
+                        {/* Workout name */}
+                        <div className="card-workout-name">
+                            {item.title
+                                ? item.title.toUpperCase()
+                                : <span className="card-rest-label">Rest Day</span>
+                            }
                         </div>
-                        <div className={`card-footer ${item.isToday ? 'today' : 'not-today'}`}>
-                            {item.hasWorkout && (
-                                <button
-                                    className={`workout-action-btn ${item.isToday ? 'btn-start' : 'btn-show'}`}
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        handleShowWorkout(item);
-                                    }}
-                                >
-                                    Show
-                                </button>
-                            )}
-                        </div>
+
+                        {/* Divider */}
+                        {item.title && <div className="card-divider" />}
+
+                        {/* Exercise list */}
+                        {item.exercises.length > 0 && (
+                            <div className="card-exercises">
+                                {item.exercises.slice(0, 4).map((ex, i) => (
+                                    <div key={i} className="card-exercise-row">
+                                        <span className="card-ex-name">{ex.exerciseName}</span>
+                                    </div>
+                                ))}
+                                {item.exercises.length > 4 && (
+                                    <div className="card-ex-more">+{item.exercises.length - 4} more</div>
+                                )}
+                            </div>
+                        )}
                     </div>
                 ))}
             </div>
-
-            {/* Workout Log Popup */}
-            {showPopup && (
-                <div className="workout-log-overlay" onClick={() => setShowPopup(null)}>
-                    <div className="workout-log-popup" onClick={e => e.stopPropagation()}>
-                        <div className="workout-log-popup-header">
-                            <div>
-                                <h3>{showPopup.day}</h3>
-                                <span className="workout-log-popup-date">{showPopup.date}</span>
-                            </div>
-                            <button className="workout-log-popup-close" onClick={() => setShowPopup(null)}>
-                                <X size={18} />
-                            </button>
-                        </div>
-                        <div className="workout-log-popup-body">
-                            {popupLoading ? (
-                                <div className="workout-log-empty">Loading...</div>
-                            ) : showPopup.exercises.length === 0 ? (
-                                <div className="workout-log-empty">No workout data logged for this day.</div>
-                            ) : (
-                                showPopup.exercises.map((ex, i) => (
-                                    <div key={i} className="workout-log-exercise">
-                                        <h4 className="workout-log-exercise-name">{ex.name}</h4>
-                                        <div className="workout-log-target">
-                                            {ex.targetSets} sets
-                                            {ex.targetReps ? ` × ${ex.targetReps} reps` : ''}
-                                            {ex.targetKg ? ` @ ${ex.targetKg} kg` : ''}
-                                        </div>
-                                        {ex.logs.length > 0 && (
-                                            <div className="workout-log-sets">
-                                                <div className="workout-log-sets-header">
-                                                    <span>Set</span><span>KG</span><span>Reps</span>
-                                                </div>
-                                                {ex.logs.map((log, j) => (
-                                                    <div key={j} className="workout-log-set-row">
-                                                        <span>{log.setNumber}</span>
-                                                        <span className="workout-log-value">{log.kg}</span>
-                                                        <span className="workout-log-value">{log.reps}</span>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        )}
-                                    </div>
-                                ))
-                            )}
-                        </div>
-                    </div>
-                </div>
-            )}
         </div>
     );
 };

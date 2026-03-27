@@ -32,6 +32,7 @@ const connectToDatabase = async () => {
         await addColumnIfNotExists('Users', 'profileImage', 'VARCHAR(255) NULL');
         await addColumnIfNotExists('Workouts', 'day', "ENUM('Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday') NULL");
         await addColumnIfNotExists('ScheduleEvents', 'date', 'DATE NULL');
+        await addColumnIfNotExists('DailyLogs', 'steps', 'INT NULL DEFAULT 0');
 
         // Create TrainerInviteCodes table if not exists
         await sequelize.query(`

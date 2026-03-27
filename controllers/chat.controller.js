@@ -6,6 +6,7 @@ export const getConversations = async (req, res, next) => {
     try {
         const userId = req.user.id;
 
+        // Get all partners: either from messages OR from trainer-client relationship
         const rows = await sequelize.query(
             `SELECT
                 partner.id,
@@ -15,9 +16,9 @@ export const getConversations = async (req, res, next) => {
                 last_msg.createdAt AS lastAt,
                 SUM(CASE WHEN m2.receiverId = :userId AND m2.senderId = partner.id AND m2.isRead = 0 THEN 1 ELSE 0 END) AS unread
              FROM Users partner
-             JOIN Messages m2 ON (m2.senderId = partner.id AND m2.receiverId = :userId)
-                              OR (m2.senderId = :userId AND m2.receiverId = partner.id)
-             JOIN (
+             LEFT JOIN Messages m2 ON (m2.senderId = partner.id AND m2.receiverId = :userId)
+                                   OR (m2.senderId = :userId AND m2.receiverId = partner.id)
+             LEFT JOIN (
                  SELECT
                      CASE WHEN senderId = :userId THEN receiverId ELSE senderId END AS partnerId,
                      content,
@@ -27,6 +28,14 @@ export const getConversations = async (req, res, next) => {
                  ORDER BY createdAt DESC
              ) last_msg ON last_msg.partnerId = partner.id
              WHERE partner.id != :userId
+               AND (
+                   -- already exchanged messages
+                   m2.id IS NOT NULL
+                   -- OR customer's assigned trainer
+                   OR partner.id = (SELECT trainerId FROM Users WHERE id = :userId)
+                   -- OR trainer's assigned clients
+                   OR partner.trainerId = :userId
+               )
              GROUP BY partner.id, partner.name, partner.role, last_msg.content, last_msg.createdAt
              ORDER BY last_msg.createdAt DESC`,
             { replacements: { userId }, type: QueryTypes.SELECT }
@@ -77,7 +86,18 @@ export const getChatHistory = async (req, res, next) => {
             return res.status(200).json({ success: true, data: [], message: "No chat partner found." });
         }
 
-        // 2. Fetch Messages with Sender Details
+        // 2. Verify the partner is allowed (must be user's trainer or user's client)
+        const [allowed] = await sequelize.query(
+            `SELECT 1 FROM Users WHERE id = :partnerId AND (
+                trainerId = :userId OR id = (SELECT trainerId FROM Users WHERE id = :userId)
+            )`,
+            { replacements: { partnerId, userId }, type: QueryTypes.SELECT }
+        );
+        if (!allowed) {
+            return res.status(403).json({ success: false, message: 'Forbidden' });
+        }
+
+        // 3. Fetch Messages with Sender Details
         const query = `
             SELECT 
                 m.id, 
@@ -195,7 +215,20 @@ export const sendMessage = async (req, res, next) => {
             throw error;
         }
 
-        // 2. Insert Message
+        // 2. Verify the receiver is allowed (must be user's trainer or user's client)
+        const [allowed] = await sequelize.query(
+            `SELECT 1 FROM Users WHERE id = :targetReceiverId AND (
+                trainerId = :userId OR id = (SELECT trainerId FROM Users WHERE id = :userId)
+            )`,
+            { replacements: { targetReceiverId, userId }, type: QueryTypes.SELECT }
+        );
+        if (!allowed) {
+            const error = new Error('Forbidden');
+            error.statusCode = 403;
+            throw error;
+        }
+
+        // 3. Insert Message
         const insertResult = await sequelize.query(
             `INSERT INTO Messages (senderId, receiverId, content, isRead, createdAt, updatedAt) 
              VALUES (:senderId, :receiverId, :content, 0, NOW(), NOW())`,

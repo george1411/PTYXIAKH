@@ -1,15 +1,18 @@
 /* ─── Progress Page Layout ─────────────────────────────────── */
 .progress-page {
     width: 100%;
-    min-height: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
 }
 
 .progress-header {
     display: flex;
     align-items: center;
     gap: 12px;
-    margin-bottom: 28px;
+    margin-bottom: 16px;
     justify-content: flex-start;
+    flex-shrink: 0;
 }
 
 .progress-header svg {
@@ -19,7 +22,7 @@
 .progress-header h2 {
     font-size: 1.5rem;
     font-weight: 700;
-    color: #111;
+    color: #f0f0f0;
     margin: 0;
 }
 
@@ -27,7 +30,10 @@
 .progress-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 24px;
+    grid-template-rows: 1fr 1fr;
+    gap: 16px;
+    flex: 1;
+    min-height: 0;
 }
 
 @media (max-width: 900px) {
@@ -38,13 +44,14 @@
 
 /* ─── Card ─────────────────────────────────────────────────── */
 .progress-card {
-    background: #fafafa;
-    border: 1px solid #e5e7eb;
+    background: #111111;
+    border: 1px solid rgba(255,255,255,0.08);
     border-radius: 16px;
     padding: 24px;
     display: flex;
     flex-direction: column;
-    min-height: 340px;
+    min-height: 0;
+    overflow: hidden;
 }
 
 .progress-card-header {
@@ -67,15 +74,92 @@
 .progress-card-title h3 {
     font-size: 1rem;
     font-weight: 700;
-    color: #111;
+    color: #f0f0f0;
     margin: 0;
+}
+
+/* ─── Weight Log Inline Popup ──────────────────────────────── */
+.wh-log-anchor {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.wh-log-btn {
+    border: none;
+    background: transparent;
+    color: #aaa;
+    font-size: 20px;
+    line-height: 1;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    flex-shrink: 0;
+    padding: 0 2px;
+    transition: color 0.15s;
+}
+
+.wh-log-btn:hover,
+.wh-log-btn.active {
+    color: #fff;
+}
+
+.wh-log-popup {
+    position: absolute;
+    left: calc(100% + 10px);
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: #1a1a1a;
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 10px;
+    padding: 6px 10px;
+    z-index: 100;
+    white-space: nowrap;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+}
+
+.wh-log-input {
+    width: 72px;
+    padding: 5px 8px;
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 7px;
+    background: #111;
+    color: #f0f0f0;
+    font-size: 0.85rem;
+    outline: none;
+}
+
+.wh-log-input:focus {
+    border-color: rgba(255,255,255,0.3);
+}
+
+.wh-log-save {
+    padding: 5px 12px;
+    background: #fff;
+    color: #111;
+    border: none;
+    border-radius: 7px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: opacity 0.15s;
+}
+
+.wh-log-save:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
 }
 
 /* ─── Range Toggle ─────────────────────────────────────────── */
 .progress-range-toggle {
     display: flex;
     gap: 4px;
-    background: #f0f0f0;
+    background: #1a1a1a;
     border-radius: 8px;
     padding: 3px;
 }
@@ -93,13 +177,13 @@
 }
 
 .progress-range-btn.active {
-    background: var(--accent);
-    color: #fff;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+    background: #ffffff;
+    color: #000000;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
 }
 
 .progress-range-btn:hover:not(.active) {
-    color: #111;
+    color: #fff;
 }
 
 /* ─── Weight Stats Row ─────────────────────────────────────── */
@@ -113,7 +197,7 @@
 .progress-weight-current {
     font-size: 2rem;
     font-weight: 800;
-    color: #111;
+    color: #f0f0f0;
     letter-spacing: -0.02em;
 }
 
@@ -131,18 +215,18 @@
 }
 
 .progress-weight-diff.positive {
-    color: #888;
-    background: #fef2f2;
+    color: #f87171;
+    background: rgba(248,113,113,0.12);
 }
 
 .progress-weight-diff.negative {
-    color: #666;
-    background: #f0fdf4;
+    color: #4ade80;
+    background: rgba(74,222,128,0.12);
 }
 
 .progress-weight-diff.neutral {
     color: #888;
-    background: #f5f5f5;
+    background: rgba(255,255,255,0.06);
 }
 
 /* ─── Chart Container ──────────────────────────────────────── */
@@ -150,6 +234,7 @@
     flex: 1;
     min-height: 0;
     width: 100%;
+    overflow: hidden;
 }
 
 /* ─── PR List ──────────────────────────────────────────────── */
@@ -166,8 +251,8 @@
     align-items: center;
     gap: 14px;
     padding: 12px 14px;
-    background: #fff;
-    border: 1px solid #eee;
+    background: #1a1a1a;
+    border: 1px solid rgba(255,255,255,0.06);
     border-radius: 12px;
     transition: box-shadow 0.2s ease;
 }
@@ -204,8 +289,8 @@
 }
 
 .progress-pr-rank.default {
-    background: #f0f0f0;
-    color: #888;
+    background: #2a2a2a;
+    color: #666;
 }
 
 .progress-pr-info {
@@ -216,7 +301,7 @@
 .progress-pr-exercise {
     font-size: 0.88rem;
     font-weight: 700;
-    color: #111;
+    color: #f0f0f0;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -236,7 +321,7 @@
 .progress-pr-kg {
     font-size: 1.1rem;
     font-weight: 800;
-    color: #111;
+    color: #f0f0f0;
 }
 
 .progress-pr-date {
@@ -316,16 +401,16 @@
 }
 
 .progress-heatmap-cell.level-0 {
-    background: #ebedf0;
+    background: #2a2a2a;
 }
 
 .progress-heatmap-cell.level-1 {
-    background: #555;
+    background: #e0e0e0;
 }
 
 .progress-heatmap-cell.future {
-    background: #f5f5f5;
-    opacity: 0.5;
+    background: #1a1a1a;
+    opacity: 0.6;
 }
 
 .progress-heatmap-legend {
@@ -380,8 +465,8 @@
 .progress-spinner {
     width: 24px;
     height: 24px;
-    border: 3px solid #e5e7eb;
-    border-top-color: var(--accent);
+    border: 3px solid rgba(255,255,255,0.1);
+    border-top-color: #e0e0e0;
     border-radius: 50%;
     animation: progress-spin 0.7s linear infinite;
 }
@@ -394,8 +479,8 @@
 
 /* ─── AI Weight Prediction Widget ─────────────────────────── */
 .progress-card-prediction {
-    border: 1px solid var(--border);
-    background: linear-gradient(135deg, #fafafe 0%, #f0f0ff 100%);
+    border: 1px solid rgba(255,255,255,0.08);
+    background: #111111;
 }
 
 .prediction-form {
@@ -413,7 +498,7 @@
 .prediction-field label {
     font-size: 0.8rem;
     font-weight: 600;
-    color: #555;
+    color: #888;
 }
 
 .prediction-slider {
@@ -421,7 +506,7 @@
     height: 6px;
     -webkit-appearance: none;
     appearance: none;
-    background: #e0e0ef;
+    background: #2a2a2a;
     border-radius: 3px;
     outline: none;
     cursor: pointer;
@@ -429,11 +514,11 @@
 
 .prediction-input {
     padding: 8px 12px;
-    border: 1px solid #e0e0ef;
+    border: 1px solid rgba(255,255,255,0.08);
     border-radius: 8px;
     font-size: 0.85rem;
-    color: #333;
-    background: #fff;
+    color: #e0e0e0;
+    background: #1a1a1a;
     outline: none;
     width: 100%;
     transition: border-color 0.2s;
@@ -441,7 +526,7 @@
 }
 
 .prediction-input:focus {
-    border-color: var(--accent);
+    border-color: rgba(255,255,255,0.3);
 }
 
 .prediction-stat-box {
@@ -450,7 +535,7 @@
     font-size: 0.85rem;
     font-weight: 700;
     text-align: center;
-    background: #f5f5f5;
+    background: #1a1a1a;
     color: #888;
     height: 100%;
     display: flex;
@@ -460,13 +545,13 @@
 }
 
 .prediction-stat-box.surplus {
-    background: #fef2f2;
-    color: #888;
+    background: rgba(248,113,113,0.1);
+    color: #f87171;
 }
 
 .prediction-stat-box.deficit {
-    background: #f0fdf4;
-    color: #666;
+    background: rgba(74,222,128,0.1);
+    color: #4ade80;
 }
 
 .prediction-slider::-webkit-slider-thumb {
@@ -474,9 +559,9 @@
     width: 18px;
     height: 18px;
     border-radius: 50%;
-    background: var(--accent);
+    background: #ffffff;
     cursor: pointer;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
 }
 
 .prediction-slider-labels {
@@ -488,18 +573,18 @@
 
 .prediction-select {
     padding: 8px 12px;
-    border: 1px solid #e0e0ef;
+    border: 1px solid rgba(255,255,255,0.08);
     border-radius: 8px;
     font-size: 0.85rem;
-    color: #333;
-    background: #fff;
+    color: #e0e0e0;
+    background: #1a1a1a;
     outline: none;
     cursor: pointer;
     transition: border-color 0.2s;
 }
 
 .prediction-select:focus {
-    border-color: var(--accent);
+    border-color: rgba(255,255,255,0.3);
 }
 
 .prediction-btn {
@@ -508,15 +593,15 @@
     justify-content: center;
     gap: 8px;
     padding: 10px 20px;
-    background: var(--accent);
-    color: #fff;
+    background: #ffffff;
+    color: #000000;
     border: none;
     border-radius: 10px;
     font-size: 0.88rem;
     font-weight: 700;
     cursor: pointer;
     transition: all 0.2s ease;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
     margin-top: 4px;
 }
 
@@ -533,20 +618,20 @@
 .prediction-error {
     margin-top: 12px;
     padding: 10px 14px;
-    background: #fef2f2;
-    color: #888;
+    background: rgba(248,113,113,0.1);
+    color: #f87171;
     border-radius: 8px;
     font-size: 0.82rem;
     font-weight: 500;
-    border: 1px solid #fecaca;
+    border: 1px solid rgba(248,113,113,0.25);
 }
 
 .prediction-result {
     margin-top: 16px;
     padding: 16px;
-    background: #fff;
+    background: #1a1a1a;
     border-radius: 12px;
-    border: 1px solid #e5e7eb;
+    border: 1px solid rgba(255,255,255,0.08);
 }
 
 .prediction-result-header {
@@ -581,12 +666,12 @@
 .prediction-weight-value {
     font-size: 1.4rem;
     font-weight: 800;
-    color: #111;
+    color: #f0f0f0;
 }
 
 .prediction-arrow {
     font-size: 1.4rem;
-    color: var(--accent);
+    color: #e0e0e0;
     font-weight: 700;
 }
 
@@ -602,18 +687,18 @@
 }
 
 .prediction-change.positive {
-    color: #888;
-    background: #fef2f2;
+    color: #f87171;
+    background: rgba(248,113,113,0.12);
 }
 
 .prediction-change.negative {
-    color: #666;
-    background: #f0fdf4;
+    color: #4ade80;
+    background: rgba(74,222,128,0.12);
 }
 
 .prediction-change.neutral {
     color: #888;
-    background: #f5f5f5;
+    background: rgba(255,255,255,0.06);
 }
 
 .prediction-meta {
@@ -625,8 +710,8 @@
 
 /* ─── BMI Calculator Widget ──────────────────────────────────── */
 .bmi-card {
-    border: 1px solid var(--border);
-    background: linear-gradient(135deg, #fafafe 0%, #f5f0ff 100%);
+    border: 1px solid rgba(255,255,255,0.08);
+    background: #111111;
 }
 
 .bmi-inputs {
@@ -645,7 +730,7 @@
 .bmi-input-group label {
     font-size: 0.8rem;
     font-weight: 600;
-    color: #555;
+    color: #888;
     display: flex;
     align-items: center;
     gap: 6px;
@@ -704,11 +789,11 @@
     align-items: flex-start;
     gap: 10px;
     padding: 10px 14px;
-    background: #fff;
+    background: #1a1a1a;
     border-radius: 10px;
-    border-left: 3px solid #444;
+    border-left: 3px solid #555;
     font-size: 0.8rem;
-    color: #555;
+    color: #888;
     line-height: 1.5;
     margin-top: 8px;
 }

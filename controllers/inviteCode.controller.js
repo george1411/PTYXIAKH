@@ -21,11 +21,12 @@ export const getInviteCodes = async (req, res, next) => {
     try {
         const trainerId = req.user.id;
         const codes = await sequelize.query(
-            `SELECT ic.id, ic.code, ic.createdAt, ic.usedAt,
-                    u.name AS usedByName
+            `SELECT ic.id, ic.code, ic.createdAt,
+                    COUNT(u.id) AS usedCount
              FROM TrainerInviteCodes ic
-             LEFT JOIN Users u ON u.id = ic.usedBy
+             LEFT JOIN Users u ON u.trainerId = ic.trainerId
              WHERE ic.trainerId = :trainerId
+             GROUP BY ic.id
              ORDER BY ic.createdAt DESC`,
             { replacements: { trainerId }, type: QueryTypes.SELECT }
         );
@@ -78,18 +79,26 @@ export const redeemInviteCode = async (req, res, next) => {
         );
 
         if (!invite) return res.status(404).json({ success: false, message: 'Invalid invite code' });
-        if (invite.usedBy) return res.status(409).json({ success: false, message: 'This code has already been used' });
+        if (invite.usedBy) return res.status(409).json({ success: false, message: 'This invite code has already been used' });
         if (invite.trainerId === customerId) return res.status(400).json({ success: false, message: 'You cannot redeem your own code' });
 
-        // Link customer to trainer
+        // Check if already connected to this trainer
+        const [customer] = await sequelize.query(
+            `SELECT trainerId FROM Users WHERE id = :customerId`,
+            { replacements: { customerId }, type: QueryTypes.SELECT }
+        );
+        if (customer?.trainerId === invite.trainerId) {
+            return res.status(409).json({ success: false, message: 'You are already connected to this trainer' });
+        }
+
+        // Link customer to trainer and mark code as used
         await sequelize.query(
             `UPDATE Users SET trainerId = :trainerId WHERE id = :customerId`,
             { replacements: { trainerId: invite.trainerId, customerId }, type: QueryTypes.UPDATE }
         );
-        // Mark code as used
         await sequelize.query(
-            `UPDATE TrainerInviteCodes SET usedBy = :customerId, usedAt = NOW() WHERE id = :id`,
-            { replacements: { customerId, id: invite.id }, type: QueryTypes.UPDATE }
+            `UPDATE TrainerInviteCodes SET usedBy = :customerId WHERE id = :inviteId`,
+            { replacements: { customerId, inviteId: invite.id }, type: QueryTypes.UPDATE }
         );
 
         res.status(200).json({ success: true, data: { trainerName: invite.trainerName } });

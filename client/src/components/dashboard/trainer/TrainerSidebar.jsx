@@ -5,9 +5,13 @@ const NavItem = ({ label, active, onClick }) => (
     <button
         onClick={onClick}
         className={`w-full flex items-center gap-3 px-3 py-2 rounded-md transition-all duration-200 group ${active
-            ? 'text-white font-semibold bg-black/20'
-            : 'text-white/70 hover:text-white hover:bg-black/10'
+            ? 'font-semibold'
+            : 'hover:bg-white/5'
             }`}
+        style={active
+            ? { background: 'rgba(56,189,248,0.15)', color: '#38bdf8' }
+            : { color: 'rgba(148,163,184,0.8)' }
+        }
     >
         <span className={`text-sm ${active ? 'font-medium' : 'font-normal'}`}>{label}</span>
     </button>
@@ -34,13 +38,13 @@ const TrainerSidebar = ({ activeTab = 'overview', onNavigate, onLogout, user }) 
 
     return (
         <div className="w-64 h-screen flex flex-col flex-shrink-0 sticky top-0 font-sans"
-            style={{ background: 'linear-gradient(180deg, #111 0%, #1a1a1a 50%, #222 100%)' }}
+            style={{ background: 'linear-gradient(180deg, #0f172a 0%, #1e293b 60%, #0f172a 100%)' }}
         >
             <div className="p-6">
                 <div className="flex items-center gap-3 mb-2">
-                    <span className="font-bold text-xl tracking-wide text-white">GymLit</span>
+                    <span className="font-bold text-xl tracking-wide" style={{ color: '#38bdf8' }}>GymLit</span>
                 </div>
-                <div className="text-xs text-white/50 uppercase tracking-widest">Trainer Panel</div>
+                <div className="text-xs uppercase tracking-widest" style={{ color: 'rgba(148,163,184,0.6)' }}>Trainer Panel</div>
             </div>
 
             {/* Navigation */}
@@ -56,34 +60,43 @@ const TrainerSidebar = ({ activeTab = 'overview', onNavigate, onLogout, user }) 
             </nav>
 
             {/* My Account block */}
-            <div className="p-4 mt-auto border-t border-white/10" ref={menuRef}>
+            <div className="p-4 mt-auto" ref={menuRef} style={{ borderTop: '1px solid rgba(148,163,184,0.1)' }}>
                 <div className="relative">
                     <button
                         onClick={() => setMenuOpen(v => !v)}
-                        className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg bg-white/10 hover:bg-white/15 transition-all duration-200 group"
+                        className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group"
+                        style={{ background: 'rgba(56,189,248,0.08)' }}
+                        onMouseEnter={e => e.currentTarget.style.background = 'rgba(56,189,248,0.15)'}
+                        onMouseLeave={e => e.currentTarget.style.background = 'rgba(56,189,248,0.08)'}
                     >
-                        <div className="w-8 h-8 rounded-full bg-white/20 text-white flex items-center justify-center flex-shrink-0 overflow-hidden">
+                        <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 overflow-hidden" style={{ background: 'rgba(56,189,248,0.2)', color: '#38bdf8' }}>
                             {user?.profileImage
                                 ? <img src={user.profileImage} alt="avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                                 : <User size={16} />
                             }
                         </div>
-                        <span className="flex-1 text-sm font-semibold text-white text-left truncate">My Account</span>
-                        <ChevronRight size={15} className="text-white/50 group-hover:text-white transition-transform duration-200" style={{ transform: menuOpen ? 'rotate(90deg)' : 'none' }} />
+                        <span className="flex-1 text-sm font-semibold text-left truncate" style={{ color: '#f1f5f9' }}>My Account</span>
+                        <ChevronRight size={15} style={{ color: 'rgba(148,163,184,0.5)', transform: menuOpen ? 'rotate(90deg)' : 'none', transition: 'transform 0.2s' }} />
                     </button>
 
                     {menuOpen && (
-                        <div className="absolute bottom-full left-0 right-0 mb-2 bg-[#1a1a1a] border border-white/10 rounded-xl shadow-xl overflow-hidden z-50">
+                        <div className="absolute bottom-full left-0 right-0 mb-2 rounded-xl shadow-xl overflow-hidden z-50" style={{ background: '#0f172a', border: '1px solid rgba(148,163,184,0.15)' }}>
                             <button
                                 onClick={() => { onNavigate('settings'); setMenuOpen(false); }}
-                                className="w-full flex items-center gap-3 px-4 py-3 text-sm text-white/70 hover:text-white hover:bg-white/10 transition-colors"
+                                className="w-full flex items-center gap-3 px-4 py-3 text-sm transition-colors"
+                                style={{ color: '#94a3b8' }}
+                                onMouseEnter={e => { e.currentTarget.style.background = 'rgba(56,189,248,0.08)'; e.currentTarget.style.color = '#f1f5f9'; }}
+                                onMouseLeave={e => { e.currentTarget.style.background = ''; e.currentTarget.style.color = '#94a3b8'; }}
                             >
                                 <Settings size={16} />
                                 Settings
                             </button>
                             <button
                                 onClick={() => { onLogout(); setMenuOpen(false); }}
-                                className="w-full flex items-center gap-3 px-4 py-3 text-sm text-white/70 hover:text-white hover:bg-white/10 transition-colors border-t border-white/10"
+                                className="w-full flex items-center gap-3 px-4 py-3 text-sm transition-colors"
+                                style={{ color: '#94a3b8', borderTop: '1px solid rgba(148,163,184,0.1)' }}
+                                onMouseEnter={e => { e.currentTarget.style.background = 'rgba(239,68,68,0.1)'; e.currentTarget.style.color = '#f87171'; }}
+                                onMouseLeave={e => { e.currentTarget.style.background = ''; e.currentTarget.style.color = '#94a3b8'; }}
                             >
                                 <LogOut size={16} />
                                 Sign Out

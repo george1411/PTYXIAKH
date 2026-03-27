@@ -12,6 +12,10 @@ import StreaksStats from './widgets/StreaksStats/StreaksStats';
 import WeeklyMeasurements from './widgets/WeeklyMeasurements/WeeklyMeasurements';
 import TodayNutrition from './widgets/TodayNutrition/TodayNutrition';
 import TodayWorkout from './widgets/TodayWorkout/TodayWorkout';
+import TodayEvents from './widgets/TodayEvents/TodayEvents';
+import TodayMacros from './widgets/TodayMacros/TodayMacros';
+import { ConsistencyCalendar } from './widgets/Progress/Progress';
+import Void from './Void/Void';
 import { Search, Bell } from 'lucide-react';
 
 // ─── Notification Bell ────────────────────────────────────────
@@ -49,9 +53,9 @@ const NotificationBell = ({ onNavigateToMessages }) => {
     };
 
     return (
-        <div className="relative">
+        <div className="relative flex items-center">
             <button
-                className="relative text-gray-400 hover:text-black transition-colors"
+                className="relative text-gray-500 hover:text-gray-200 transition-colors"
                 onClick={() => setOpen(prev => !prev)}
                 title="Notifications"
             >
@@ -64,32 +68,32 @@ const NotificationBell = ({ onNavigateToMessages }) => {
             </button>
 
             {open && (
-                <div className="absolute right-0 top-9 w-80 bg-white border border-gray-200 rounded-2xl shadow-xl z-50 overflow-hidden">
-                    <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
-                        <span className="text-sm font-semibold text-gray-800">Messages</span>
+                <div className="absolute right-0 top-9 w-80 rounded-2xl shadow-2xl z-50 overflow-hidden" style={{ background: '#1a1a1a', border: '1px solid rgba(255,255,255,0.08)' }}>
+                    <div className="px-4 py-3 flex items-center justify-between" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+                        <span className="text-sm font-semibold text-gray-200">Messages</span>
                         {unreadCount === 0
-                            ? <span className="text-xs text-gray-400">All caught up</span>
-                            : <span className="text-xs font-semibold text-red-500">{unreadCount} unread</span>
+                            ? <span className="text-xs text-gray-600">All caught up</span>
+                            : <span className="text-xs font-semibold text-red-400">{unreadCount} unread</span>
                         }
                     </div>
 
                     {convos.length === 0 ? (
-                        <div className="px-4 py-6 text-center text-sm text-gray-400">No conversations yet</div>
+                        <div className="px-4 py-6 text-center text-sm text-gray-600">No conversations yet</div>
                     ) : (
-                        <div className="divide-y divide-gray-50 max-h-72 overflow-y-auto">
+                        <div className="max-h-72 overflow-y-auto" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
                             {convos.map(c => (
                                 <div
                                     key={c.id}
-                                    className="flex items-start gap-3 px-4 py-3 hover:bg-gray-50 transition-colors cursor-pointer"
+                                    className="flex items-start gap-3 px-4 py-3 hover:bg-white/5 transition-colors cursor-pointer"
                                     onClick={() => { setOpen(false); onNavigateToMessages(); }}
                                 >
-                                    <div className="w-8 h-8 rounded-full bg-gray-800 text-white text-xs font-bold flex items-center justify-center flex-shrink-0 mt-0.5">
+                                    <div className="w-8 h-8 rounded-full text-white text-xs font-bold flex items-center justify-center flex-shrink-0 mt-0.5" style={{ background: '#2a2a2a' }}>
                                         {c.name?.charAt(0).toUpperCase()}
                                     </div>
                                     <div className="flex-1 min-w-0">
                                         <div className="flex items-center justify-between gap-2">
-                                            <span className="text-xs font-semibold text-gray-800 truncate">{c.name}</span>
-                                            <span className="text-[10px] text-gray-400 flex-shrink-0">{formatTime(c.lastAt)}</span>
+                                            <span className="text-xs font-semibold text-gray-300 truncate">{c.name}</span>
+                                            <span className="text-[10px] text-gray-600 flex-shrink-0">{formatTime(c.lastAt)}</span>
                                         </div>
                                         <p className="text-xs text-gray-500 mt-0.5 line-clamp-2 leading-relaxed">{c.lastMessage || '—'}</p>
                                     </div>
@@ -103,9 +107,9 @@ const NotificationBell = ({ onNavigateToMessages }) => {
                         </div>
                     )}
 
-                    <div className="px-4 py-2.5 border-t border-gray-100">
+                    <div className="px-4 py-2.5">
                         <button
-                            className="w-full text-xs font-semibold text-black hover:underline text-center"
+                            className="w-full text-xs font-semibold text-gray-400 hover:text-white hover:underline text-center transition-colors"
                             onClick={() => { setOpen(false); onNavigateToMessages(); }}
                         >
                             Open Messages →
@@ -143,31 +147,34 @@ const CustomerDashboard = ({ user, onLogout, onUserUpdate }) => {
             {/* Main Content */}
             <div className="flex-1 flex flex-col h-screen overflow-hidden">
                 {/* Header */}
-                <header className="border-b border-[var(--border)] bg-[var(--bg-card)] shrink-0">
-                    <div className="h-20 flex justify-between items-center px-8">
-                        <div className="flex items-center text-sm text-gray-500">
-                            <span>Dashboard</span>
-                            <span className="mx-2">›</span>
-                            <span className="text-[var(--text)] font-bold capitalize">{activeTab}</span>
+                <header className="shrink-0" style={{ background: '#111111', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+                    <div className="h-16 flex justify-between items-center px-8">
+                        <div className="flex items-center text-sm">
+                            <span style={{ color: '#a5b4fc' }}>Dashboard</span>
+                            <span className="mx-2 text-gray-700">›</span>
+                            <span className="font-semibold capitalize" style={{ color: '#a5b4fc' }}>{activeTab}</span>
                         </div>
 
-                        <div className="flex items-center gap-6">
+                        <div className="flex items-center gap-5">
+                            <span className="hidden md:block text-sm font-semibold" style={{ whiteSpace: 'nowrap', color: '#a5b4fc' }}>
+                                {new Date().toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })}
+                            </span>
                             <div className="relative hidden md:block">
-                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
+                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-600 w-4 h-4" />
                                 <input
                                     type="text"
                                     placeholder="Search..."
-                                    className="bg-[var(--bg)] border border-[var(--border)] rounded-full py-2 pl-10 pr-4 text-sm text-[var(--text)] focus:outline-none focus:border-[var(--accent)] transition-colors w-64 placeholder:text-[var(--text-muted)]"
+                                    className="rounded-full py-1.5 pl-10 pr-4 text-sm text-gray-300 focus:outline-none transition-colors w-56 placeholder:text-gray-600"
+                                    style={{ background: '#1a1a1a', border: '1px solid rgba(255,255,255,0.08)' }}
                                 />
                             </div>
                             <NotificationBell onNavigateToMessages={() => navigateTo('messages')} />
-                            <div className="md:hidden w-8 h-8 rounded-full bg-gray-200"></div>
                         </div>
                     </div>
                 </header>
 
                 {/* Scrollable Grid Area */}
-                <main className="flex-1 overflow-y-auto p-6 lg:p-8 custom-scrollbar bg-[var(--bg)] relative">
+                <main className={`flex-1 p-6 lg:p-8 custom-scrollbar bg-[var(--bg)] relative ${activeTab === 'progress' ? 'overflow-hidden' : 'overflow-y-auto'}`}>
 
 
                     <div className="max-w-7xl mx-auto relative z-10 h-full">
@@ -183,24 +190,24 @@ const CustomerDashboard = ({ user, onLogout, onUserUpdate }) => {
                             <Settings user={user} onLogout={onLogout} onUserUpdate={onUserUpdate} />
                         ) : activeTab === 'messages' ? (
                             <CustomerMessages user={user} targetTrainer={messageTarget} />
+                        ) : activeTab === 'void' ? (
+                            <Void />
                         ) : (
                             /* Overview Grid */
                             <div className="grid grid-cols-4 gap-4">
-                                {/* Row 4: Weekly Schedule */}
+                                {/* Row 1: Weekly Schedule */}
                                 <div className="col-span-4">
                                     <Schedule onNavigate={setActiveTab} hideTitle />
                                 </div>
 
-
-                                {/* Row 1: Streaks & Stats | Today's Nutrition */}
-                                <div className="col-span-2"><StreaksStats /></div>
-                                <div className="col-span-2"><TodayNutrition /></div>
-
-                                {/* Row 3: Today's Workout | Weight Progress */}
-                                <div className="col-span-2"><TodayWorkout onNavigate={navigateTo} /></div>
+                                {/* Row 2: Today's Workout | Today's Events | Weight Progress */}
+                                <div className="col-span-1"><TodayWorkout onNavigate={navigateTo} /></div>
+                                <div className="col-span-1"><TodayEvents onNavigate={navigateTo} /></div>
                                 <div className="col-span-2"><WeeklyMeasurements /></div>
 
-
+                                {/* Row 3: Today's Macros | Workout Consistency */}
+                                <div className="col-span-2"><TodayMacros /></div>
+                                <div className="col-span-2"><ConsistencyCalendar /></div>
                             </div>
                         )}
                     </div>

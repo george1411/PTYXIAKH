@@ -188,25 +188,12 @@ export const getTrainerDashboard = async (req, res, next) => {
     try {
         const userId = req.user.id;
 
-        // Total clients (messages from unique users)
-        const clients = await sequelize.query(
-            `SELECT DISTINCT 
-                CASE WHEN senderId = :userId THEN receiverId ELSE senderId END as clientId
-             FROM Messages 
-             WHERE senderId = :userId OR receiverId = :userId`,
+        // All clients linked to this trainer via invite code
+        const clientDetails = await sequelize.query(
+            `SELECT id, name, email, profileImage FROM Users WHERE trainerId = :userId ORDER BY name ASC`,
             { replacements: { userId }, type: QueryTypes.SELECT }
         );
-        const totalClients = clients.length;
-
-        // Get client details
-        const clientIds = clients.map(c => c.clientId);
-        let clientDetails = [];
-        if (clientIds.length > 0) {
-            clientDetails = await sequelize.query(
-                `SELECT id, name, email FROM Users WHERE id IN (:ids)`,
-                { replacements: { ids: clientIds }, type: QueryTypes.SELECT }
-            );
-        }
+        const totalClients = clientDetails.length;
 
         // Total messages
         const [msgCount] = await sequelize.query(
@@ -274,38 +261,84 @@ export const getTrainerDashboard = async (req, res, next) => {
             { replacements: { userId }, type: QueryTypes.SELECT }
         );
 
-        // Per-client stats: compliance % and workouts logged this week
+        // Per-client stats: workouts this week + weight progression
+        const clientIds = clientDetails.map(c => c.id);
         let clientStats = [];
         if (clientIds.length > 0) {
             const weekStart = new Date();
             weekStart.setDate(weekStart.getDate() - weekStart.getDay() + (weekStart.getDay() === 0 ? -6 : 1));
             const weekStartStr = weekStart.toISOString().split('T')[0];
 
-            const rawStats = await sequelize.query(
+            // Workouts done this week per client (distinct days with logs)
+            const workoutStats = await sequelize.query(
                 `SELECT
                     u.id,
                     u.name,
-                    COUNT(DISTINCT DATE(wl.loggedAt)) AS activeDays,
-                    COUNT(wl.id) AS totalSets,
+                    u.profileImage,
+                    COUNT(DISTINCT DATE(wl.loggedAt)) AS workoutsThisWeek,
                     MAX(wl.loggedAt) AS lastActive
                  FROM Users u
-                 LEFT JOIN WorkoutExercises we ON we.workoutId IN (
-                     SELECT id FROM Workouts WHERE userId = u.id
-                 )
-                 LEFT JOIN WorkoutLogs wl ON wl.workoutExerciseId = we.id
-                     AND wl.loggedAt >= :weekStart
+                 LEFT JOIN WorkoutLogs wl ON wl.userId = u.id
+                     AND DATE(wl.loggedAt) >= :weekStart
                  WHERE u.id IN (:ids)
-                 GROUP BY u.id, u.name`,
+                 GROUP BY u.id, u.name, u.profileImage`,
                 { replacements: { ids: clientIds, weekStart: weekStartStr }, type: QueryTypes.SELECT }
             );
 
-            clientStats = rawStats.map(r => ({
+            // Weight: first and latest measurement per client
+            const weightStats = await sequelize.query(
+                `SELECT
+                    w1.userId,
+                    w1.weight AS weightStart,
+                    w2.weight AS weightCurrent
+                 FROM
+                    (SELECT userId, weight FROM WeeklyMeasurements
+                     WHERE (userId, date) IN (
+                         SELECT userId, MIN(date) FROM WeeklyMeasurements WHERE userId IN (:ids) GROUP BY userId
+                     )) w1
+                 JOIN
+                    (SELECT userId, weight FROM WeeklyMeasurements
+                     WHERE (userId, date) IN (
+                         SELECT userId, MAX(date) FROM WeeklyMeasurements WHERE userId IN (:ids) GROUP BY userId
+                     )) w2 ON w1.userId = w2.userId`,
+                { replacements: { ids: clientIds }, type: QueryTypes.SELECT }
+            );
+
+            const weightMap = {};
+            weightStats.forEach(w => { weightMap[w.userId] = w; });
+
+            // Today's protein consumed per client
+            const todayStr = new Date().toISOString().split('T')[0];
+            const todayNutrition = await sequelize.query(
+                `SELECT dl.userId, dl.proteinConsumed,
+                        COALESCE(dg.protein, 150) AS proteinTarget
+                 FROM DailyLogs dl
+                 LEFT JOIN DailyGoals dg ON dg.userId = dl.userId AND dg.date = dl.date
+                 WHERE dl.userId IN (:ids) AND dl.date = :today`,
+                { replacements: { ids: clientIds, today: todayStr }, type: QueryTypes.SELECT }
+            );
+            const nutritionMap = {};
+            todayNutrition.forEach(n => { nutritionMap[n.userId] = n; });
+
+            // Did each client log a workout today?
+            const todayWorkouts = await sequelize.query(
+                `SELECT DISTINCT userId FROM WorkoutLogs
+                 WHERE userId IN (:ids) AND DATE(loggedAt) = :today`,
+                { replacements: { ids: clientIds, today: todayStr }, type: QueryTypes.SELECT }
+            );
+            const todayWorkoutSet = new Set(todayWorkouts.map(w => w.userId));
+
+            clientStats = workoutStats.map(r => ({
                 id: r.id,
                 name: r.name,
-                activeDays: parseInt(r.activeDays) || 0,
-                totalSets: parseInt(r.totalSets) || 0,
-                compliance: Math.round(Math.min(100, ((parseInt(r.activeDays) || 0) / 5) * 100)),
+                profileImage: r.profileImage || null,
+                workoutsThisWeek: parseInt(r.workoutsThisWeek) || 0,
                 lastActive: r.lastActive || null,
+                weightStart: weightMap[r.id]?.weightStart || null,
+                weightCurrent: weightMap[r.id]?.weightCurrent || null,
+                proteinConsumed: nutritionMap[r.id]?.proteinConsumed || 0,
+                proteinTarget: nutritionMap[r.id]?.proteinTarget || 150,
+                todayWorkoutDone: todayWorkoutSet.has(r.id),
             }));
         }
 

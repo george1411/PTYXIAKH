@@ -115,20 +115,19 @@ export const getUserStats = async (req, res, next) => {
 export const getWeightHistory = async (req, res, next) => {
     try {
         const userId = req.user.id;
-        const range = req.query.range || '90'; // days: 30, 90, 365, 'all'
+        const rawRange = req.query.range || '90';
+        const allowedRanges = ['30', '90', '180', '365'];
+        const isAll = rawRange === 'all';
+        const days = isAll ? null : (allowedRanges.includes(String(rawRange)) ? parseInt(rawRange) : 90);
 
-        let dateFilter = '';
-        if (range !== 'all') {
-            dateFilter = `AND wm.date >= DATE_SUB(CURDATE(), INTERVAL ${parseInt(range)} DAY)`;
-        }
+        const query = isAll
+            ? `SELECT wm.date, wm.weight FROM WeeklyMeasurements wm WHERE wm.userId = :userId ORDER BY wm.date ASC`
+            : `SELECT wm.date, wm.weight FROM WeeklyMeasurements wm WHERE wm.userId = :userId AND wm.date >= DATE_SUB(CURDATE(), INTERVAL :days DAY) ORDER BY wm.date ASC`;
 
-        const measurements = await sequelize.query(
-            `SELECT wm.date, wm.weight
-             FROM WeeklyMeasurements wm
-             WHERE wm.userId = :userId ${dateFilter}
-             ORDER BY wm.date ASC`,
-            { replacements: { userId }, type: QueryTypes.SELECT }
-        );
+        const measurements = await sequelize.query(query, {
+            replacements: isAll ? { userId } : { userId, days },
+            type: QueryTypes.SELECT
+        });
 
         // Calculate current + diff
         let current = 0, diff = 0;
@@ -189,7 +188,7 @@ export const getWorkoutCalendar = async (req, res, next) => {
         const months = parseInt(req.query.months) || 6;
 
         const workoutDays = await sequelize.query(
-            `SELECT DISTINCT DATE(wl.loggedAt) as date
+            `SELECT DISTINCT DATE_FORMAT(DATE(wl.loggedAt), '%Y-%m-%d') as date
              FROM WorkoutLogs wl
              WHERE wl.userId = :userId
                AND wl.loggedAt >= DATE_SUB(CURDATE(), INTERVAL :months MONTH)

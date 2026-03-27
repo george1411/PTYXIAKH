@@ -239,6 +239,19 @@ export const saveWorkoutLogs = async (req, res, next) => {
             throw error;
         }
 
+        // Verify the workoutExercise belongs to this user
+        const [ownership] = await sequelize.query(
+            `SELECT we.id FROM WorkoutExercises we
+             JOIN Workouts w ON we.workoutId = w.id
+             WHERE we.id = :workoutExerciseId AND w.userId = :userId`,
+            { replacements: { workoutExerciseId, userId }, type: QueryTypes.SELECT }
+        );
+        if (!ownership) {
+            const error = new Error('Forbidden');
+            error.statusCode = 403;
+            throw error;
+        }
+
         // Delete old logs for this exercise and user FOR TODAY ONLY, preserving history
         await sequelize.query(
             `DELETE FROM WorkoutLogs WHERE workoutExerciseId = :workoutExerciseId AND userId = :userId AND DATE(loggedAt) = CURDATE()`,

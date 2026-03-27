@@ -46,7 +46,7 @@ export const signUp = async (req, res, next) => {
     const t = await sequelize.transaction();
 
     try {
-        const { name, email, password, role } = req.body;
+        const { name, email, password, role, gender, height, weight } = req.body;
 
         // Check if user exists
         const existingUsers = await sequelize.query(
@@ -66,10 +66,13 @@ export const signUp = async (req, res, next) => {
 
         // Insert user
         const [userId] = await sequelize.query(
-            `INSERT INTO Users (name, email, password, role, createdAt, updatedAt)
-             VALUES (:name, :email, :password, :role, NOW(), NOW())`,
+            `INSERT INTO Users (name, email, password, role, gender, height, createdAt, updatedAt)
+             VALUES (:name, :email, :password, :role, :gender, :height, NOW(), NOW())`,
             {
-                replacements: { name, email, password: hashedPassword, role: role || 'customer' },
+                replacements: {
+                    name, email, password: hashedPassword, role: role || 'customer',
+                    gender: gender || null, height: height || null
+                },
                 type: QueryTypes.INSERT,
                 transaction: t
             }
@@ -88,6 +91,20 @@ export const signUp = async (req, res, next) => {
                 transaction: t
             }
         );
+
+        // Save initial weight if provided
+        if (weight) {
+            await sequelize.query(
+                `INSERT INTO WeeklyMeasurements (userId, date, weight, createdAt, updatedAt)
+                 VALUES (:userId, :date, :weight, NOW(), NOW())
+                 ON DUPLICATE KEY UPDATE weight = :weight`,
+                {
+                    replacements: { userId, date: today, weight: parseFloat(weight) },
+                    type: QueryTypes.INSERT,
+                    transaction: t
+                }
+            );
+        }
 
         const token = jwt.sign({ userId }, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
 

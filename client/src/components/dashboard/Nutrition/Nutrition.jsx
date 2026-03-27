@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Plus, X, Search, AlertCircle, CheckCircle, Bookmark, BookmarkCheck } from 'lucide-react';
 import {
-    BarChart, Bar, XAxis, YAxis, Tooltip,
+    BarChart, Bar, XAxis, YAxis, LabelList, Tooltip,
     ResponsiveContainer, CartesianGrid, Legend
 } from 'recharts';
 import axios from 'axios';
@@ -23,20 +23,27 @@ const RangeToggle = ({ value, onChange, options }) => (
 );
 
 // ─── SVG Circular Macro Ring ──────────────────────────────────
-const MacroRing = ({ label, value, target, color, unit }) => {
+const MacroRing = ({ label, value, target, gradFrom, gradTo, labelColor, unit }) => {
     const r = 38;
     const circ = 2 * Math.PI * r;
     const pct = target > 0 ? Math.min(value / target, 1) : 0;
     const offset = circ - pct * circ;
+    const gradId = `grad-${label.toLowerCase()}`;
 
     return (
         <div className="macro-ring-item">
             <svg width="104" height="104" viewBox="0 0 104 104">
-                <circle cx="52" cy="52" r={r} fill="none" stroke="#f0f0f0" strokeWidth="7" />
+                <defs>
+                    <linearGradient id={gradId} x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%" stopColor={gradFrom} />
+                        <stop offset="100%" stopColor={gradTo} />
+                    </linearGradient>
+                </defs>
+                <circle cx="52" cy="52" r={r} fill="none" stroke="#2a2a2a" strokeWidth="7" />
                 <circle
                     cx="52" cy="52" r={r}
                     fill="none"
-                    stroke={color}
+                    stroke={`url(#${gradId})`}
                     strokeWidth="7"
                     strokeDasharray={circ}
                     strokeDashoffset={offset}
@@ -44,14 +51,14 @@ const MacroRing = ({ label, value, target, color, unit }) => {
                     transform="rotate(-90 52 52)"
                     style={{ transition: 'stroke-dashoffset 0.7s ease' }}
                 />
-                <text x="52" y="49" textAnchor="middle" fontSize="15" fontWeight="800" fill="#111">
+                <text x="52" y="49" textAnchor="middle" fontSize="15" fontWeight="800" fill="#f0f0f0">
                     {Math.round(value)}
                 </text>
-                <text x="52" y="63" textAnchor="middle" fontSize="9" fill="#aaa">
+                <text x="52" y="63" textAnchor="middle" fontSize="9" fill="#666">
                     / {Math.round(target)} {unit}
                 </text>
             </svg>
-            <div className="macro-ring-label" style={{ color }}>{label}</div>
+            <div className="macro-ring-label" style={{ color: labelColor }}>{label}</div>
         </div>
     );
 };
@@ -76,10 +83,10 @@ const DailyMacroTracker = ({ mealsData, balanceData, loading }) => {
                 <div className="nutrition-loading"><div className="nutrition-spinner" /></div>
             ) : (
                 <div className="macro-rings-row">
-                    <MacroRing label="Calories" value={totals.calories} target={calTarget} color="#333" unit="kcal" />
-                    <MacroRing label="Protein"  value={totals.protein}  target={proteinTarget} color="#555" unit="g" />
-                    <MacroRing label="Carbs"    value={totals.carbs}    target={carbsTarget}   color="#777" unit="g" />
-                    <MacroRing label="Fat"      value={totals.fat}      target={fatTarget}      color="#666" unit="g" />
+                    <MacroRing label="Calories" value={totals.calories} target={calTarget}     gradFrom="#555"    gradTo="#e0e0e0" labelColor="#e0e0e0" unit="kcal" />
+                    <MacroRing label="Protein"  value={totals.protein}  target={proteinTarget} gradFrom="#334"    gradTo="#a5b4fc" labelColor="#a5b4fc" unit="g" />
+                    <MacroRing label="Carbs"    value={totals.carbs}    target={carbsTarget}   gradFrom="#1e3a5f" gradTo="#38bdf8" labelColor="#38bdf8" unit="g" />
+                    <MacroRing label="Fat"      value={totals.fat}      target={fatTarget}     gradFrom="#2a1a3a" gradTo="#c084fc" labelColor="#c084fc" unit="g" />
                 </div>
             )}
         </div>
@@ -188,16 +195,16 @@ const NutritionHistoryChart = () => {
                 <div className="nutrition-chart-container">
                     <ResponsiveContainer width="100%" height="100%">
                         <BarChart data={chartData} barGap={2}>
-                            <CartesianGrid stroke="#f0f0f0" strokeDasharray="3 3" vertical={false} />
-                            <XAxis dataKey="date" tick={{ fontSize: 11, fill: '#999' }} tickLine={false} axisLine={false} interval="preserveStartEnd" />
-                            <YAxis tick={{ fontSize: 11, fill: '#999' }} tickLine={false} axisLine={false} width={40} />
-                            <Tooltip
-                                contentStyle={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 10, boxShadow: '0 4px 12px rgba(0,0,0,0.08)' }}
-                                labelStyle={{ color: '#888', fontSize: 12 }}
-                            />
-                            <Legend wrapperStyle={{ fontSize: '12px', paddingTop: '8px' }} />
-                            <Bar dataKey="Calories" fill="#333" radius={[3, 3, 0, 0]} />
-                            <Bar dataKey="Protein"  fill="#555" radius={[3, 3, 0, 0]} />
+                            <CartesianGrid stroke="rgba(255,255,255,0.05)" strokeDasharray="3 3" vertical={false} />
+                            <XAxis dataKey="date" tick={{ fontSize: 11, fill: '#555' }} tickLine={false} axisLine={false} interval="preserveStartEnd" />
+                            <YAxis tick={{ fontSize: 11, fill: '#555' }} tickLine={false} axisLine={false} width={40} />
+                            <Legend wrapperStyle={{ fontSize: '12px', paddingTop: '8px', color: '#888' }} />
+                            <Bar dataKey="Calories" fill="#e0e0e0" radius={[3, 3, 0, 0]}>
+                                <LabelList dataKey="Calories" position="top" style={{ fill: '#e0e0e0', fontSize: 10, fontWeight: 600 }} />
+                            </Bar>
+                            <Bar dataKey="Protein" fill="#a5b4fc" radius={[3, 3, 0, 0]}>
+                                <LabelList dataKey="Protein" position="top" style={{ fill: '#a5b4fc', fontSize: 10, fontWeight: 600 }} />
+                            </Bar>
                         </BarChart>
                     </ResponsiveContainer>
                 </div>
@@ -207,7 +214,7 @@ const NutritionHistoryChart = () => {
 };
 
 // ─── Weekly Nutrition Summary ─────────────────────────────────
-const WeeklyNutritionSummary = () => {
+export const WeeklyNutritionSummary = () => {
     const [data, setData] = useState([]);
     const [loading, setLoading] = useState(true);
 
@@ -239,18 +246,19 @@ const WeeklyNutritionSummary = () => {
                 <div className="nutrition-chart-container">
                     <ResponsiveContainer width="100%" height="100%">
                         <BarChart data={chartData} barSize={14}>
-                            <CartesianGrid stroke="#f0f0f0" strokeDasharray="3 3" vertical={false} />
-                            <XAxis dataKey="day" tick={{ fontSize: 11, fill: '#999' }} tickLine={false} axisLine={false} />
-                            <YAxis tick={{ fontSize: 11, fill: '#999' }} tickLine={false} axisLine={false} width={32} />
+                            <CartesianGrid stroke="rgba(255,255,255,0.05)" strokeDasharray="3 3" vertical={false} />
+                            <XAxis dataKey="day" tick={{ fontSize: 11, fill: '#555' }} tickLine={false} axisLine={false} />
+                            <YAxis tick={{ fontSize: 11, fill: '#555' }} tickLine={false} axisLine={false} width={32} />
                             <Tooltip
-                                contentStyle={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 10, boxShadow: '0 4px 12px rgba(0,0,0,0.08)' }}
+                                contentStyle={{ background: '#1a1a1a', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 10, boxShadow: '0 4px 20px rgba(0,0,0,0.5)' }}
                                 labelStyle={{ color: '#888', fontSize: 12 }}
+                                itemStyle={{ color: '#e0e0e0' }}
                                 formatter={(v) => [`${v}g`]}
                             />
-                            <Legend wrapperStyle={{ fontSize: '12px', paddingTop: '8px' }} />
-                            <Bar dataKey="Protein" stackId="a" fill="#444" />
-                            <Bar dataKey="Carbs"   stackId="a" fill="#555" />
-                            <Bar dataKey="Fat"     stackId="a" fill="#666" radius={[3, 3, 0, 0]} />
+                            <Legend wrapperStyle={{ fontSize: '12px', paddingTop: '8px', color: '#888' }} />
+                            <Bar dataKey="Protein" stackId="a" fill="#e0e0e0" />
+                            <Bar dataKey="Carbs"   stackId="a" fill="#888" />
+                            <Bar dataKey="Fat"     stackId="a" fill="#555" radius={[3, 3, 0, 0]} />
                         </BarChart>
                     </ResponsiveContainer>
                 </div>
@@ -260,7 +268,7 @@ const WeeklyNutritionSummary = () => {
 };
 
 // ─── Water Intake Tracker ─────────────────────────────────────
-const WaterIntakeTracker = () => {
+export const WaterIntakeTracker = () => {
     const [glasses, setGlasses] = useState(0);
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
@@ -313,11 +321,6 @@ const WaterIntakeTracker = () => {
                     </div>
                     <div className="water-progress-bar">
                         <div className="water-progress-fill" style={{ width: `${(glasses / 8) * 100}%` }} />
-                    </div>
-                    <div className="water-label">
-                        {glasses >= 8
-                            ? 'Goal reached! Great hydration!'
-                            : `${8 - glasses} more glass${8 - glasses === 1 ? '' : 'es'} to reach your goal`}
                     </div>
                 </div>
             )}
@@ -420,27 +423,32 @@ const MealLogger = ({ mealsData, onUpdate, loading }) => {
 
     // Auto-lookup when food, amount, or unit changes (500 ms debounce)
     useEffect(() => {
-        const q = buildQuery(form.food, form.amount, form.unit);
-        if (!q) { setLookup('idle'); setLookupMsg(''); return; }
+        if (!form.food?.trim()) { setLookup('idle'); setLookupMsg(''); return; }
         setLookup('loading');
-        const timer = setTimeout(() => runLookup(q, form.unit === 'qty'), 500);
+        const isQty = form.unit === 'qty';
+        // For qty: always look up 1 unit so we can multiply by amount ourselves
+        // For weight/volume: include amount in query (e.g. "300g chicken")
+        const q = isQty ? form.food.trim() : buildQuery(form.food, form.amount, form.unit);
+        const qty = isQty ? (parseFloat(form.amount) || 1) : 1;
+        const timer = setTimeout(() => runLookup(q, isQty, qty), 500);
         return () => clearTimeout(timer);
     }, [form.food, form.amount, form.unit]);
 
-    const runLookup = async (q, isQty) => {
+    const runLookup = async (q, isQty, qty = 1) => {
         try {
             const res = await axios.get(`/api/v1/nutrition/lookup?query=${encodeURIComponent(q)}`, { withCredentials: true });
             const d = res.data.data;
+            const round = (v) => Math.round(v * qty * 10) / 10;
             setForm(f => ({
                 ...f,
                 foodName: d.foodName,
-                calories: String(d.calories),
-                protein:  String(d.protein),
-                carbs:    String(d.carbs),
-                fat:      String(d.fat),
+                calories: String(round(d.calories)),
+                protein:  String(round(d.protein)),
+                carbs:    String(round(d.carbs)),
+                fat:      String(round(d.fat)),
             }));
             setLookup('found');
-            const label = isQty ? `${form.amount} ${d.foodName}` : `${d.grams} g of ${d.foodName}`;
+            const label = isQty ? `${qty} × ${d.foodName}` : `${d.grams} g of ${d.foodName}`;
             setLookupMsg(`Found "${d.foodName}"${d.assumed ? ' — assumed 100 g' : ` for ${label}`}`);
         } catch (err) {
             setLookup('error');
@@ -797,12 +805,9 @@ const Nutrition = () => {
                     loading={loadingMeals || loadingBal}
                 />
                 <MealLogger mealsData={mealsData} onUpdate={handleMealUpdate} loading={loadingMeals} />
-                {/* Row 2: balance | history */}
-                <CalorieBalanceCard balanceData={balanceData} loading={loadingBal} />
-                <NutritionHistoryChart />
-                {/* Row 3: weekly summary | water */}
-                <WeeklyNutritionSummary />
+                {/* Row 2: water intake | history */}
                 <WaterIntakeTracker />
+                <NutritionHistoryChart />
             </div>
         </div>
     );

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
-import { X, Info, ChevronDown, ChevronUp, ChevronLeft, ChevronRight, Save, CheckCircle, Play, Pause, RotateCcw, Timer } from 'lucide-react';
+import { X, Info, ChevronDown, ChevronUp, ChevronLeft, ChevronRight, CheckCircle, Play, Pause, RotateCcw, Timer } from 'lucide-react';
 import axios from 'axios';
 import './Workout.css';
 
@@ -171,7 +171,7 @@ const Workout = () => {
                     <button className="workout-day-nav-btn" onClick={() => setDayOffset(prev => prev + 1)}><ChevronRight size={18} /></button>
                     {!isToday && <button className="workout-day-today-btn" onClick={() => setDayOffset(0)}>Today</button>}
                 </div>
-                <div className="p-8 text-center text-gray-500">Loading workout...</div>
+                <div className="p-8 text-center" style={{ color: '#555' }}>Loading workout...</div>
             </div>
         );
     }
@@ -186,11 +186,11 @@ const Workout = () => {
                     {!isToday && <button className="workout-day-today-btn" onClick={() => setDayOffset(0)}>Today</button>}
                 </div>
                 <div className="flex flex-col items-center justify-center h-64 p-8 text-center">
-                    <div className="bg-gray-100 p-6 rounded-full mb-4">
-                        <Info className="w-8 h-8 text-gray-400" />
+                    <div className="p-6 rounded-full mb-4" style={{ background: '#1a1a1a' }}>
+                        <Info className="w-8 h-8" style={{ color: '#555' }} />
                     </div>
-                    <h2 className="text-xl font-bold mb-2">Rest Day</h2>
-                    <p className="text-gray-500">
+                    <h2 className="text-xl font-bold mb-2" style={{ color: '#e0e0e0' }}>Rest Day</h2>
+                    <p style={{ color: '#666' }}>
                         {isToday ? 'No workout scheduled for today.' : `No workout scheduled for ${viewedDayName}.`}
                     </p>
                 </div>
@@ -234,8 +234,8 @@ const Workout = () => {
                 {workout.exercises.map((exercise) => (
                     <div
                         key={exercise.id}
-                        className="exercise-row"
-                        onClick={() => openExerciseModal(exercise)}
+                        className={`exercise-row ${!isToday ? 'read-only' : ''}`}
+                        onClick={() => isToday && openExerciseModal(exercise)}
                     >
                         <div className="exercise-details">
                             <h3 className="exercise-name">{exercise.name}</h3>
@@ -268,11 +268,6 @@ const Workout = () => {
                     </div>
                 ))}
             </div>
-
-            <button className="btn-save-bottom-list">
-                <Save className="w-5 h-5 inline-block mr-2" />
-                Save {workout.name}
-            </button>
 
             {/* Modal */}
             {selectedExercise && (
@@ -356,15 +351,6 @@ const Workout = () => {
                                 </div>
                             )}
 
-                            <div className="notes-section">
-                                <label className="notes-label">NOTES</label>
-                                <textarea
-                                    className="notes-area"
-                                    placeholder="Weights felt heavy? Shoulder pain?"
-                                    value={selectedExercise.notes}
-                                    readOnly={true}
-                                ></textarea>
-                            </div>
                         </div>
 
                         <div className="modal-footer">

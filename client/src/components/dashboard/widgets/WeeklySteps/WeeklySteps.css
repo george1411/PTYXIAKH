@@ -1,0 +1,98 @@
+.ws-card {
+    display: flex;
+    flex-direction: column;
+}
+
+.ws-log-form {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.ws-log-input {
+    width: 120px;
+    background: #1e1e1e;
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 8px;
+    color: #e0e0e0;
+    font-size: 0.78rem;
+    padding: 4px 10px;
+    outline: none;
+    transition: border-color 0.15s;
+}
+
+.ws-log-input::placeholder { color: #555; }
+.ws-log-input:focus { border-color: rgba(165,180,252,0.4); }
+
+.ws-log-btn {
+    background: rgba(165,180,252,0.12);
+    color: #a5b4fc;
+    border: 1px solid rgba(165,180,252,0.2);
+    border-radius: 8px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    padding: 4px 12px;
+    cursor: pointer;
+    transition: background 0.15s;
+    white-space: nowrap;
+}
+
+.ws-log-btn:hover:not(:disabled) { background: rgba(165,180,252,0.2); }
+.ws-log-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.ws-stats-row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin: 10px 0 8px;
+}
+
+.ws-stat {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.ws-stat-value {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #e0e0e0;
+    line-height: 1;
+}
+
+.ws-stat-label {
+    font-size: 0.7rem;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.ws-stat-divider {
+    width: 1px;
+    height: 28px;
+    background: rgba(255,255,255,0.07);
+}
+
+.ws-chart-container {
+    flex: 1;
+    min-height: 0;
+    pointer-events: none;
+}
+
+.ws-tooltip {
+    background: #1a1a1a;
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 8px;
+    padding: 8px 12px;
+    font-size: 0.78rem;
+}
+
+.ws-tooltip-label {
+    color: #888;
+    margin-bottom: 2px;
+}
+
+.ws-tooltip-value {
+    color: #e0e0e0;
+    font-weight: 600;
+}
