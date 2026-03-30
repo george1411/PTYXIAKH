@@ -60,11 +60,20 @@ app.use('/api/v1/meals', mealRouter);
 app.use('/api/v1/nutrition', nutritionRouter);
 app.use('/api/v1/invite', inviteRouter);
 
-app.use(errorMiddleware);
+// Serve React frontend in production
+if (NODE_ENV === 'production') {
+    const clientDistPath = path.join(__dirname, 'client', 'dist');
+    app.use(express.static(clientDistPath));
+    app.get('*', (req, res) => {
+        res.sendFile(path.join(clientDistPath, 'index.html'));
+    });
+} else {
+    app.get('/', (req, res) => {
+        res.send('Welcome');
+    });
+}
 
-app.get('/', (req, res) => {
-    res.send('Welcome');
-});
+app.use(errorMiddleware);
 
 const startServer = async () => {
     try {

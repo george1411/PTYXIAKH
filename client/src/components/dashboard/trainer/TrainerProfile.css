@@ -10,15 +10,15 @@
     align-items: center;
     justify-content: center;
     height: 300px;
-    color: #999;
+    color: var(--text-secondary);
     gap: 12px;
 }
 
 .tp-loading-spinner {
     width: 32px;
     height: 32px;
-    border: 3px solid #eee;
-    border-top-color: var(--bg-dark);
+    border: 3px solid var(--border);
+    border-top-color: var(--accent);
     border-radius: 50%;
     animation: tp-spin 0.8s linear infinite;
 }
@@ -49,8 +49,8 @@
     width: 72px;
     height: 72px;
     border-radius: 50%;
-    background: linear-gradient(135deg, var(--bg-dark), #333);
-    color: white;
+    background: linear-gradient(135deg, var(--bg-dark-alt), #2a2a2a);
+    color: var(--text);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -69,7 +69,7 @@
 
 .tp-email {
     font-size: 14px;
-    color: #888;
+    color: var(--text-secondary);
     margin: 0 0 8px 0;
 }
 
@@ -91,13 +91,14 @@
 }
 
 .tp-badge-role {
-    background: var(--bg-dark);
-    color: white;
+    background: var(--accent);
+    color: #000;
 }
 
 .tp-badge-exp {
-    background: #f0f0f0;
-    color: #555;
+    background: rgba(255,255,255,0.08);
+    color: var(--text-secondary);
+    border: 1px solid var(--border);
 }
 
 .tp-header-actions {
@@ -122,7 +123,7 @@
 
 .tp-btn-edit {
     background: var(--accent);
-    color: white;
+    color: #000;
 }
 
 .tp-btn-edit:hover {
@@ -131,7 +132,7 @@
 
 .tp-btn-save {
     background: var(--accent);
-    color: white;
+    color: #000;
 }
 
 .tp-btn-save:hover {
@@ -144,17 +145,19 @@
 }
 
 .tp-btn-cancel {
-    background: #f0f0f0;
-    color: #555;
+    background: rgba(255,255,255,0.08);
+    color: var(--text-secondary);
+    border: 1px solid var(--border);
 }
 
 .tp-btn-cancel:hover {
-    background: #e0e0e0;
+    background: rgba(255,255,255,0.12);
+    color: var(--text);
 }
 
 .tp-btn-add {
     background: var(--accent);
-    color: white;
+    color: #000;
     white-space: nowrap;
 }
 
@@ -205,7 +208,7 @@
 }
 
 .tp-card:hover {
-    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+    box-shadow: 0 2px 12px rgba(255,255,255,0.03);
 }
 
 .tp-card-bio {
@@ -221,7 +224,7 @@
     align-items: center;
     gap: 8px;
     margin-bottom: 16px;
-    color: #333;
+    color: var(--text);
 }
 
 .tp-card-header h2 {
@@ -233,7 +236,7 @@
 /* Bio */
 .tp-textarea {
     width: 100%;
-    border: 1px solid #ddd;
+    border: 1px solid var(--border);
     border-radius: 8px;
     padding: 12px;
     font-size: 14px;
@@ -241,24 +244,27 @@
     resize: vertical;
     transition: border-color 0.2s;
     line-height: 1.6;
-    color: #333;
+    color: var(--text);
+    background: var(--bg-input);
 }
+
+.tp-textarea::placeholder { color: var(--text-muted); }
 
 .tp-textarea:focus {
     outline: none;
-    border-color: var(--accent);
+    border-color: rgba(255,255,255,0.25);
 }
 
 .tp-bio-text {
     font-size: 14px;
     line-height: 1.7;
-    color: #444;
+    color: var(--text);
     margin: 0;
     white-space: pre-wrap;
 }
 
 .tp-placeholder {
-    color: #bbb;
+    color: var(--text-muted);
     font-style: italic;
 }
 
@@ -278,7 +284,7 @@
 .tp-contact-item label {
     font-size: 12px;
     font-weight: 600;
-    color: #888;
+    color: var(--text-secondary);
     text-transform: uppercase;
     letter-spacing: 0.5px;
     display: flex;
@@ -288,23 +294,26 @@
 
 .tp-contact-item span {
     font-size: 14px;
-    color: #333;
+    color: var(--text);
 }
 
 .tp-input {
-    border: 1px solid #ddd;
+    border: 1px solid var(--border);
     border-radius: 8px;
     padding: 8px 12px;
     font-size: 14px;
     font-family: inherit;
     transition: border-color 0.2s;
     width: 100%;
-    color: #333;
+    color: var(--text);
+    background: var(--bg-input);
 }
+
+.tp-input::placeholder { color: var(--text-muted); }
 
 .tp-input:focus {
     outline: none;
-    border-color: var(--accent);
+    border-color: rgba(255,255,255,0.25);
 }
 
 .tp-input-small {
@@ -319,7 +328,7 @@
 
 .tp-exp-input span {
     font-size: 14px;
-    color: #666;
+    color: var(--text-secondary);
 }
 
 /* Specializations */
@@ -332,12 +341,12 @@
 .tp-spec-chip {
     padding: 6px 14px;
     border-radius: 20px;
-    border: 1px solid #ddd;
-    background: white;
+    border: 1px solid var(--border);
+    background: transparent;
     font-size: 13px;
     cursor: pointer;
     transition: all 0.2s;
-    color: #666;
+    color: var(--text-secondary);
 }
 
 .tp-spec-chip:hover:not(:disabled) {
@@ -347,7 +356,7 @@
 
 .tp-spec-active {
     background: var(--accent);
-    color: white !important;
+    color: #000 !important;
     border-color: var(--accent);
 }
 
@@ -371,18 +380,19 @@
     align-items: center;
     gap: 10px;
     padding: 10px 14px;
-    background: #f8f9fa;
+    background: var(--bg-dark-alt);
+    border: 1px solid var(--border);
     border-radius: 8px;
     font-size: 14px;
-    color: #333;
+    color: var(--text);
 }
 
 .tp-cert-icon {
     width: 28px;
     height: 28px;
     border-radius: 6px;
-    background: linear-gradient(135deg, var(--bg-dark), #333);
-    color: white;
+    background: linear-gradient(135deg, var(--accent), var(--accent-hover));
+    color: #000;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -393,7 +403,7 @@
     margin-left: auto;
     background: none;
     border: none;
-    color: #ccc;
+    color: var(--text-muted);
     cursor: pointer;
     padding: 4px;
     border-radius: 4px;
@@ -401,8 +411,8 @@
 }
 
 .tp-cert-remove:hover {
-    color: #888;
-    background: #fee;
+    color: #f87171;
+    background: rgba(239,68,68,0.1);
 }
 
 .tp-cert-add {
@@ -427,7 +437,7 @@
 .tp-cert-name {
     font-size: 14px;
     font-weight: 500;
-    color: #333;
+    color: var(--text);
 }
 
 .tp-cert-file-link {
@@ -435,7 +445,7 @@
     align-items: center;
     gap: 4px;
     font-size: 12px;
-    color: #333;
+    color: var(--text-secondary);
     text-decoration: none;
     font-weight: 500;
     transition: color 0.2s;
@@ -451,24 +461,24 @@
     align-items: center;
     gap: 4px;
     font-size: 12px;
-    color: #888;
+    color: var(--text-secondary);
     cursor: pointer;
     transition: color 0.2s;
     padding: 2px 0;
 }
 
 .tp-cert-upload-btn:hover {
-    color: #333;
+    color: var(--text);
 }
 
 .tp-cert-uploading {
-    color: #555;
+    color: var(--text-secondary);
     font-size: 12px;
 }
 
 .tp-cert-no-file {
     font-size: 12px;
-    color: #ccc;
+    color: var(--text-muted);
     font-style: italic;
 }
 
@@ -499,13 +509,16 @@
     align-items: center;
     gap: 6px;
     padding: 6px 14px;
-    background: #111;
-    color: #fff;
+    background: var(--accent);
+    color: #000;
     border: none;
     border-radius: 6px;
     font-size: 13px;
     cursor: pointer;
+    font-weight: 600;
+    transition: background 0.15s;
 }
+.tp-btn-generate:hover { background: var(--accent-hover); }
 .tp-btn-generate:disabled {
     opacity: 0.5;
     cursor: default;
@@ -513,7 +526,7 @@
 
 .tp-invite-hint {
     font-size: 13px;
-    color: #888;
+    color: var(--text-secondary);
     margin: 0 0 12px;
 }
 
@@ -528,9 +541,9 @@
     align-items: center;
     gap: 12px;
     padding: 10px 14px;
-    background: #f7f7f7;
+    background: var(--bg-dark-alt);
     border-radius: 8px;
-    border: 1px solid #e5e5e5;
+    border: 1px solid var(--border);
 }
 .tp-invite-used {
     opacity: 0.6;
@@ -541,21 +554,21 @@
     font-size: 15px;
     font-weight: 600;
     letter-spacing: 1px;
-    color: #111;
+    color: var(--text);
     flex: 0 0 auto;
 }
 
 .tp-invite-available {
     font-size: 12px;
-    color: #555;
-    background: #e8e8e8;
+    color: var(--text-secondary);
+    background: rgba(255,255,255,0.08);
     border-radius: 999px;
     padding: 2px 10px;
 }
 
 .tp-invite-used-by {
     font-size: 12px;
-    color: #555;
+    color: var(--text-secondary);
     flex: 1;
 }
 
@@ -571,18 +584,18 @@
     justify-content: center;
     width: 28px;
     height: 28px;
-    border: 1px solid #ddd;
+    border: 1px solid var(--border);
     border-radius: 6px;
-    background: #fff;
+    background: transparent;
     cursor: pointer;
-    color: #555;
+    color: var(--text-secondary);
     transition: background 0.15s;
 }
 .tp-invite-btn:hover {
-    background: #f0f0f0;
+    background: rgba(255,255,255,0.06);
 }
 .tp-invite-btn-del:hover {
-    background: #fee2e2;
-    border-color: #fca5a5;
-    color: #b91c1c;
+    background: rgba(239,68,68,0.1);
+    border-color: rgba(239,68,68,0.3);
+    color: #f87171;
 }

@@ -25,7 +25,7 @@ const TodayEvents = ({ onNavigate }) => {
             .then(res => {
                 const all = res.data.data || [];
                 const todayEvents = all
-                    .filter(e => e.date === todayDate)
+                    .filter(e => String(e.date || '').split('T')[0] === todayDate)
                     .sort((a, b) => a.startTime.localeCompare(b.startTime));
                 setEvents(todayEvents);
             })

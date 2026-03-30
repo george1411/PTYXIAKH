@@ -20,7 +20,7 @@
     display: flex;
     flex-direction: column;
     overflow: hidden;
-    background: #fafafa;
+    background: var(--bg-dark);
 }
 
 .tc-search-wrap {
@@ -43,13 +43,18 @@
     border: 1px solid var(--border);
     border-radius: 8px;
     font-size: 0.875rem;
-    background: #fff;
+    background: var(--bg-input);
+    color: var(--text);
     outline: none;
     transition: border-color 0.15s;
 }
 
+.tc-search-input::placeholder {
+    color: var(--text-muted);
+}
+
 .tc-search-input:focus {
-    border-color: var(--accent);
+    border-color: rgba(255,255,255,0.25);
 }
 
 .tc-client-list {
@@ -72,15 +77,15 @@
     transition: background 0.15s;
 }
 
-.tc-client-item:hover    { background: #f3f4f6; }
-.tc-client-item.selected { background: #eef2ff; }
+.tc-client-item:hover    { background: rgba(255,255,255,0.04); }
+.tc-client-item.selected { background: rgba(255,255,255,0.08); }
 
 .tc-client-avatar {
     width: 38px;
     height: 38px;
     border-radius: 50%;
     background: linear-gradient(135deg, var(--accent), var(--accent-hover));
-    color: #fff;
+    color: #000;
     font-weight: 700;
     font-size: 1rem;
     display: flex;
@@ -108,9 +113,9 @@
     font-weight: 700;
     padding: 2px 6px;
     border-radius: 999px;
-    background: #f3f3f3;
-    color: #888;
-    border: 1px solid #ddd;
+    background: rgba(255,255,255,0.06);
+    color: var(--text-secondary);
+    border: 1px solid var(--border);
     white-space: nowrap;
 }
 
@@ -136,9 +141,9 @@
 }
 
 .tc-active-dot.online  { background: var(--success); }
-.tc-active-dot.offline { background: #d1d5db; }
+.tc-active-dot.offline { background: #444; }
 
-.tc-chevron { color: #d1d5db; flex-shrink: 0; }
+.tc-chevron { color: var(--text-muted); flex-shrink: 0; }
 
 /* ─── Right panel ────────────────────────────────────────────── */
 .tc-right {
@@ -164,7 +169,7 @@
     align-items: center;
     gap: 16px;
     padding: 20px 24px 16px;
-    border-bottom: 1px solid #f3f4f6;
+    border-bottom: 1px solid var(--border);
 }
 
 .tc-client-header-avatar {
@@ -172,7 +177,7 @@
     height: 52px;
     border-radius: 50%;
     background: linear-gradient(135deg, var(--accent), var(--accent-hover));
-    color: #fff;
+    color: #000;
     font-weight: 700;
     font-size: 1.4rem;
     display: flex;
@@ -185,6 +190,7 @@
     font-size: 1.1rem;
     font-weight: 700;
     margin: 0 0 2px;
+    color: var(--text);
 }
 
 .tc-client-header-info span {
@@ -200,8 +206,8 @@
 
 .tc-client-meta span {
     font-size: 0.75rem;
-    background: #f3f4f6;
-    color: #374151;
+    background: rgba(255,255,255,0.06);
+    color: var(--text-secondary);
     padding: 2px 8px;
     border-radius: 999px;
 }
@@ -249,7 +255,7 @@
     display: flex;
     align-items: center;
     gap: 12px;
-    background: #fafafa;
+    background: var(--bg-dark-alt);
     border: 1px solid var(--border);
     border-radius: 12px;
     padding: 14px;
@@ -262,7 +268,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #fff;
+    color: #000;
     flex-shrink: 0;
 }
 
@@ -284,7 +290,7 @@
 }
 
 .tc-card {
-    background: #fafafa;
+    background: var(--bg-dark-alt);
     border: 1px solid var(--border);
     border-radius: 12px;
     padding: 16px;
@@ -313,7 +319,7 @@
     margin-bottom: 6px;
 }
 
-.tc-progress-label { font-size: 0.8rem; color: #374151; font-weight: 500; }
+.tc-progress-label { font-size: 0.8rem; color: var(--text); font-weight: 500; }
 .tc-progress-val   { font-size: 0.8rem; color: var(--text-secondary); }
 
 .tc-progress-track {
@@ -335,7 +341,7 @@
     justify-content: space-between;
     margin-top: 10px;
     padding-top: 10px;
-    border-top: 1px solid #f3f4f6;
+    border-top: 1px solid var(--border);
 }
 
 /* ─── Program panel ──────────────────────────────────────────── */
@@ -369,13 +375,14 @@
     cursor: pointer;
     transition: background 0.15s, border-color 0.15s;
 }
-.tc-tpl-btn:hover { background: #f3f4f6; border-color: #aaa; }
+.tc-tpl-btn:hover { background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.2); }
 
 /* ─── Template modal ──────────────────────────────────────────── */
 .tc-tpl-modal-overlay {
     position: fixed;
     inset: 0;
-    background: rgba(0,0,0,0.35);
+    background: rgba(0,0,0,0.6);
+    backdrop-filter: blur(2px);
     z-index: 9999;
     display: flex;
     align-items: center;
@@ -383,7 +390,8 @@
 }
 
 .tc-tpl-modal {
-    background: #fff;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
     border-radius: 14px;
     padding: 24px;
     width: 420px;
@@ -391,7 +399,7 @@
     display: flex;
     flex-direction: column;
     gap: 14px;
-    box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+    box-shadow: 0 20px 60px rgba(0,0,0,0.6);
 }
 
 .tc-tpl-modal-header {
@@ -406,13 +414,13 @@
     background: none;
     border: none;
     cursor: pointer;
-    color: #888;
+    color: var(--text-secondary);
 }
-.tc-tpl-modal-header button:hover { color: #111; }
+.tc-tpl-modal-header button:hover { color: var(--text); }
 
 .tc-tpl-modal-hint {
     font-size: 0.82rem;
-    color: #888;
+    color: var(--text-secondary);
     margin: 0;
 }
 
@@ -424,8 +432,11 @@
     font-size: 0.9rem;
     outline: none;
     box-sizing: border-box;
+    background: var(--bg-input);
+    color: var(--text);
 }
-.tc-tpl-name-input:focus { border-color: #555; }
+.tc-tpl-name-input::placeholder { color: var(--text-muted); }
+.tc-tpl-name-input:focus { border-color: rgba(255,255,255,0.25); }
 
 .tc-tpl-confirm-btn {
     display: flex;
@@ -433,8 +444,8 @@
     justify-content: center;
     gap: 6px;
     padding: 9px;
-    background: var(--bg-dark);
-    color: #fff;
+    background: var(--accent);
+    color: #000;
     border: none;
     border-radius: 8px;
     font-size: 0.88rem;
@@ -442,12 +453,12 @@
     cursor: pointer;
     transition: background 0.15s;
 }
-.tc-tpl-confirm-btn:hover:not(:disabled) { background: #333; }
+.tc-tpl-confirm-btn:hover:not(:disabled) { background: var(--accent-hover); }
 .tc-tpl-confirm-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
 .tc-tpl-loading, .tc-tpl-empty {
     text-align: center;
-    color: #888;
+    color: var(--text-secondary);
     font-size: 0.85rem;
     padding: 16px 0;
 }
@@ -470,7 +481,7 @@
     cursor: pointer;
     transition: background 0.15s;
 }
-.tc-tpl-item:hover { background: #f5f5f5; }
+.tc-tpl-item:hover { background: rgba(255,255,255,0.04); }
 
 .tc-tpl-item-name {
     flex: 1;
@@ -480,19 +491,19 @@
 }
 .tc-tpl-item-date {
     font-size: 0.75rem;
-    color: #aaa;
+    color: var(--text-muted);
     flex-shrink: 0;
 }
 .tc-tpl-item-del {
     background: none;
     border: none;
     cursor: pointer;
-    color: #bbb;
+    color: var(--text-muted);
     padding: 2px;
     display: flex;
     align-items: center;
 }
-.tc-tpl-item-del:hover { color: #888; }
+.tc-tpl-item-del:hover { color: var(--text-secondary); }
 
 .tc-day-pills {
     display: flex;
@@ -505,7 +516,7 @@
     padding: 7px 16px;
     border-radius: 999px;
     border: 1px solid var(--border);
-    background: #fff;
+    background: transparent;
     font-size: 0.82rem;
     font-weight: 500;
     color: var(--text-secondary);
@@ -514,7 +525,7 @@
 }
 
 .tc-day-pill:hover  { border-color: var(--accent); color: var(--accent); }
-.tc-day-pill.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+.tc-day-pill.active { background: var(--accent); border-color: var(--accent); color: #000; }
 
 .tc-day-date {
     font-weight: 400;
@@ -537,12 +548,12 @@
 }
 
 .tc-day-pill.active .tc-day-dot {
-    background: #fff;
+    background: #000;
 }
 
 /* ─── Editor ─────────────────────────────────────────────────── */
 .tc-editor {
-    background: #fafafa;
+    background: var(--bg-dark-alt);
     border: 1px solid var(--border);
     border-radius: 14px;
     padding: 20px;
@@ -582,11 +593,13 @@
     border-radius: 8px;
     font-size: 0.875rem;
     outline: none;
-    background: #fff;
+    background: var(--bg-input);
+    color: var(--text);
     transition: border-color 0.15s;
 }
 
-.tc-workout-name-input:focus { border-color: var(--accent); }
+.tc-workout-name-input::placeholder { color: var(--text-muted); }
+.tc-workout-name-input:focus { border-color: rgba(255,255,255,0.25); }
 
 .tc-editor-actions {
     display: flex;
@@ -599,7 +612,7 @@
     gap: 6px;
     padding: 7px 16px;
     background: var(--accent);
-    color: #fff;
+    color: #000;
     border: none;
     border-radius: 8px;
     font-size: 0.82rem;
@@ -616,9 +629,9 @@
     align-items: center;
     gap: 6px;
     padding: 7px 14px;
-    background: #fff;
-    color: #888;
-    border: 1px solid #ccc;
+    background: transparent;
+    color: var(--text-secondary);
+    border: 1px solid var(--border);
     border-radius: 8px;
     font-size: 0.82rem;
     font-weight: 600;
@@ -626,7 +639,7 @@
     transition: all 0.15s;
 }
 
-.tc-btn-danger:hover    { background: #fef2f2; }
+.tc-btn-danger:hover    { background: rgba(239,68,68,0.1); color: #f87171; border-color: rgba(239,68,68,0.3); }
 .tc-btn-danger:disabled { opacity: 0.6; cursor: not-allowed; }
 
 /* ─── Exercise rows ──────────────────────────────────────────── */
@@ -637,7 +650,7 @@
 }
 
 .tc-exercise-row {
-    background: #fff;
+    background: var(--bg-dark);
     border: 1px solid var(--border);
     border-radius: 12px;
     padding: 12px 14px;
@@ -648,8 +661,8 @@
 }
 
 .tc-exercise-row:focus-within {
-    border-color: #a5b4fc;
-    box-shadow: 0 0 0 3px rgba(0,0,0,0.05);
+    border-color: rgba(255,255,255,0.25);
+    box-shadow: 0 0 0 3px rgba(255,255,255,0.03);
 }
 
 .tc-exercise-row-top {
@@ -704,13 +717,13 @@
     font-size: 0.85rem;
     text-align: center;
     outline: none;
-    background: #f9fafb;
-    transition: border-color 0.15s, background 0.15s;
+    background: var(--bg-input);
+    color: var(--text);
+    transition: border-color 0.15s;
 }
 
 .tc-exercise-field input:focus {
-    border-color: var(--accent);
-    background: #fff;
+    border-color: rgba(255,255,255,0.25);
 }
 
 .tc-exercise-field-notes { flex: 1; min-width: 120px; }
@@ -719,7 +732,7 @@
 .tc-exercise-remove {
     background: none;
     border: none;
-    color: #d1d5db;
+    color: var(--text-muted);
     cursor: pointer;
     padding: 4px;
     border-radius: 6px;
@@ -729,7 +742,7 @@
     flex-shrink: 0;
 }
 
-.tc-exercise-remove:hover { color: #ef4444; }
+.tc-exercise-remove:hover { color: #f87171; }
 
 /* ─── Add exercise search ────────────────────────────────────── */
 .tc-btn-add-exercise {
@@ -737,8 +750,8 @@
     align-items: center;
     gap: 6px;
     padding: 8px 16px;
-    background: #fff;
-    border: 1px dashed #d1d5db;
+    background: transparent;
+    border: 1px dashed rgba(255,255,255,0.15);
     border-radius: 8px;
     font-size: 0.82rem;
     color: var(--text-secondary);
@@ -753,7 +766,7 @@
 .tc-ex-search-box {
     border: 1px solid var(--border);
     border-radius: 10px;
-    background: #fff;
+    background: var(--bg-dark);
     overflow: hidden;
 }
 
@@ -762,7 +775,7 @@
     align-items: center;
     gap: 8px;
     padding: 10px 12px;
-    border-bottom: 1px solid #f3f4f6;
+    border-bottom: 1px solid var(--border);
     color: var(--text-muted);
 }
 
@@ -771,7 +784,11 @@
     border: none;
     outline: none;
     font-size: 0.875rem;
+    background: transparent;
+    color: var(--text);
 }
+
+.tc-ex-search-input-wrap input::placeholder { color: var(--text-muted); }
 
 .tc-ex-search-input-wrap button {
     background: none;
@@ -799,7 +816,7 @@
     transition: background 0.1s;
 }
 
-.tc-ex-result-item:hover { background: #f5f3ff; }
+.tc-ex-result-item:hover { background: rgba(255,255,255,0.04); }
 
 .tc-ex-result-name   { font-size: 0.875rem; color: var(--text); font-weight: 500; }
 .tc-ex-result-muscle { font-size: 0.75rem; color: var(--text-muted); }
@@ -811,18 +828,18 @@
     gap: 7px;
     width: 100%;
     padding: 10px 14px;
-    background: #f5f5f5;
-    border: 1px dashed #ccc;
+    background: var(--bg-input);
+    border: 1px dashed rgba(255,255,255,0.15);
     border-radius: 8px;
     margin: 6px 0 2px;
     font-size: 0.85rem;
     font-weight: 600;
-    color: #333;
+    color: var(--text-secondary);
     cursor: pointer;
     text-align: left;
     transition: background 0.15s;
 }
-.tc-ex-custom-item:hover { background: #eee; }
+.tc-ex-custom-item:hover { background: rgba(255,255,255,0.06); }
 
 /* ─── Chat panel ─────────────────────────────────────────────── */
 .tc-chat {
@@ -856,7 +873,7 @@
     height: 30px;
     border-radius: 50%;
     background: linear-gradient(135deg, var(--accent), var(--accent-hover));
-    color: #fff;
+    color: #000;
     font-size: 0.78rem;
     font-weight: 700;
     display: flex;
@@ -877,13 +894,14 @@
 
 .tc-msg-bubble.me {
     background: var(--accent);
-    color: #fff;
+    color: #000;
     border-bottom-right-radius: 4px;
 }
 
 .tc-msg-bubble.them {
-    background: #f3f4f6;
+    background: var(--bg-dark-alt);
     color: var(--text);
+    border: 1px solid var(--border);
     border-bottom-left-radius: 4px;
 }
 
@@ -900,7 +918,7 @@
     display: flex;
     gap: 8px;
     padding-top: 12px;
-    border-top: 1px solid #f3f4f6;
+    border-top: 1px solid var(--border);
 }
 
 .tc-chat-input {
@@ -910,17 +928,20 @@
     border-radius: 999px;
     font-size: 0.875rem;
     outline: none;
+    background: var(--bg-input);
+    color: var(--text);
     transition: border-color 0.15s;
 }
 
-.tc-chat-input:focus { border-color: var(--accent); }
+.tc-chat-input::placeholder { color: var(--text-muted); }
+.tc-chat-input:focus { border-color: rgba(255,255,255,0.25); }
 
 .tc-chat-send {
     width: 40px;
     height: 40px;
     border-radius: 50%;
     background: var(--accent);
-    color: #fff;
+    color: #000;
     border: none;
     cursor: pointer;
     display: flex;
@@ -963,7 +984,7 @@
 
 /* ─── Invite Panel ────────────────────────────────────────── */
 .tc-invite-panel {
-    border-top: 1px solid #e5e5e5;
+    border-top: 1px solid var(--border);
 }
 
 .tc-invite-toggle {
@@ -977,10 +998,10 @@
     cursor: pointer;
     font-size: 13px;
     font-weight: 600;
-    color: #333;
+    color: var(--text-secondary);
     text-align: left;
 }
-.tc-invite-toggle:hover { background: #f5f5f5; }
+.tc-invite-toggle:hover { background: rgba(255,255,255,0.04); }
 
 .tc-invite-toggle-right {
     display: flex;
@@ -989,8 +1010,8 @@
 }
 
 .tc-invite-count {
-    background: #333;
-    color: #fff;
+    background: rgba(255,255,255,0.1);
+    color: var(--text);
     font-size: 11px;
     font-weight: 600;
     border-radius: 999px;
@@ -999,7 +1020,7 @@
 
 .tc-invite-chevron {
     font-size: 10px;
-    color: #888;
+    color: var(--text-muted);
 }
 
 .tc-invite-body {
@@ -1011,7 +1032,7 @@
 
 .tc-invite-empty {
     font-size: 12px;
-    color: #999;
+    color: var(--text-muted);
     text-align: center;
     padding: 4px 0;
 }
@@ -1027,9 +1048,9 @@
     align-items: center;
     gap: 8px;
     padding: 6px 10px;
-    background: #f7f7f7;
+    background: var(--bg-input);
     border-radius: 6px;
-    border: 1px solid #e8e8e8;
+    border: 1px solid var(--border);
 }
 .tc-invite-row.used { opacity: 0.5; }
 
@@ -1039,7 +1060,7 @@
     font-weight: 600;
     letter-spacing: 0.5px;
     flex: 1;
-    color: #111;
+    color: var(--text);
 }
 
 .tc-invite-label {
@@ -1047,8 +1068,8 @@
     border-radius: 999px;
     padding: 1px 8px;
 }
-.tc-invite-label.avail { background: #e8e8e8; color: #555; }
-.tc-invite-label.used  { background: #f0f0f0; color: #888; }
+.tc-invite-label.avail { background: rgba(255,255,255,0.08); color: var(--text-secondary); }
+.tc-invite-label.used  { background: rgba(255,255,255,0.04); color: var(--text-muted); }
 
 .tc-invite-actions {
     display: flex;
@@ -1061,14 +1082,14 @@
     justify-content: center;
     width: 24px;
     height: 24px;
-    border: 1px solid #ddd;
+    border: 1px solid var(--border);
     border-radius: 5px;
-    background: #fff;
+    background: transparent;
     cursor: pointer;
-    color: #555;
+    color: var(--text-secondary);
 }
-.tc-invite-btn:hover { background: #f0f0f0; }
-.tc-invite-btn.del:hover { background: #fee2e2; color: #b91c1c; border-color: #fca5a5; }
+.tc-invite-btn:hover { background: rgba(255,255,255,0.06); }
+.tc-invite-btn.del:hover { background: rgba(239,68,68,0.1); color: #f87171; border-color: rgba(239,68,68,0.3); }
 
 .tc-invite-generate {
     display: flex;
@@ -1076,8 +1097,8 @@
     gap: 6px;
     width: 100%;
     padding: 7px 12px;
-    background: #111;
-    color: #fff;
+    background: var(--accent);
+    color: #000;
     border: none;
     border-radius: 6px;
     font-size: 12px;

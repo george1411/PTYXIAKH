@@ -208,7 +208,7 @@ const Schedule = ({ onNavigate, fullPage, hideTitle }) => {
                     end: ev.endTime,
                     title: ev.title,
                     color: ev.color || 'event-1',
-                    date: ev.date || null,
+                    date: ev.date ? String(ev.date).split('T')[0] : null,
                     isWorkout: false,
                 }));
 

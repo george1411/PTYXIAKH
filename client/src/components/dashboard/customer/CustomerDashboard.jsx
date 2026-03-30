@@ -15,7 +15,6 @@ import TodayWorkout from './widgets/TodayWorkout/TodayWorkout';
 import TodayEvents from './widgets/TodayEvents/TodayEvents';
 import TodayMacros from './widgets/TodayMacros/TodayMacros';
 import { ConsistencyCalendar } from '../common/widgets/Progress/Progress';
-import Void from './Void/Void';
 import { Search, Bell } from 'lucide-react';
 
 // ─── Notification Bell ────────────────────────────────────────
@@ -190,8 +189,6 @@ const CustomerDashboard = ({ user, onLogout, onUserUpdate }) => {
                             <Settings user={user} onLogout={onLogout} onUserUpdate={onUserUpdate} />
                         ) : activeTab === 'messages' ? (
                             <CustomerMessages user={user} targetTrainer={messageTarget} />
-                        ) : activeTab === 'void' ? (
-                            <Void />
                         ) : (
                             /* Overview Grid */
                             <div className="grid grid-cols-4 gap-4">
