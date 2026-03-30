@@ -72,13 +72,6 @@ export default function Signup({ onBack, onSubmit, onLoginSuccess }) {
                     <h2 className="text-4xl font-bold mb-2 tracking-tight text-white">
                         {step === 1 ? 'Sign Up' : 'Your Body Stats'}
                     </h2>
-                    <div className="w-12 h-1 bg-white rounded-full"></div>
-                    {isCustomer && (
-                        <div className="flex gap-2 mt-4">
-                            <div className={`w-2 h-2 rounded-full transition-colors ${step === 1 ? 'bg-white' : 'bg-gray-600'}`} />
-                            <div className={`w-2 h-2 rounded-full transition-colors ${step === 2 ? 'bg-white' : 'bg-gray-600'}`} />
-                        </div>
-                    )}
                 </div>
 
                 {error && (
