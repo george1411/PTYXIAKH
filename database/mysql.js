@@ -34,6 +34,10 @@ const connectToDatabase = async () => {
         await addColumnIfNotExists('ScheduleEvents', 'date', 'DATE NULL');
         await addColumnIfNotExists('DailyLogs', 'steps', 'INT NULL DEFAULT 0');
 
+        // Sync models first so base tables (Users, Workouts, etc.) exist
+        await sequelize.sync();
+        console.log('All models were synchronized successfully.');
+
         // Create TrainerInviteCodes table if not exists
         await sequelize.query(`
             CREATE TABLE IF NOT EXISTS TrainerInviteCodes (
@@ -59,10 +63,6 @@ const connectToDatabase = async () => {
                 FOREIGN KEY (trainerId) REFERENCES Users(id) ON DELETE CASCADE
             )
         `);
-
-        // Sync models
-        await sequelize.sync();
-        console.log('All models were synchronized successfully.');
     } catch (error) {
         console.error('Unable to connect to the database:', error);
         process.exit(1);
