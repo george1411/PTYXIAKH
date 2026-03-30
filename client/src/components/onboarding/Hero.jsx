@@ -6,12 +6,17 @@ export default function Hero({ onNext }) {
             <div className="max-w-xl">
 
                 {/* Headline */}
-                <h1 className="text-6xl md:text-7xl font-bold mb-6 tracking-tight leading-[1.1] text-white">
+                <h1 className="text-6xl md:text-7xl font-bold mb-6 tracking-tight leading-[1.1]" style={{ color: '#f0f0f0' }}>
                     Train
                     <br />
                     Smarter.
                     <br />
-                    <span className="bg-gradient-to-b from-gray-200 to-gray-600 bg-clip-text text-transparent">
+                    <span style={{
+                        background: 'linear-gradient(180deg, #a5b4fc 0%, #6d6aff 40%, rgba(30,20,80,0.3) 100%)',
+                        WebkitBackgroundClip: 'text',
+                        WebkitTextFillColor: 'transparent',
+                        backgroundClip: 'text',
+                    }}>
                         Stay
                         <br />
                         Connected.
@@ -19,22 +24,23 @@ export default function Hero({ onNext }) {
                 </h1>
 
                 {/* Subcopy */}
-                <p className="text-lg text-gray-400 mb-10 leading-relaxed max-w-md">
+                <p className="text-lg mb-10 leading-relaxed max-w-md" style={{ color: 'rgba(255,255,255,0.45)' }}>
                     Your personal training, simplified. Join a community that values progress and discipline over perfection.
                 </p>
 
-                {/* Buttons */}
-                <div className="flex flex-wrap items-center gap-4 mb-14">
+                {/* CTA */}
+                <div className="flex flex-wrap items-center gap-4">
                     <button
                         onClick={onNext}
-                        className="group flex items-center gap-2 bg-white text-black px-8 py-4 rounded-full font-bold text-lg hover:bg-gray-100 transition-all duration-300 hover:scale-105 shadow-xl shadow-white/5"
+                        className="group flex items-center gap-2 px-8 py-4 rounded-full font-bold text-lg transition-all duration-300 hover:scale-105"
+                        style={{ background: '#a5b4fc', color: '#0a0a0a' }}
+                        onMouseEnter={e => e.currentTarget.style.background = '#c4b5fd'}
+                        onMouseLeave={e => e.currentTarget.style.background = '#a5b4fc'}
                     >
-                        Get Started Free
+                        Get Started
                         <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                     </button>
-
                 </div>
-
 
             </div>
         </div>

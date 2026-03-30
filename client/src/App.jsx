@@ -68,9 +68,9 @@ function App() {
   }
 
   return (
-    <div className="flex w-full bg-black text-white font-sans min-h-screen">
+    <div className="flex w-full font-sans min-h-screen" style={{ background: '#0a0a0a', color: '#f0f0f0' }}>
       {/* LEFT SPLIT - Interactive */}
-      <div className="w-full lg:w-1/2 relative flex flex-col z-20 overflow-y-auto custom-scrollbar">
+      <div className="w-full lg:w-1/2 relative flex flex-col z-20 overflow-y-auto custom-scrollbar" style={{ borderRight: '1px solid rgba(255,255,255,0.06)' }}>
         <Navbar onLogin={() => setScreen(3)} />
 
         <div className="flex-1 flex flex-col min-h-[600px]">
@@ -96,7 +96,7 @@ function App() {
       </div>
 
       {/* RIGHT SPLIT - Visual */}
-      <div className="hidden lg:block lg:w-1/2 relative z-10 sticky top-0 h-screen">
+      <div className="hidden lg:flex lg:w-1/2 relative z-10 sticky top-0 h-screen" style={{ background: '#111111', alignItems: 'center', justifyContent: 'center' }}>
         <VisualPanel />
       </div>
     </div>

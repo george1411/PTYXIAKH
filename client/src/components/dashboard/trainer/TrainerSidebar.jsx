@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Settings, LogOut, ChevronRight, User } from 'lucide-react';
 
 const NavItem = ({ label, active, onClick }) => (
@@ -9,8 +9,8 @@ const NavItem = ({ label, active, onClick }) => (
             : 'hover:bg-white/5'
             }`}
         style={active
-            ? { background: 'rgba(56,189,248,0.15)', color: '#38bdf8' }
-            : { color: 'rgba(148,163,184,0.8)' }
+            ? { background: 'rgba(255,255,255,0.08)', color: '#f0f0f0' }
+            : { color: 'rgba(255,255,255,0.5)' }
         }
     >
         <span className={`text-sm ${active ? 'font-medium' : 'font-normal'}`}>{label}</span>
@@ -38,13 +38,13 @@ const TrainerSidebar = ({ activeTab = 'overview', onNavigate, onLogout, user }) 
 
     return (
         <div className="w-64 h-screen flex flex-col flex-shrink-0 sticky top-0 font-sans"
-            style={{ background: 'linear-gradient(180deg, #0f172a 0%, #1e293b 60%, #0f172a 100%)' }}
+            style={{ background: '#111111', borderRight: '1px solid rgba(255,255,255,0.06)' }}
         >
             <div className="p-6">
                 <div className="flex items-center gap-3 mb-2">
-                    <span className="font-bold text-xl tracking-wide" style={{ color: '#38bdf8' }}>GymLit</span>
+                    <span className="font-bold text-xl tracking-wide" style={{ color: '#f0f0f0' }}>GymLit</span>
                 </div>
-                <div className="text-xs uppercase tracking-widest" style={{ color: 'rgba(148,163,184,0.6)' }}>Trainer Panel</div>
+                <div className="text-xs uppercase tracking-widest" style={{ color: 'rgba(255,255,255,0.3)' }}>Trainer Panel</div>
             </div>
 
             {/* Navigation */}
@@ -60,33 +60,33 @@ const TrainerSidebar = ({ activeTab = 'overview', onNavigate, onLogout, user }) 
             </nav>
 
             {/* My Account block */}
-            <div className="p-4 mt-auto" ref={menuRef} style={{ borderTop: '1px solid rgba(148,163,184,0.1)' }}>
+            <div className="p-4 mt-auto" ref={menuRef} style={{ borderTop: '1px solid rgba(255,255,255,0.08)' }}>
                 <div className="relative">
                     <button
                         onClick={() => setMenuOpen(v => !v)}
                         className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group"
-                        style={{ background: 'rgba(56,189,248,0.08)' }}
-                        onMouseEnter={e => e.currentTarget.style.background = 'rgba(56,189,248,0.15)'}
-                        onMouseLeave={e => e.currentTarget.style.background = 'rgba(56,189,248,0.08)'}
+                        style={{ background: 'rgba(255,255,255,0.04)' }}
+                        onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.08)'}
+                        onMouseLeave={e => e.currentTarget.style.background = 'rgba(255,255,255,0.04)'}
                     >
-                        <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 overflow-hidden" style={{ background: 'rgba(56,189,248,0.2)', color: '#38bdf8' }}>
+                        <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 overflow-hidden" style={{ background: 'rgba(255,255,255,0.1)', color: '#e0e0e0' }}>
                             {user?.profileImage
                                 ? <img src={user.profileImage} alt="avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                                 : <User size={16} />
                             }
                         </div>
-                        <span className="flex-1 text-sm font-semibold text-left truncate" style={{ color: '#f1f5f9' }}>My Account</span>
-                        <ChevronRight size={15} style={{ color: 'rgba(148,163,184,0.5)', transform: menuOpen ? 'rotate(90deg)' : 'none', transition: 'transform 0.2s' }} />
+                        <span className="flex-1 text-sm font-semibold text-left truncate" style={{ color: '#f0f0f0' }}>My Account</span>
+                        <ChevronRight size={15} style={{ color: 'rgba(255,255,255,0.3)', transform: menuOpen ? 'rotate(90deg)' : 'none', transition: 'transform 0.2s' }} />
                     </button>
 
                     {menuOpen && (
-                        <div className="absolute bottom-full left-0 right-0 mb-2 rounded-xl shadow-xl overflow-hidden z-50" style={{ background: '#0f172a', border: '1px solid rgba(148,163,184,0.15)' }}>
+                        <div className="absolute bottom-full left-0 right-0 mb-2 rounded-xl shadow-xl overflow-hidden z-50" style={{ background: '#0d0d0d', border: '1px solid rgba(255,255,255,0.08)' }}>
                             <button
                                 onClick={() => { onNavigate('settings'); setMenuOpen(false); }}
                                 className="w-full flex items-center gap-3 px-4 py-3 text-sm transition-colors"
-                                style={{ color: '#94a3b8' }}
-                                onMouseEnter={e => { e.currentTarget.style.background = 'rgba(56,189,248,0.08)'; e.currentTarget.style.color = '#f1f5f9'; }}
-                                onMouseLeave={e => { e.currentTarget.style.background = ''; e.currentTarget.style.color = '#94a3b8'; }}
+                                style={{ color: 'rgba(255,255,255,0.5)' }}
+                                onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.04)'; e.currentTarget.style.color = '#f0f0f0'; }}
+                                onMouseLeave={e => { e.currentTarget.style.background = ''; e.currentTarget.style.color = 'rgba(255,255,255,0.5)'; }}
                             >
                                 <Settings size={16} />
                                 Settings
@@ -94,9 +94,9 @@ const TrainerSidebar = ({ activeTab = 'overview', onNavigate, onLogout, user }) 
                             <button
                                 onClick={() => { onLogout(); setMenuOpen(false); }}
                                 className="w-full flex items-center gap-3 px-4 py-3 text-sm transition-colors"
-                                style={{ color: '#94a3b8', borderTop: '1px solid rgba(148,163,184,0.1)' }}
+                                style={{ color: 'rgba(255,255,255,0.5)', borderTop: '1px solid rgba(255,255,255,0.06)' }}
                                 onMouseEnter={e => { e.currentTarget.style.background = 'rgba(239,68,68,0.1)'; e.currentTarget.style.color = '#f87171'; }}
-                                onMouseLeave={e => { e.currentTarget.style.background = ''; e.currentTarget.style.color = '#94a3b8'; }}
+                                onMouseLeave={e => { e.currentTarget.style.background = ''; e.currentTarget.style.color = 'rgba(255,255,255,0.5)'; }}
                             >
                                 <LogOut size={16} />
                                 Sign Out
