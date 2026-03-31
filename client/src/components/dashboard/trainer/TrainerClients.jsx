@@ -553,7 +553,7 @@ const ProgramPanel = ({ clientId }) => {
                                     </button>
                                 )}
                                 {filteredEx.length === 0 && !exSearch.trim() && (
-                                    <div className="tc-ex-none">Type to search or add a custom exercise</div>
+                                    <div className="tc-ex-none">Add an exercise</div>
                                 )}
                                 {filteredEx.slice(0, 30).map(ex => (
                                     <button key={ex.id} className="tc-ex-result-item" onClick={() => addExercise(ex)}>

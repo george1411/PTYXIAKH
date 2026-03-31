@@ -189,17 +189,39 @@ export const saveClientProgram = async (req, res, next) => {
 
         // Insert exercises
         for (const ex of (exercises || [])) {
+            let exerciseId = ex.exerciseId || null;
+
+            // If no exerciseId, find or create by name
+            if (!exerciseId && ex.exerciseName) {
+                const [existing] = await sequelize.query(
+                    `SELECT id FROM Exercises WHERE name = :name LIMIT 1`,
+                    { replacements: { name: ex.exerciseName }, type: QueryTypes.SELECT, transaction: t }
+                );
+                if (existing) {
+                    exerciseId = existing.id;
+                } else {
+                    const [newId] = await sequelize.query(
+                        `INSERT INTO Exercises (name, description, category, targetMuscles, equipment, instructions, createdAt, updatedAt)
+                         VALUES (:name, '', 'Other', '[]', '', '', NOW(), NOW())`,
+                        { replacements: { name: ex.exerciseName }, type: QueryTypes.INSERT, transaction: t }
+                    );
+                    exerciseId = newId;
+                }
+            }
+
+            if (!exerciseId) continue;
+
             await sequelize.query(
                 `INSERT INTO WorkoutExercises (workoutId, exerciseId, sets, reps, weight, notes, createdAt, updatedAt)
                  VALUES (:workoutId, :exerciseId, :sets, :reps, :weight, :notes, NOW(), NOW())`,
                 {
                     replacements: {
                         workoutId,
-                        exerciseId: ex.exerciseId,
-                        sets:       ex.sets   || 3,
-                        reps:       String(ex.reps || '10'),
-                        weight:     ex.weight || null,
-                        notes:      ex.notes  || null,
+                        exerciseId,
+                        sets:   ex.sets   || 3,
+                        reps:   String(ex.reps || '10'),
+                        weight: ex.weight || null,
+                        notes:  ex.notes  || null,
                     },
                     type: QueryTypes.INSERT,
                     transaction: t
