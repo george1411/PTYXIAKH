@@ -59,7 +59,7 @@ export default function Signup({ onBack, onSubmit, onLoginSuccess }) {
     };
 
     return (
-        <div className="flex-1 flex flex-col px-8 md:px-16 pt-32 pb-8 animate-slide-up">
+        <div className="flex-1 flex flex-col px-8 md:px-16 pt-8 pb-8 animate-slide-up">
             <button
                 onClick={step === 2 ? () => setStep(1) : onBack}
                 className="self-start mb-8 p-2 -ml-2 hover:bg-white/5 rounded-full transition-colors text-gray-400 hover:text-white"

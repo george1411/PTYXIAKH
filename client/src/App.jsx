@@ -68,10 +68,12 @@ function App() {
   }
 
   return (
-    <div className="flex w-full font-sans" style={{ background: '#0a0a0a', color: '#f0f0f0', height: '100vh', overflow: 'hidden' }}>
+    <div className="flex flex-col w-full font-sans" style={{ background: '#0a0a0a', color: '#f0f0f0', height: '100vh', overflow: 'hidden' }}>
+      <Navbar onLogin={() => setScreen(3)} />
+      {/* SPLITS */}
+      <div className="flex flex-1 overflow-hidden">
       {/* LEFT SPLIT - Interactive */}
       <div className="w-full lg:w-1/2 relative flex flex-col z-20 overflow-y-auto" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
-        <Navbar onLogin={() => setScreen(3)} />
 
         <div className="flex-1 flex flex-col">
           {screen === 0 && <Hero onNext={() => setScreen(2)} />}
@@ -96,8 +98,9 @@ function App() {
       </div>
 
       {/* RIGHT SPLIT - Visual */}
-      <div className="hidden lg:flex lg:w-1/2 relative z-10 sticky top-0 h-screen" style={{ background: '#0a0a0a', alignItems: 'center', justifyContent: 'center' }}>
+      <div className="hidden lg:flex lg:w-1/2 relative z-10" style={{ background: '#0a0a0a', alignItems: 'center', justifyContent: 'center' }}>
         <VisualPanel />
+      </div>
       </div>
     </div>
   );

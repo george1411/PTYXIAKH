@@ -41,7 +41,7 @@ export default function SignIn({ onNavigateHome, onBack, onSignUp, onLoginSucces
     };
 
     return (
-        <div className="flex-1 flex flex-col px-8 md:px-16 pt-32 pb-8 animate-slide-up">
+        <div className="flex-1 flex flex-col px-8 md:px-16 pt-8 pb-8 animate-slide-up">
             {/* Back Button */}
             <button
                 onClick={onBack}

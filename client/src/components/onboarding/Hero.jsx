@@ -2,7 +2,7 @@ import { ArrowRight } from 'lucide-react';
 
 export default function Hero({ onNext }) {
     return (
-        <div className="flex-1 flex flex-col justify-center px-8 md:px-16 pt-32 pb-12 animate-fade-in">
+        <div className="flex-1 flex flex-col justify-center px-8 md:px-16 pb-12 animate-fade-in">
             <div className="max-w-xl">
 
                 {/* Headline */}
