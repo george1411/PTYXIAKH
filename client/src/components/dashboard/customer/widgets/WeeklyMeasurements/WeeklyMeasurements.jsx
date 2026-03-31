@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
+import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 
 const WeeklyMeasurements = () => {
     const [currentWeight, setCurrentWeight] = useState(0);
@@ -70,7 +70,13 @@ const WeeklyMeasurements = () => {
             {/* Graph */}
             <div className="flex-1 w-full min-h-0">
                 <ResponsiveContainer width="100%" height="100%">
-                    <LineChart data={history}>
+                    <AreaChart data={history}>
+                        <defs>
+                            <linearGradient id="weightOverviewGradient" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="0%" stopColor="#818CF8" stopOpacity={0.25} />
+                                <stop offset="100%" stopColor="#818CF8" stopOpacity={0} />
+                            </linearGradient>
+                        </defs>
                         <XAxis
                             dataKey="date"
                             tick={{ fontSize: 10, fill: '#555' }}
@@ -85,19 +91,20 @@ const WeeklyMeasurements = () => {
                                 borderRadius: '8px',
                                 boxShadow: '0 4px 20px rgba(0,0,0,0.5)'
                             }}
-                            itemStyle={{ color: '#e0e0e0' }}
+                            itemStyle={{ color: '#a5b4fc' }}
                             labelStyle={{ color: '#666', fontSize: '12px', marginBottom: '0.25rem' }}
                             formatter={(v) => [`${v} kg`, 'Weight']}
                         />
-                        <Line
+                        <Area
                             type="monotone"
                             dataKey="weight"
-                            stroke="#e0e0e0"
+                            stroke="#818CF8"
                             strokeWidth={2.5}
-                            dot={{ r: 4, fill: '#111', stroke: '#e0e0e0', strokeWidth: 2 }}
-                            activeDot={{ r: 6, fill: '#ffffff' }}
+                            fill="url(#weightOverviewGradient)"
+                            dot={{ r: 4, fill: '#111', stroke: '#818CF8', strokeWidth: 2 }}
+                            activeDot={{ r: 6, fill: '#a5b4fc' }}
                         />
-                    </LineChart>
+                    </AreaChart>
                 </ResponsiveContainer>
             </div>
         </div>

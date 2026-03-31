@@ -54,7 +54,7 @@ export default function VisualPanel() {
                     <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px', marginBottom: '14px' }}>
                         <span style={{ fontSize: '2rem', fontWeight: 800, color: '#f0f0f0' }}>65</span>
                         <span style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.4)' }}>kg</span>
-                        <span style={{ fontSize: '0.68rem', background: 'rgba(34,197,94,0.15)', color: '#22c55e', padding: '2px 8px', borderRadius: '20px', fontWeight: 700 }}>-1.0 kg</span>
+                        <span style={{ fontSize: '0.68rem', background: 'rgba(129,140,248,0.15)', color: '#a5b4fc', padding: '2px 8px', borderRadius: '20px', fontWeight: 700 }}>-1.0 kg</span>
                     </div>
                     <svg width="100%" height="56" viewBox="0 0 220 56" preserveAspectRatio="none">
                         <defs>
@@ -84,25 +84,18 @@ export default function VisualPanel() {
                     transform: 'rotate(-1.5deg)',
                     zIndex: 2,
                 }}>
-                    <p style={{ fontSize: '0.65rem', fontWeight: 700, letterSpacing: '0.12em', color: '#a5b4fc', marginBottom: '3px' }}>MONDAY</p>
-                    <p style={{ fontSize: '1.3rem', fontWeight: 800, color: '#f0f0f0', marginBottom: '18px' }}>CHEST DAY</p>
-
-                    <div style={{ marginBottom: '14px' }}>
-                        <p style={{ fontSize: '0.8rem', fontWeight: 700, color: '#f0f0f0', marginBottom: '8px' }}>Bench Press</p>
-                        {[{ label: 'Set 1', val: '60kg × 8' }, { label: 'Set 2', val: '60kg × 8' }].map((s, i) => (
-                            <div key={i} style={{ display: 'flex', justifyContent: 'space-between', background: '#1a1a1a', borderRadius: '10px', padding: '7px 12px', marginBottom: '5px' }}>
-                                <span style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.45)' }}>{s.label}</span>
-                                <span style={{ fontSize: '0.72rem', color: '#f0f0f0', fontWeight: 600 }}>{s.val}</span>
-                            </div>
-                        ))}
-                    </div>
-
-                    <div>
-                        <p style={{ fontSize: '0.8rem', fontWeight: 700, color: '#f0f0f0', marginBottom: '8px' }}>Cable Fly</p>
-                        {[{ label: 'Set 1', val: '15kg × 12' }, { label: 'Set 2', val: '15kg × 12' }].map((s, i) => (
-                            <div key={i} style={{ display: 'flex', justifyContent: 'space-between', background: '#1a1a1a', borderRadius: '10px', padding: '7px 12px', marginBottom: '5px' }}>
-                                <span style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.45)' }}>{s.label}</span>
-                                <span style={{ fontSize: '0.72rem', color: '#f0f0f0', fontWeight: 600 }}>{s.val}</span>
+                    <p style={{ fontSize: '0.65rem', fontWeight: 700, letterSpacing: '0.12em', color: '#a5b4fc', marginBottom: '3px' }}>TODAY'S WORKOUT</p>
+                    <p style={{ fontSize: '1.3rem', fontWeight: 800, color: '#f0f0f0', marginBottom: '14px' }}>CHEST DAY</p>
+                    <div style={{ height: '1px', background: 'rgba(255,255,255,0.06)', marginBottom: '14px' }} />
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                        {[
+                            { name: 'Bench Press',     val: '3 × 60kg × 8'  },
+                            { name: 'Barbell Row',     val: '3 × 40kg × 10' },
+                            { name: 'Bicep Curls',     val: '3 × 12kg × 12' },
+                        ].map((ex, i) => (
+                            <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#1a1a1a', borderRadius: '10px', padding: '8px 12px' }}>
+                                <span style={{ fontSize: '0.78rem', fontWeight: 700, color: '#f0f0f0' }}>{ex.name}</span>
+                                <span style={{ fontSize: '0.7rem', fontWeight: 600, color: 'rgba(255,255,255,0.45)' }}>{ex.val}</span>
                             </div>
                         ))}
                     </div>

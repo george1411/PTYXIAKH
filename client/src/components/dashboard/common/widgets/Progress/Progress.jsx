@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import {
-    LineChart, Line, BarChart, Bar, XAxis, YAxis, Tooltip,
+    LineChart, Line, AreaChart, Area, BarChart, Bar, XAxis, YAxis, Tooltip,
     ResponsiveContainer, CartesianGrid, ReferenceLine
 } from 'recharts';
 import axios from 'axios';
@@ -138,7 +138,13 @@ const WeightHistory = () => {
                     </div>
                     <div className="progress-chart-container">
                         <ResponsiveContainer width="100%" height="100%">
-                            <LineChart data={chartData}>
+                            <AreaChart data={chartData}>
+                                <defs>
+                                    <linearGradient id="weightGradient" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="0%" stopColor="#818CF8" stopOpacity={0.25} />
+                                        <stop offset="100%" stopColor="#818CF8" stopOpacity={0} />
+                                    </linearGradient>
+                                </defs>
                                 <CartesianGrid stroke="rgba(255,255,255,0.05)" strokeDasharray="0" vertical={false} />
                                 <XAxis dataKey="date" tick={{ fontSize: 11, fill: '#555' }} tickLine={false} axisLine={false} interval="preserveStartEnd" />
                                 <YAxis
@@ -157,20 +163,20 @@ const WeightHistory = () => {
                                 <Tooltip
                                     contentStyle={{ background: '#1a1a1a', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 10, boxShadow: '0 4px 20px rgba(0,0,0,0.5)' }}
                                     labelStyle={{ color: '#888', fontSize: 12 }}
-                                    itemStyle={{ color: '#e0e0e0' }}
+                                    itemStyle={{ color: '#a5b4fc' }}
                                     formatter={(v) => [`${v} kg`, 'Weight']}
                                 />
-                                <Line type="monotone" dataKey="weight" stroke="#e0e0e0" strokeWidth={2.5} dot={{ r: 3, fill: '#111', stroke: '#e0e0e0', strokeWidth: 2 }} activeDot={{ r: 5, fill: '#fff' }} />
+                                <Area type="monotone" dataKey="weight" stroke="#818CF8" strokeWidth={2.5} fill="url(#weightGradient)" dot={{ r: 3, fill: '#111', stroke: '#818CF8', strokeWidth: 2 }} activeDot={{ r: 5, fill: '#a5b4fc' }} />
                                 {weightGoal && (
                                     <ReferenceLine
                                         y={weightGoal}
-                                        stroke="#888"
+                                        stroke="#818CF8"
                                         strokeDasharray="6 4"
                                         strokeWidth={1.5}
-                                        label={{ value: `${weightGoal}kg goal`, position: 'right', fill: '#888', fontSize: 11, fontWeight: 700 }}
+                                        label={{ value: `${weightGoal}kg goal`, position: 'right', fill: '#818CF8', fontSize: 11, fontWeight: 700 }}
                                     />
                                 )}
-                            </LineChart>
+                            </AreaChart>
                         </ResponsiveContainer>
                     </div>
                 </>
@@ -373,7 +379,7 @@ export const ConsistencyCalendar = () => {
                     <div className="progress-heatmap-legend">
                         <span className="progress-heatmap-legend-text">Less</span>
                         <div className="progress-heatmap-legend-cell" style={{ background: '#2a2a2a' }} />
-                        <div className="progress-heatmap-legend-cell" style={{ background: '#e0e0e0' }} />
+                        <div className="progress-heatmap-legend-cell" style={{ background: '#818CF8' }} />
                         <span className="progress-heatmap-legend-text">More</span>
                     </div>
                 </div>
@@ -579,10 +585,10 @@ export const WeightPrediction = () => {
 
 // ─── BMI Calculator ──────────────────────────────────────────
 const BMI_CATEGORIES = [
-    { label: 'Underweight', range: [0, 18.5], color: '#444', tip: 'Consider increasing your calorie intake with nutrient-dense foods.' },
-    { label: 'Normal', range: [18.5, 25], color: '#555', tip: 'Great job! Maintain your healthy lifestyle.' },
-    { label: 'Overweight', range: [25, 30], color: '#666', tip: 'Small changes in diet and activity can make a big difference.' },
-    { label: 'Obese', range: [30, 100], color: '#888', tip: 'Consult with your trainer for a personalized plan.' },
+    { label: 'Underweight', range: [0, 18.5], color: '#60a5fa', tip: 'Consider increasing your calorie intake with nutrient-dense foods.' },
+    { label: 'Normal', range: [18.5, 25], color: '#818CF8', tip: 'Great job! Maintain your healthy lifestyle.' },
+    { label: 'Overweight', range: [25, 30], color: '#a78bfa', tip: 'Small changes in diet and activity can make a big difference.' },
+    { label: 'Obese', range: [30, 100], color: '#c084fc', tip: 'Consult with your trainer for a personalized plan.' },
 ];
 
 export const BMICalculator = () => {
@@ -694,8 +700,8 @@ export const BMICalculator = () => {
                 {/* Needle */}
                 {bmi !== null && (
                     <>
-                        <line x1={cx} y1={cy} x2={nx} y2={ny} stroke="#e0e0e0" strokeWidth="2.5" strokeLinecap="round" />
-                        <circle cx={cx} cy={cy} r="5" fill="#e0e0e0" />
+                        <line x1={cx} y1={cy} x2={nx} y2={ny} stroke="#a5b4fc" strokeWidth="2.5" strokeLinecap="round" />
+                        <circle cx={cx} cy={cy} r="5" fill="#818CF8" />
                         <circle cx={cx} cy={cy} r="2.5" fill="#111" />
                     </>
                 )}

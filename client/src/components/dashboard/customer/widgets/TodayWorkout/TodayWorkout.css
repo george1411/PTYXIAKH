@@ -28,19 +28,19 @@
 
 @keyframes tw-spin { to { transform: rotate(360deg); } }
 
-/* ─── Top row: day + date ───────────────────────────────────── */
+/* ─── Top row: day + done badge ────────────────────────────── */
 .tw-top-row {
     display: flex;
     align-items: center;
-    justify-content: center;
-    margin-bottom: 1rem;
+    justify-content: space-between;
+    margin-bottom: 4px;
 }
 
 .tw-day-label {
-    font-size: 0.72rem;
+    font-size: 0.65rem;
     font-weight: 700;
-    letter-spacing: 0.1em;
-    color: #6b7280;
+    letter-spacing: 0.12em;
+    color: #a5b4fc;
 }
 
 .tw-date-badge {
@@ -57,29 +57,13 @@
 }
 
 /* ─── Workout title ─────────────────────────────────────────── */
-.tw-title-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 8px;
-    margin-bottom: 1rem;
-}
-
 .tw-workout-title {
-    font-size: 1.6rem;
-    font-weight: 900;
-    color: #ffffff;
-    margin: 0;
-    letter-spacing: 0.01em;
-    line-height: 1.1;
-    text-align: center;
-}
-
-.tw-workout-name {
-    font-size: 0.95rem;
-    font-weight: 700;
-    color: #9ca3af;
-    margin: 0;
+    font-size: 1.4rem;
+    font-weight: 800;
+    color: #f0f0f0;
+    margin: 0 0 14px 0;
+    letter-spacing: -0.01em;
+    line-height: 1.2;
 }
 
 .tw-done-badge {
@@ -107,7 +91,7 @@
 .tw-exercises {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 12px;
     flex: 1;
 }
 
@@ -116,27 +100,24 @@
     align-items: center;
     justify-content: space-between;
     gap: 12px;
-    padding: 10px 14px;
+    padding: 8px 12px;
     background: #1a1a1a;
     border-radius: 10px;
 }
 
-.tw-ex-name {
-    font-size: 0.88rem;
+.tw-ex-header {
+    font-size: 0.8rem;
     font-weight: 700;
-    color: #ffffff;
+    color: #f0f0f0;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
 }
 
 .tw-ex-badge {
-    font-size: 0.78rem;
+    font-size: 0.72rem;
     font-weight: 600;
-    color: #d1d5db;
-    background: #252525;
-    border-radius: 8px;
-    padding: 5px 12px;
+    color: rgba(255,255,255,0.5);
     white-space: nowrap;
     flex-shrink: 0;
 }
@@ -173,24 +154,3 @@
     max-width: 220px;
 }
 
-/* ─── Start button ──────────────────────────────────────────── */
-.tw-start-btn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    width: 100%;
-    padding: 11px;
-    background: #ffffff;
-    color: #111111;
-    border: none;
-    border-radius: 10px;
-    font-size: 0.85rem;
-    font-weight: 700;
-    cursor: pointer;
-    margin-top: 1rem;
-    transition: background 0.15s, transform 0.1s;
-}
-
-.tw-start-btn:hover  { background: #e5e7eb; }
-.tw-start-btn:active { transform: scale(0.98); }

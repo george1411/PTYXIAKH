@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Clock, Play, CheckCircle2 } from 'lucide-react';
+import { Clock, CheckCircle2 } from 'lucide-react';
 import axios from 'axios';
 import './TodayWorkout.css';
 
@@ -53,26 +53,20 @@ const TodayWorkout = ({ onNavigate }) => {
             ) : (
                 <>
                     <div className="tw-top-row">
-                        <h2 className="tw-workout-title">Today's Workout</h2>
+                        <span className="tw-day-label">TODAY'S WORKOUT</span>
+                        {logged && <span className="tw-done-badge"><CheckCircle2 size={13} /> Done</span>}
                     </div>
-                    <div className="tw-divider" />
 
-                    <div className="tw-title-row">
-                        <h3 className="tw-workout-name">{workout.name?.toUpperCase()}</h3>
-                        {logged && (
-                            <span className="tw-done-badge"><CheckCircle2 size={13} /> Done</span>
-                        )}
-                    </div>
+                    <h2 className="tw-workout-title">{workout.name?.toUpperCase()}</h2>
 
                     <div className="tw-divider" />
 
                     <div className="tw-exercises">
                         {workout.exercises?.slice(0, 6).map((ex, i) => (
                             <div key={i} className="tw-exercise-row">
-                                <span className="tw-ex-name">{ex.exerciseName}</span>
+                                <span className="tw-ex-header">{ex.exerciseName}</span>
                                 <span className="tw-ex-badge">
-                                    {ex.sets || 3} sets × {ex.reps || '—'} reps
-                                    {ex.weight ? ` × ${ex.weight} kg` : ''}
+                                    {ex.sets || 1} × {ex.weight ? `${ex.weight}kg × ` : ''}{ex.reps || '—'}
                                 </span>
                             </div>
                         ))}
@@ -80,11 +74,6 @@ const TodayWorkout = ({ onNavigate }) => {
                             <div className="tw-more">+{workout.exercises.length - 6} more</div>
                         )}
                     </div>
-
-                    <button className="tw-start-btn" onClick={() => onNavigate('workout')}>
-                        <Play size={15} />
-                        {logged ? 'View Workout' : 'Start Workout'}
-                    </button>
                 </>
             )}
         </div>

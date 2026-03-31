@@ -223,7 +223,7 @@
     right: 2px;
     border-radius: 6px;
     padding: 6px 8px;
-    color: #fff;
+    color: #000;
     overflow: hidden;
     cursor: pointer;
     z-index: 2;
@@ -506,17 +506,22 @@
     display: flex;
     flex-direction: column;
     padding: 16px 14px 14px;
-    border-radius: 16px;
+    border-radius: 20px;
     flex: 1;
     min-width: 0;
     background: #111111;
-    border: 1px solid #1e1e1e;
-    transition: transform 0.2s;
+    border: 1px solid rgba(255,255,255,0.07);
+    transition: border-color 0.2s, box-shadow 0.2s;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+}
+
+.schedule-card:hover {
+    border-color: rgba(255,255,255,0.12);
 }
 
 .schedule-card.is-today {
     background: #161616;
-    border-color: #2a2a2a;
+    border-color: rgba(255,255,255,0.1);
 }
 
 /* ─── Card header: day label + dot ───────────────────────── */
@@ -531,25 +536,26 @@
     font-size: 10px;
     font-weight: 700;
     letter-spacing: 0.18em;
-    color: #aaa;
+    color: #818CF8;
 }
 
-.schedule-card.is-today .card-label { color: #ccc; }
+.schedule-card.is-today .card-label { color: #a5b4fc; }
 
 .today-indicator {
     width: 7px;
     height: 7px;
     border-radius: 50%;
-    background: #e0e0e0;
+    background: #818CF8;
 }
 
 /* ─── Workout name ────────────────────────────────────────── */
 .card-workout-name {
-    font-size: 1.25rem;
+    font-size: 1.2rem;
     font-weight: 800;
-    color: #e8e8e8;
+    color: #f0f0f0;
     line-height: 1.2;
-    margin-bottom: 10px;
+    margin-bottom: 12px;
+    letter-spacing: -0.01em;
 }
 
 .schedule-card.is-today .card-workout-name { color: #ffffff; }
@@ -563,11 +569,11 @@
 /* ─── Divider ─────────────────────────────────────────────── */
 .card-divider {
     height: 1px;
-    background: #1e1e1e;
+    background: rgba(255,255,255,0.05);
     margin-bottom: 10px;
 }
 
-.schedule-card.is-today .card-divider { background: #2a2a2a; }
+.schedule-card.is-today .card-divider { background: rgba(129,140,248,0.15); }
 
 /* ─── Exercise list ───────────────────────────────────────── */
 .card-exercises {
@@ -581,17 +587,21 @@
     align-items: center;
     justify-content: space-between;
     gap: 8px;
-    padding: 7px 10px;
-    background: #181818;
-    border-radius: 8px;
+    padding: 7px 12px;
+    background: #1a1a1a;
+    border-radius: 10px;
+    border: 1px solid rgba(255,255,255,0.04);
 }
 
-.schedule-card.is-today .card-exercise-row { background: #1e1e1e; }
+.schedule-card.is-today .card-exercise-row {
+    background: #1e1e28;
+    border-color: rgba(129,140,248,0.08);
+}
 
 .card-ex-name {
-    font-size: 0.78rem;
-    font-weight: 700;
-    color: #d0d0d0;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: rgba(255,255,255,0.7);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -602,12 +612,12 @@
 .card-ex-badge {
     font-size: 0.7rem;
     font-weight: 600;
-    color: #555;
+    color: rgba(255,255,255,0.35);
     white-space: nowrap;
     flex-shrink: 0;
 }
 
-.schedule-card.is-today .card-ex-badge { color: #777; }
+.schedule-card.is-today .card-ex-badge { color: rgba(165,180,252,0.6); }
 
 .card-ex-more {
     font-size: 0.7rem;
