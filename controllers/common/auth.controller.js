@@ -46,7 +46,8 @@ export const signUp = async (req, res, next) => {
     const t = await sequelize.transaction();
 
     try {
-        const { name, email, password, role, gender, height, weight } = req.body;
+        const { name, email, password, role, gender: genderRaw, height, weight } = req.body;
+        const gender = genderRaw === 'male' ? 'M' : genderRaw === 'female' ? 'F' : genderRaw || null;
 
         // Check if user exists
         const existingUsers = await sequelize.query(
