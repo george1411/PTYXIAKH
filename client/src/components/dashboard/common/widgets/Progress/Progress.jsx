@@ -198,11 +198,11 @@ const ExercisePRs = () => {
             .finally(() => setLoading(false));
     }, []);
 
-    const getRankClass = (i) => {
-        if (i === 0) return 'gold';
-        if (i === 1) return 'silver';
-        if (i === 2) return 'bronze';
-        return 'default';
+    const getRankBadge = (i) => {
+        if (i === 0) return { label: '1', class: 'gold' };
+        if (i === 1) return { label: '2', class: 'silver' };
+        if (i === 2) return { label: '3', class: 'bronze' };
+        return null;
     };
 
     const parseMuscles = (muscles) => {
@@ -228,24 +228,29 @@ const ExercisePRs = () => {
                     <p>No PRs yet — start logging weights!</p>
                 </div>
             ) : (
-                <div className="progress-pr-list">
-                    {prs.map((pr, i) => (
-                        <div key={pr.exercise} className="progress-pr-item">
-                            <div className={`progress-pr-rank ${getRankClass(i)}`}>
-                                {i + 1}
-                            </div>
-                            <div className="progress-pr-info">
-                                <div className="progress-pr-exercise">{pr.exercise}</div>
-                                <div className="progress-pr-muscles">{parseMuscles(pr.muscles)}</div>
-                            </div>
-                            <div className="progress-pr-weight">
-                                <div className="progress-pr-kg">{pr.maxWeight} kg</div>
-                                {pr.achievedAt && (
-                                    <div className="progress-pr-date">
-                                        {new Date(pr.achievedAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
+                <div className="progress-pr-grid">
+                    {[prs.slice(0, 4), prs.slice(4, 8)].map((col, colIdx) => (
+                        <div key={colIdx} className="progress-pr-col">
+                            {col.map((pr, j) => {
+                                const i = colIdx * 4 + j;
+                                const badge = getRankBadge(i);
+                                return (
+                                    <div key={pr.exercise} className="progress-pr-item">
+                                        <div className="progress-pr-item-left">
+                                            {badge ? (
+                                                <span className={`progress-pr-badge ${badge.class}`}>{badge.label}</span>
+                                            ) : (
+                                                <span className="progress-pr-num">{i + 1}</span>
+                                            )}
+                                            <div className="progress-pr-info">
+                                                <div className="progress-pr-exercise">{pr.exercise}</div>
+                                                <div className="progress-pr-muscles">{parseMuscles(pr.muscles)}</div>
+                                            </div>
+                                        </div>
+                                        <div className="progress-pr-kg">{pr.maxWeight} kg</div>
                                     </div>
-                                )}
-                            </div>
+                                );
+                            })}
                         </div>
                     ))}
                 </div>
