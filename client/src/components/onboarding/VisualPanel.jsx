@@ -7,7 +7,7 @@ export default function VisualPanel() {
                 <div style={{
                     position: 'absolute', top: '50%', left: '50%',
                     transform: 'translate(-50%, -50%) rotate(-30deg)',
-                    width: '580px', height: '260px',
+                    width: '640px', height: '420px',
                     background: 'radial-gradient(ellipse, rgba(129,140,248,0.3) 0%, rgba(129,140,248,0.1) 45%, transparent 70%)',
                     pointerEvents: 'none'
                 }} />
