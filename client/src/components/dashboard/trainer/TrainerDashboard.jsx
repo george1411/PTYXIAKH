@@ -120,7 +120,7 @@ const NotificationBell = ({ onNavigateToMessages }) => {
 };
 
 const TrainerDashboard = ({ user, onLogout, onUserUpdate }) => {
-    const [activeTab, setActiveTab] = useState('overview');
+    const [activeTab, setActiveTab] = useState('clients');
 
     return (
         <div className="flex min-h-screen font-sans overflow-hidden" style={{ background: '#0a0a0a', color: '#f0f0f0' }}>

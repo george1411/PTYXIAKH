@@ -22,10 +22,7 @@ const TrainerSidebar = ({ activeTab = 'overview', onNavigate, onLogout, user }) 
     const menuRef = useRef(null);
 
     const navItems = [
-        { id: 'overview', label: 'Overview' },
-        { id: 'schedule', label: 'Calendar' },
         { id: 'clients', label: 'Clients' },
-        { id: 'profile', label: 'My Profile' },
     ];
 
     useEffect(() => {
