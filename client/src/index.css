@@ -86,6 +86,11 @@ body {
   min-height: 100vh;
 }
 
+/* Hide scrollbar on onboarding left panel */
+.overflow-y-auto::-webkit-scrollbar {
+  display: none;
+}
+
 @layer utilities {
   .animate-delay-100 {
     animation-delay: 100ms;

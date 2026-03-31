@@ -99,7 +99,7 @@ export const signUp = async (req, res, next) => {
                  VALUES (:userId, :date, :weight, NOW(), NOW())
                  ON DUPLICATE KEY UPDATE weight = :weight`,
                 {
-                    replacements: { userId, date: today, weight: parseFloat(weight) },
+                    replacements: { userId, date: today, weight: Math.round(parseFloat(weight)) },
                     type: QueryTypes.INSERT,
                     transaction: t
                 }

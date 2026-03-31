@@ -68,12 +68,12 @@ function App() {
   }
 
   return (
-    <div className="flex w-full font-sans min-h-screen" style={{ background: '#0a0a0a', color: '#f0f0f0' }}>
+    <div className="flex w-full font-sans" style={{ background: '#0a0a0a', color: '#f0f0f0', height: '100vh', overflow: 'hidden' }}>
       {/* LEFT SPLIT - Interactive */}
-      <div className="w-full lg:w-1/2 relative flex flex-col z-20 overflow-y-auto custom-scrollbar" style={{ borderRight: '1px solid rgba(255,255,255,0.06)' }}>
+      <div className="w-full lg:w-1/2 relative flex flex-col z-20 overflow-y-auto" style={{ borderRight: '1px solid rgba(255,255,255,0.06)', scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
         <Navbar onLogin={() => setScreen(3)} />
 
-        <div className="flex-1 flex flex-col min-h-[600px]">
+        <div className="flex-1 flex flex-col">
           {screen === 0 && <Hero onNext={() => setScreen(2)} />}
 
           {screen === 2 && (
