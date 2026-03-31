@@ -42,7 +42,10 @@
       "Bash(grep -r \"fitness-regression\\\\|PREDICTION\" /c/Users/georg/Downloads/PTYXIAKH --include=\"*.js\" --include=\"*.jsx\" ! -path \"*/node_modules/*\" ! -path \"*/.git/*\")",
       "Bash(grep -r \"UserStat\" /c/Users/georg/Downloads/PTYXIAKH --include=\"*.js\" --include=\"*.jsx\" ! -path \"*/node_modules/*\" ! -path \"*/.git/*\")",
       "Bash(grep -r \"^[[:space:]]*//[[:space:]]*app.use\\\\|^[[:space:]]*//[[:space:]]*import\" /c/Users/georg/Downloads/PTYXIAKH/app.js)",
-      "Bash(ls -lh /c/Users/georg/Downloads/PTYXIAKH/*.js)"
+      "Bash(ls -lh /c/Users/georg/Downloads/PTYXIAKH/*.js)",
+      "Bash(cat /c/Users/georg/Downloads/PTYXIAKH/config/*.js)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)"
     ]
   }
 }

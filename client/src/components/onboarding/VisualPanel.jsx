@@ -1,15 +1,29 @@
 export default function VisualPanel() {
     return (
         <div style={{ background: '#0a0a0a', display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%', height: '100%', overflow: 'hidden' }}>
-            <div className="animate-fade-in" style={{ position: 'relative', width: '500px', height: '520px' }}>
+            <div className="animate-fade-in" style={{ position: 'relative', width: '500px', height: '520px', transform: 'scale(1.1)', transformOrigin: 'left center' }}>
 
-                {/* Subtle glow */}
+                {/* Main deep indigo/purple base glow */}
                 <div style={{
                     position: 'absolute', top: '50%', left: '50%',
-                    transform: 'translate(-50%, -50%) rotate(-30deg)',
-                    width: '640px', height: '420px',
-                    background: 'radial-gradient(ellipse, rgba(129,140,248,0.3) 0%, rgba(129,140,248,0.1) 45%, transparent 70%)',
-                    pointerEvents: 'none'
+                    transform: 'translate(-50%, -50%)',
+                    width: '380px', height: '380px',
+                    background: 'radial-gradient(circle, rgba(99,102,241,0.4) 0%, rgba(147,51,234,0.4) 100%)',
+                    filter: 'blur(90px)',
+                    borderRadius: '50%',
+                    pointerEvents: 'none',
+                    mixBlendMode: 'screen',
+                }} />
+                {/* Bright blue accent glow — offset top-right */}
+                <div style={{
+                    position: 'absolute', top: '25%', left: '65%',
+                    transform: 'translate(-50%, -50%)',
+                    width: '240px', height: '240px',
+                    background: 'rgba(129,140,248,0.3)',
+                    filter: 'blur(70px)',
+                    borderRadius: '50%',
+                    pointerEvents: 'none',
+                    mixBlendMode: 'screen',
                 }} />
 
                 {/* Card 1 — Weight History (bottom-left) */}
