@@ -12,7 +12,7 @@ const Toast = ({ message, type, onClear }) => {
 };
 
 // ─── Profile Section ─────────────────────────────────────────
-const ProfileSection = ({ user, onUpdate }) => {
+const ProfileSection = ({ user, onUpdate, isTrainer = false }) => {
     const [name, setName] = useState(user?.name || '');
     const [email, setEmail] = useState(user?.email || '');
     const [age, setAge] = useState(user?.age || '');
@@ -116,10 +116,12 @@ const ProfileSection = ({ user, onUpdate }) => {
                             <option value="F">Female</option>
                         </select>
                     </div>
-                    <div className="settings-field">
-                        <label className="settings-label">Height (cm)</label>
-                        <input className="settings-input" type="number" value={height} onChange={e => setHeight(e.target.value)} placeholder="e.g. 175" min="100" max="250" step="0.1" />
-                    </div>
+                    {!isTrainer && (
+                        <div className="settings-field">
+                            <label className="settings-label">Height (cm)</label>
+                            <input className="settings-input" type="number" value={height} onChange={e => setHeight(e.target.value)} placeholder="e.g. 175" min="100" max="250" step="0.1" />
+                        </div>
+                    )}
                 </div>
                 <button className="settings-btn settings-btn-primary" onClick={handleSave} disabled={saving}>
                     <Check size={16} /> {saving ? 'Saving...' : 'Save Changes'}
@@ -369,8 +371,8 @@ const Settings = ({ user, onLogout, onUserUpdate, isTrainer = false }) => {
                 <h2>Settings</h2>
             </div>
 
-            <ProfileSection user={user} onUpdate={u => { if (onUserUpdate) onUserUpdate(u); }} />
-            <GoalsSection user={user} />
+            <ProfileSection user={user} onUpdate={u => { if (onUserUpdate) onUserUpdate(u); }} isTrainer={isTrainer} />
+            {!isTrainer && <GoalsSection user={user} />}
             {!isTrainer && <TrainerSection user={user} />}
             <PasswordSection />
             <DangerSection onLogout={onLogout} />
