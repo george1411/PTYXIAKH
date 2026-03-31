@@ -27,7 +27,14 @@ export default function SignIn({ onNavigateHome, onBack, onSignUp, onLoginSucces
                 onLoginSuccess(response.data.data.user);
             }
         } catch (err) {
-            setError(err.response?.data?.message || err.message || 'An error occurred');
+            const status = err.response?.status;
+            if (status === 404) {
+                setError('No account found with this email. Please sign up first.');
+            } else if (status === 401) {
+                setError('Incorrect password. Please try again.');
+            } else {
+                setError(err.response?.data?.message || 'Something went wrong. Please try again.');
+            }
         } finally {
             setLoading(false);
         }
