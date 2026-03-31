@@ -1,8 +1,6 @@
 export default function Navbar({ onLogin }) {
     return (
-        <nav className="absolute top-0 left-0 w-full z-50 p-6 md:p-10 flex justify-between items-center"
-            style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}
-        >
+        <nav className="absolute top-0 left-0 w-full z-50 p-6 md:p-10 flex justify-between items-center">
             <div className="flex items-center gap-3">
                 <span className="font-bold text-2xl tracking-tight" style={{ color: '#f0f0f0' }}>Gym<span style={{ color: '#818CF8' }}>Lit</span></span>
             </div>

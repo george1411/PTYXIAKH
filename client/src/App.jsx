@@ -70,7 +70,7 @@ function App() {
   return (
     <div className="flex w-full font-sans" style={{ background: '#0a0a0a', color: '#f0f0f0', height: '100vh', overflow: 'hidden' }}>
       {/* LEFT SPLIT - Interactive */}
-      <div className="w-full lg:w-1/2 relative flex flex-col z-20 overflow-y-auto" style={{ borderRight: '1px solid rgba(255,255,255,0.06)', scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+      <div className="w-full lg:w-1/2 relative flex flex-col z-20 overflow-y-auto" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
         <Navbar onLogin={() => setScreen(3)} />
 
         <div className="flex-1 flex flex-col">
