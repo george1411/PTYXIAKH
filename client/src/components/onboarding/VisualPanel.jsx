@@ -20,7 +20,7 @@ const FEATURES = [
 
 export default function VisualPanel() {
     return (
-        <div style={{ background: '#111111', display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%', height: '100%' }}>
+        <div style={{ background: '#0a0a0a', display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%', height: '100%' }}>
             <div className="animate-fade-in" style={{ width: '360px' }}>
 
                 {/* Header */}
@@ -42,15 +42,15 @@ export default function VisualPanel() {
                                 key={idx}
                                 className="p-5 rounded-2xl flex gap-5 items-start cursor-default transition-all duration-200"
                                 style={{
-                                    background: '#0a0a0a',
+                                    background: '#1a1a1a',
                                     border: '1px solid rgba(255,255,255,0.08)',
                                 }}
                                 onMouseEnter={e => {
-                                    e.currentTarget.style.background = '#161616';
+                                    e.currentTarget.style.background = '#222222';
                                     e.currentTarget.style.borderColor = 'rgba(165,180,252,0.25)';
                                 }}
                                 onMouseLeave={e => {
-                                    e.currentTarget.style.background = '#0a0a0a';
+                                    e.currentTarget.style.background = '#1a1a1a';
                                     e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)';
                                 }}
                             >
@@ -64,7 +64,7 @@ export default function VisualPanel() {
                                     <h3 className="font-bold mb-2" style={{ fontSize: '0.95rem', color: '#f0f0f0' }}>{feature.title}</h3>
                                     <ul className="flex flex-col gap-1">
                                         {feature.points.map((point, pIdx) => (
-                                            <li key={pIdx} className="flex items-center gap-2" style={{ fontSize: '0.82rem', color: 'rgba(255,255,255,0.4)' }}>
+                                            <li key={pIdx} className="flex items-center gap-2" style={{ fontSize: '0.82rem', color: 'rgba(255,255,255,0.75)' }}>
                                                 <span style={{ width: 4, height: 4, borderRadius: '50%', background: '#a5b4fc', opacity: 0.5, flexShrink: 0, display: 'inline-block' }} />
                                                 {point}
                                             </li>

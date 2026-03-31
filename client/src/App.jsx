@@ -96,7 +96,7 @@ function App() {
       </div>
 
       {/* RIGHT SPLIT - Visual */}
-      <div className="hidden lg:flex lg:w-1/2 relative z-10 sticky top-0 h-screen" style={{ background: '#111111', alignItems: 'center', justifyContent: 'center' }}>
+      <div className="hidden lg:flex lg:w-1/2 relative z-10 sticky top-0 h-screen" style={{ background: '#0a0a0a', alignItems: 'center', justifyContent: 'center' }}>
         <VisualPanel />
       </div>
     </div>
