@@ -6,9 +6,9 @@ export default function VisualPanel() {
                 {/* Subtle glow */}
                 <div style={{
                     position: 'absolute', top: '50%', left: '50%',
-                    transform: 'translate(-50%, -50%)',
-                    width: '480px', height: '480px',
-                    background: 'radial-gradient(circle, rgba(129,140,248,0.35) 0%, rgba(129,140,248,0.12) 40%, transparent 70%)',
+                    transform: 'translate(-50%, -50%) rotate(-30deg)',
+                    width: '580px', height: '260px',
+                    background: 'radial-gradient(ellipse, rgba(129,140,248,0.3) 0%, rgba(129,140,248,0.1) 45%, transparent 70%)',
                     pointerEvents: 'none'
                 }} />
 
