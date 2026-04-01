@@ -24,6 +24,17 @@ const ProfileSection = ({ user, onUpdate, isTrainer = false }) => {
     const [uploadingAvatar, setUploadingAvatar] = useState(false);
     const avatarInputRef = useRef(null);
 
+    useEffect(() => {
+        if (user) {
+            setName(user.name || '');
+            setEmail(user.email || '');
+            setAge(user.age || '');
+            setGender(user.gender || '');
+            setHeight(user.height || '');
+            setAvatarPreview(user.profileImage || null);
+        }
+    }, [user?.id]);
+
     const handleAvatarChange = async (e) => {
         const file = e.target.files[0];
         if (!file) return;
