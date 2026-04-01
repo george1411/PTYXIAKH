@@ -10,9 +10,10 @@ const TodayWorkout = ({ onNavigate }) => {
     const [loading, setLoading] = useState(true);
     const [logged, setLogged]   = useState(false);
 
-    const today      = DAYS[new Date().getDay()];
+    const _now       = new Date();
+    const today      = DAYS[_now.getDay()];
     const todayUpper = today.toUpperCase();
-    const todayDate  = new Date().toISOString().split('T')[0];
+    const todayDate  = `${_now.getFullYear()}-${String(_now.getMonth() + 1).padStart(2, '0')}-${String(_now.getDate()).padStart(2, '0')}`;
 
     useEffect(() => {
         const fetch = async () => {
