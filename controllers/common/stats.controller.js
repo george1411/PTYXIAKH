@@ -215,16 +215,26 @@ export const getPredictionBaseline = async (req, res, next) => {
             { replacements: { userId }, type: QueryTypes.SELECT }
         );
 
-        if (!user || !user.age || !user.gender || !user.height) {
-            return res.status(200).json({ success: true, data: null, message: "Profile incomplete" });
-        }
-
         const [latestWeight] = await sequelize.query(
             `SELECT weight FROM WeeklyMeasurements WHERE userId = :userId ORDER BY date DESC LIMIT 1`,
             { replacements: { userId }, type: QueryTypes.SELECT }
         );
 
         const currentWeightKg = latestWeight ? latestWeight.weight : 0;
+
+        // If profile is incomplete for BMR, still return height/weight so UI can pre-fill
+        if (!user || !user.age || !user.gender || !user.height) {
+            return res.status(200).json({
+                success: true,
+                data: {
+                    age: user?.age || null,
+                    gender: user?.gender || null,
+                    height: user?.height || null,
+                    current_weight_kg: currentWeightKg || null,
+                    daily_calories: null
+                }
+            });
+        }
 
         const [avgResult] = await sequelize.query(
             `SELECT AVG(caloriesBurned) as avgCalories
@@ -235,15 +245,6 @@ export const getPredictionBaseline = async (req, res, next) => {
         );
 
         const avgCalories = avgResult?.avgCalories ? Math.round(avgResult.avgCalories) : 2000;
-
-        let bmr = 0;
-        if (currentWeightKg > 0) {
-            if (user.gender === 'M') {
-                bmr = Math.round(10 * currentWeightKg + 6.25 * user.height - 5 * user.age + 5);
-            } else {
-                bmr = Math.round(10 * currentWeightKg + 6.25 * user.height - 5 * user.age - 161);
-            }
-        }
 
         res.status(200).json({
             success: true,
