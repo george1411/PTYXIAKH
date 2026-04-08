@@ -1,7 +1,6 @@
 /* ─── Progress Page Layout ─────────────────────────────────── */
 .progress-page {
     width: 100%;
-    height: 100%;
     display: flex;
     flex-direction: column;
 }
@@ -30,10 +29,8 @@
 .progress-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    grid-template-rows: 1fr 1fr;
+    grid-auto-rows: minmax(400px, auto);
     gap: 16px;
-    flex: 1;
-    min-height: 0;
 }
 
 @media (max-width: 900px) {
@@ -721,6 +718,8 @@
 .bmi-card {
     border: 1px solid rgba(255,255,255,0.08);
     background: #111111;
+    overflow: visible;
+    height: auto;
 }
 
 .bmi-inputs {

@@ -33,6 +33,8 @@ const connectToDatabase = async () => {
         await addColumnIfNotExists('Workouts', 'day', "ENUM('Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday') NULL");
         await addColumnIfNotExists('ScheduleEvents', 'date', 'DATE NULL');
         await addColumnIfNotExists('DailyLogs', 'steps', 'INT NULL DEFAULT 0');
+        await addColumnIfNotExists('Users', 'resetPasswordCode', 'VARCHAR(255) NULL');
+        await addColumnIfNotExists('Users', 'resetPasswordExpiry', 'DATETIME NULL');
 
         // Sync models first so base tables (Users, Workouts, etc.) exist
         await sequelize.sync();
@@ -61,6 +63,20 @@ const connectToDatabase = async () => {
                 createdAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
                 updatedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
                 FOREIGN KEY (trainerId) REFERENCES Users(id) ON DELETE CASCADE
+            )
+        `);
+
+        // Create FitbitTokens table if not exists
+        await sequelize.query(`
+            CREATE TABLE IF NOT EXISTS FitbitTokens (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                userId INT NOT NULL UNIQUE,
+                accessToken TEXT NOT NULL,
+                refreshToken TEXT NOT NULL,
+                expiresAt DATETIME NOT NULL,
+                createdAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                updatedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                FOREIGN KEY (userId) REFERENCES Users(id) ON DELETE CASCADE
             )
         `);
     } catch (error) {

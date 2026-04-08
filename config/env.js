@@ -12,5 +12,10 @@ export const {
     JWT_SECRET,
     JWT_EXPIRES_IN,
     ARCJET_ENV,
-    ARCJET_KEY
+    ARCJET_KEY,
+    FITBIT_CLIENT_ID,
+    FITBIT_CLIENT_SECRET,
+    FITBIT_REDIRECT_URI,
+    EMAIL_USER,
+    EMAIL_PASS
 } = process.env;

@@ -17,7 +17,8 @@ const TodayEvents = ({ onNavigate }) => {
     const [loading, setLoading] = useState(true);
 
     const today     = DAYS[new Date().getDay()];
-    const todayDate = new Date().toISOString().split('T')[0];
+    const now = new Date();
+    const todayDate = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
     const todayUpper = today.toUpperCase();
 
     useEffect(() => {
@@ -58,11 +59,9 @@ const TodayEvents = ({ onNavigate }) => {
                 <div className="te-list">
                     {events.map((ev, i) => (
                         <div key={ev.id || i} className="te-event">
-                            <div className="te-dot" style={{ background: COLOR_MAP[ev.color] || '#e0e0e0' }} />
-                            <div className="te-event-info">
-                                <span className="te-event-title">{ev.title}</span>
-                                <span className="te-event-time">{fmt(ev.startTime)} – {fmt(ev.endTime)}</span>
-                            </div>
+                            <span className="te-event-title">{ev.title}</span>
+                            <span className="te-event-sep"> : </span>
+                            <span className="te-event-time">{fmt(ev.startTime)} – {fmt(ev.endTime)}</span>
                         </div>
                     ))}
                 </div>

@@ -45,7 +45,8 @@
       "Bash(ls -lh /c/Users/georg/Downloads/PTYXIAKH/*.js)",
       "Bash(cat /c/Users/georg/Downloads/PTYXIAKH/config/*.js)",
       "Bash(git add:*)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(net start:*)"
     ]
   }
 }

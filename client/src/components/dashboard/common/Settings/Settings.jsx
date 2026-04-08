@@ -324,6 +324,63 @@ const TrainerSection = ({ user }) => {
     );
 };
 
+// ─── Fitbit Connection ────────────────────────────────────────
+const FitbitSection = () => {
+    const [connected, setConnected] = useState(false);
+    const [loading, setLoading] = useState(true);
+    const [toast, setToast] = useState(null);
+
+    useEffect(() => {
+        axios.get('/api/v1/fitbit/status', { withCredentials: true })
+            .then(res => setConnected(res.data.connected))
+            .catch(() => {})
+            .finally(() => setLoading(false));
+    }, []);
+
+    const handleConnect = () => {
+        window.location.href = '/api/v1/fitbit/connect';
+    };
+
+    const handleDisconnect = async () => {
+        try {
+            await axios.delete('/api/v1/fitbit/disconnect', { withCredentials: true });
+            setConnected(false);
+            setToast({ message: 'Fitbit disconnected.', type: 'success' });
+        } catch {
+            setToast({ message: 'Failed to disconnect.', type: 'error' });
+        }
+    };
+
+    return (
+        <div className="settings-section">
+            <div className="settings-section-header">
+                <h3>Fitbit</h3>
+            </div>
+            {toast && <Toast {...toast} onClear={() => setToast(null)} />}
+            {loading ? null : connected ? (
+                <>
+                    <p className="settings-trainer-linked">Your Fitbit account is connected. Steps sync automatically from the Weekly Steps widget.</p>
+                    <div className="settings-fitbit-actions">
+                        <button className="settings-btn settings-btn-primary" onClick={() => { window.location.href = '/api/v1/fitbit/switch'; }}>
+                            Switch Fitbit Account
+                        </button>
+                        <button className="settings-btn settings-btn-danger" onClick={handleDisconnect}>
+                            Disconnect
+                        </button>
+                    </div>
+                </>
+            ) : (
+                <>
+                    <p className="settings-trainer-hint">Connect your Fitbit account to automatically sync your daily steps.</p>
+                    <button className="settings-btn settings-btn-primary" onClick={handleConnect}>
+                        Connect Fitbit
+                    </button>
+                </>
+            )}
+        </div>
+    );
+};
+
 // ─── Danger Zone ─────────────────────────────────────────────
 const DangerSection = ({ onLogout }) => {
     const [showConfirm, setShowConfirm] = useState(false);
@@ -385,6 +442,7 @@ const Settings = ({ user, onLogout, onUserUpdate, isTrainer = false }) => {
             <ProfileSection user={user} onUpdate={u => { if (onUserUpdate) onUserUpdate(u); }} isTrainer={isTrainer} />
             {!isTrainer && <GoalsSection user={user} />}
             {!isTrainer && <TrainerSection user={user} />}
+            {!isTrainer && <FitbitSection />}
             <PasswordSection />
             <DangerSection onLogout={onLogout} />
         </div>

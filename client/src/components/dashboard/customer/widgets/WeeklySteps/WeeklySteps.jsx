@@ -8,8 +8,9 @@ const GOAL = 10000;
 const WeeklySteps = () => {
     const [data, setData] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [inputVal, setInputVal] = useState('');
-    const [saving, setSaving] = useState(false);
+    const [fitbitConnected, setFitbitConnected] = useState(false);
+    const [syncing, setSyncing] = useState(false);
+    const [syncMsg, setSyncMsg] = useState('');
 
     const fetchData = () => {
         axios.get('/api/v1/dailylogs/weekly-steps', { withCredentials: true })
@@ -18,24 +19,69 @@ const WeeklySteps = () => {
             .finally(() => setLoading(false));
     };
 
-    useEffect(() => { fetchData(); }, []);
+    const checkFitbitStatus = () => {
+        axios.get('/api/v1/fitbit/status', { withCredentials: true })
+            .then(res => {
+                setFitbitConnected(res.data.connected);
+                if (res.data.connected) {
+                    axios.post('/api/v1/fitbit/sync', {}, { withCredentials: true })
+                        .then(() => fetchData())
+                        .catch(() => {});
+                }
+            })
+            .catch(() => setFitbitConnected(false));
+    };
+
+    useEffect(() => {
+        fetchData();
+        checkFitbitStatus();
+
+        // Handle redirect back from Fitbit OAuth
+        const params = new URLSearchParams(window.location.search);
+        const fitbitParam = params.get('fitbit');
+        if (fitbitParam === 'connected') {
+            setFitbitConnected(true);
+            setSyncMsg('Fitbit connected!');
+            window.history.replaceState({}, '', window.location.pathname);
+            setTimeout(() => setSyncMsg(''), 3000);
+        } else if (fitbitParam === 'error') {
+            setSyncMsg('Fitbit connection failed. Try again.');
+            window.history.replaceState({}, '', window.location.pathname);
+            setTimeout(() => setSyncMsg(''), 4000);
+        }
+    }, []);
 
     const today = data[data.length - 1];
     const todaySteps = today?.steps || 0;
     const totalWeek = data.reduce((s, d) => s + d.steps, 0);
 
-    const handleSave = async (e) => {
-        e.preventDefault();
-        if (!inputVal) return;
-        setSaving(true);
+    const handleFitbitConnect = () => {
+        window.location.href = '/api/v1/fitbit/connect';
+    };
+
+    const handleFitbitSync = async () => {
+        setSyncing(true);
+        setSyncMsg('');
         try {
-            await axios.post('/api/v1/dailylogs/steps', { steps: parseInt(inputVal) }, { withCredentials: true });
-            setInputVal('');
+            await axios.post('/api/v1/fitbit/sync', {}, { withCredentials: true });
+            setSyncMsg('Synced!');
             fetchData();
         } catch (err) {
-            console.error('Save steps error:', err);
+            setSyncMsg('Sync failed.');
         } finally {
-            setSaving(false);
+            setSyncing(false);
+            setTimeout(() => setSyncMsg(''), 3000);
+        }
+    };
+
+    const handleFitbitDisconnect = async () => {
+        try {
+            await axios.delete('/api/v1/fitbit/disconnect', { withCredentials: true });
+            setFitbitConnected(false);
+            setSyncMsg('Fitbit disconnected.');
+            setTimeout(() => setSyncMsg(''), 3000);
+        } catch (err) {
+            console.error('Disconnect error:', err);
         }
     };
 
@@ -45,21 +91,16 @@ const WeeklySteps = () => {
                 <div className="progress-card-title">
                     <h3>Weekly Steps</h3>
                 </div>
-                <form className="ws-log-form" onSubmit={handleSave}>
-                    <input
-                        type="number"
-                        min="0"
-                        max="100000"
-                        placeholder="Today's steps"
-                        value={inputVal}
-                        onChange={e => setInputVal(e.target.value)}
-                        className="ws-log-input"
-                    />
-                    <button type="submit" disabled={saving || !inputVal} className="ws-log-btn">
-                        {saving ? '…' : 'Save'}
-                    </button>
-                </form>
+                <div className="ws-header-actions">
+                    {!fitbitConnected && (
+                        <button className="ws-fitbit-btn ws-connect-btn" onClick={handleFitbitConnect}>
+                            Connect Fitbit
+                        </button>
+                    )}
+                </div>
             </div>
+
+            {syncMsg && <div className="ws-sync-msg">{syncMsg}</div>}
 
             <div className="ws-stats-row">
                 <div className="ws-stat">

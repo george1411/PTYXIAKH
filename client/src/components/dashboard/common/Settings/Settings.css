@@ -372,3 +372,9 @@
     font-size: 12px;
     color: #666;
 }
+
+.settings-fitbit-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}

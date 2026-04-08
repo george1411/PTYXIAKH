@@ -2,7 +2,7 @@ import { useState } from 'react';
 import axios from 'axios';
 import { Mail, Lock, ArrowRight, Loader2, ChevronLeft } from 'lucide-react';
 
-export default function SignIn({ onNavigateHome, onBack, onSignUp, onLoginSuccess }) {
+export default function SignIn({ onNavigateHome, onBack, onSignUp, onLoginSuccess, onForgotPassword }) {
     const [formData, setFormData] = useState({
         email: '',
         password: ''
@@ -93,7 +93,7 @@ export default function SignIn({ onNavigateHome, onBack, onSignUp, onLoginSucces
                         </div>
 
                         <div className="flex items-center text-sm">
-                            <p className="text-gray-400">Lost password? <a href="#" className="text-white underline decoration-white font-semibold hover:text-gray-300 transition-colors">Click here!</a></p>
+                            <p className="text-gray-400">Lost password? <button type="button" onClick={onForgotPassword} className="text-white underline decoration-white font-semibold hover:text-gray-300 transition-colors">Click here!</button></p>
                         </div>
 
                         <div className="pt-2">

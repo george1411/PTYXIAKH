@@ -25,6 +25,7 @@ import trainerRouter from './routes/trainer/trainer.routes.js';
 import mealRouter from './routes/common/meal.routes.js';
 import nutritionRouter from './routes/common/nutrition.routes.js';
 import inviteRouter from './routes/common/invite.routes.js';
+import fitbitRouter from './routes/fitbit.routes.js';
 
 const app = express();
 
@@ -59,6 +60,7 @@ app.use('/api/v1/trainer', trainerRouter);
 app.use('/api/v1/meals', mealRouter);
 app.use('/api/v1/nutrition', nutritionRouter);
 app.use('/api/v1/invite', inviteRouter);
+app.use('/api/v1/fitbit', fitbitRouter);
 
 // Serve React frontend in production
 if (NODE_ENV === 'production') {

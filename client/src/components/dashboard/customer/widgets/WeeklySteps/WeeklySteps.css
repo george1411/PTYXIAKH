@@ -96,3 +96,57 @@
     color: #e0e0e0;
     font-weight: 600;
 }
+
+.ws-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.ws-fitbit-actions {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.ws-fitbit-btn {
+    border-radius: 8px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 4px 10px;
+    cursor: pointer;
+    border: 1px solid;
+    transition: background 0.15s;
+    white-space: nowrap;
+}
+
+.ws-connect-btn {
+    background: rgba(0, 184, 148, 0.1);
+    color: #00b894;
+    border-color: rgba(0, 184, 148, 0.25);
+}
+.ws-connect-btn:hover { background: rgba(0, 184, 148, 0.2); }
+
+.ws-sync-btn {
+    background: rgba(0, 184, 148, 0.1);
+    color: #00b894;
+    border-color: rgba(0, 184, 148, 0.25);
+}
+.ws-sync-btn:hover:not(:disabled) { background: rgba(0, 184, 148, 0.2); }
+.ws-sync-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.ws-disconnect-btn {
+    background: rgba(255, 82, 82, 0.1);
+    color: #ff5252;
+    border-color: rgba(255, 82, 82, 0.2);
+    padding: 4px 8px;
+}
+.ws-disconnect-btn:hover { background: rgba(255, 82, 82, 0.2); }
+
+.ws-sync-msg {
+    font-size: 0.75rem;
+    color: #00b894;
+    margin-bottom: 4px;
+    padding: 0 2px;
+}

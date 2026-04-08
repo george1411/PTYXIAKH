@@ -42,7 +42,10 @@ const Workout = () => {
         return d;
     }, [dayOffset]);
 
-    const viewedDateStr = useMemo(() => viewedDate.toISOString().split('T')[0], [viewedDate]);
+    const viewedDateStr = useMemo(() => {
+        const d = viewedDate;
+        return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    }, [viewedDate]);
     const isToday = dayOffset === 0;
 
     const viewedDayName = useMemo(() => {

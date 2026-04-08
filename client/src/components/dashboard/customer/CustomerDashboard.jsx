@@ -173,7 +173,7 @@ const CustomerDashboard = ({ user, onLogout, onUserUpdate }) => {
                 </header>
 
                 {/* Scrollable Grid Area */}
-                <main className={`flex-1 p-6 lg:p-8 custom-scrollbar bg-[var(--bg)] relative ${activeTab === 'progress' ? 'overflow-hidden' : 'overflow-y-auto'}`}>
+                <main className={`flex-1 p-6 lg:p-8 custom-scrollbar bg-[var(--bg)] relative overflow-y-auto`}>
 
 
                     <div className="max-w-7xl mx-auto relative z-10 h-full">

@@ -4,9 +4,20 @@ import multer from 'multer';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import fs from 'fs';
+import crypto from 'crypto';
+import nodemailer from 'nodemailer';
 import { sequelize } from '../../models/index.js';
 import { QueryTypes } from 'sequelize';
-import { JWT_SECRET, JWT_EXPIRES_IN, NODE_ENV } from '../../config/env.js';
+import { JWT_SECRET, JWT_EXPIRES_IN, NODE_ENV, EMAIL_USER, EMAIL_PASS } from '../../config/env.js';
+
+// ─── Email Transporter ──────────────────────────────────────
+const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+        user: EMAIL_USER,
+        pass: EMAIL_PASS
+    }
+});
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -381,6 +392,101 @@ export const deleteAccount = async (req, res, next) => {
         });
 
         res.status(200).json({ success: true, message: 'Account deleted successfully.' });
+    } catch (error) {
+        next(error);
+    }
+};
+
+// ─── Forgot Password ────────────────────────────────────────
+export const forgotPassword = async (req, res, next) => {
+    try {
+        const { email } = req.body;
+
+        const users = await sequelize.query(
+            `SELECT id, name FROM Users WHERE email = :email LIMIT 1`,
+            { replacements: { email }, type: QueryTypes.SELECT }
+        );
+
+        if (users.length === 0) {
+            const error = new Error('No account found with this email.');
+            error.statusCode = 404;
+            throw error;
+        }
+
+        // Generate 6-digit code
+        const code = crypto.randomInt(100000, 999999).toString();
+        const expiry = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes
+
+        await sequelize.query(
+            `UPDATE Users SET resetPasswordCode = :code, resetPasswordExpiry = :expiry, updatedAt = NOW() WHERE email = :email`,
+            { replacements: { code, expiry, email }, type: QueryTypes.UPDATE }
+        );
+
+        await transporter.sendMail({
+            from: `"GymLit" <${EMAIL_USER}>`,
+            to: email,
+            subject: 'Password Reset Code',
+            html: `
+                <div style="font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto; padding: 32px; background: #0a0a0a; color: #f0f0f0; border-radius: 12px;">
+                    <h2 style="text-align: center; margin-bottom: 8px;">Password Reset</h2>
+                    <p style="text-align: center; color: #888; margin-bottom: 24px;">Hi ${users[0].name}, use the code below to reset your password.</p>
+                    <div style="text-align: center; font-size: 32px; font-weight: bold; letter-spacing: 8px; padding: 16px; background: #1a1a1a; border-radius: 8px; margin-bottom: 24px;">${code}</div>
+                    <p style="text-align: center; color: #888; font-size: 13px;">This code expires in 15 minutes. If you didn't request this, ignore this email.</p>
+                </div>
+            `
+        });
+
+        res.status(200).json({ success: true, message: 'Reset code sent to your email.' });
+    } catch (error) {
+        next(error);
+    }
+};
+
+// ─── Reset Password ─────────────────────────────────────────
+export const resetPassword = async (req, res, next) => {
+    try {
+        const { email, code, newPassword } = req.body;
+
+        if (!newPassword || newPassword.length < 6) {
+            const error = new Error('Password must be at least 6 characters.');
+            error.statusCode = 400;
+            throw error;
+        }
+
+        const users = await sequelize.query(
+            `SELECT id, resetPasswordCode, resetPasswordExpiry FROM Users WHERE email = :email LIMIT 1`,
+            { replacements: { email }, type: QueryTypes.SELECT }
+        );
+
+        if (users.length === 0) {
+            const error = new Error('No account found with this email.');
+            error.statusCode = 404;
+            throw error;
+        }
+
+        const user = users[0];
+
+        if (!user.resetPasswordCode || user.resetPasswordCode !== code) {
+            const error = new Error('Invalid reset code.');
+            error.statusCode = 400;
+            throw error;
+        }
+
+        if (new Date(user.resetPasswordExpiry) < new Date()) {
+            const error = new Error('Reset code has expired. Please request a new one.');
+            error.statusCode = 400;
+            throw error;
+        }
+
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(newPassword, salt);
+
+        await sequelize.query(
+            `UPDATE Users SET password = :password, resetPasswordCode = NULL, resetPasswordExpiry = NULL, updatedAt = NOW() WHERE email = :email`,
+            { replacements: { password: hashedPassword, email }, type: QueryTypes.UPDATE }
+        );
+
+        res.status(200).json({ success: true, message: 'Password reset successfully.' });
     } catch (error) {
         next(error);
     }

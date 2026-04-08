@@ -197,7 +197,7 @@
 
 .cd-schedule-day-body {
     position: relative;
-    height: calc(50px * 18);
+    height: calc(50px * 36);
     /* SLOTS_COUNT * SLOT_HEIGHT */
     cursor: pointer;
 }

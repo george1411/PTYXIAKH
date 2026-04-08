@@ -241,7 +241,7 @@ const Schedule = ({ onNavigate, fullPage, hideTitle }) => {
 
         // Compute specific date for this day in the current week view
         const eventDate = getDateForDay(monday, dayIndex);
-        const dateStr = eventDate.toISOString().split('T')[0]; // YYYY-MM-DD
+        const dateStr = `${eventDate.getFullYear()}-${String(eventDate.getMonth() + 1).padStart(2, '0')}-${String(eventDate.getDate()).padStart(2, '0')}`;
 
         setModalEvent({
             id: null,
@@ -268,7 +268,7 @@ const Schedule = ({ onNavigate, fullPage, hideTitle }) => {
                 // Compute date from day + current week's monday
                 const dayIdx = DAYS.indexOf(data.day);
                 const eventDate = getDateForDay(monday, dayIdx >= 0 ? dayIdx : 0);
-                const dateStr = data.date || eventDate.toISOString().split('T')[0];
+                const dateStr = data.date || `${eventDate.getFullYear()}-${String(eventDate.getMonth() + 1).padStart(2, '0')}-${String(eventDate.getDate()).padStart(2, '0')}`;
 
                 // POST to create
                 const res = await axios.post('/api/v1/schedule', {
@@ -347,7 +347,7 @@ const Schedule = ({ onNavigate, fullPage, hideTitle }) => {
                 <button
                     className="cd-schedule-add-btn"
                     onClick={() => {
-                        const dateStr = monday.toISOString().split('T')[0]; // Monday of current week
+                        const dateStr = `${monday.getFullYear()}-${String(monday.getMonth() + 1).padStart(2, '0')}-${String(monday.getDate()).padStart(2, '0')}`;
                         setModalEvent({
                             id: null, day: 'Monday', start: '09:00', end: '10:00', title: '', color: 'event-1', date: dateStr
                         });
@@ -375,7 +375,7 @@ const Schedule = ({ onNavigate, fullPage, hideTitle }) => {
                     {DAYS.map((day, dayIndex) => {
                         // Compute the date string for this day column
                         const colDate = getDateForDay(monday, dayIndex);
-                        const colDateStr = colDate.toISOString().split('T')[0]; // YYYY-MM-DD
+                        const colDateStr = `${colDate.getFullYear()}-${String(colDate.getMonth() + 1).padStart(2, '0')}-${String(colDate.getDate()).padStart(2, '0')}`;
 
                         // Filter events: workout events always show, user events only if date matches this column's date
                         const dayEvents = events.filter(ev => {

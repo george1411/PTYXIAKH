@@ -4,6 +4,8 @@ import Hero from './components/onboarding/Hero';
 import Signup from './components/onboarding/Signup';
 import { Check } from 'lucide-react';
 import SignIn from './components/SignIn';
+import ForgotPassword from './components/ForgotPassword';
+import ResetPassword from './components/ResetPassword';
 import VisualPanel from './components/onboarding/VisualPanel';
 import axios from 'axios';
 import CustomerDashboard from './components/dashboard/customer/CustomerDashboard';
@@ -16,6 +18,7 @@ function App() {
     goal: null,
     details: null
   });
+  const [resetEmail, setResetEmail] = useState('');
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -92,6 +95,22 @@ function App() {
               onBack={() => setScreen(0)}
               onSignUp={() => setScreen(2)}
               onLoginSuccess={handleLoginSuccess}
+              onForgotPassword={() => setScreen(4)}
+            />
+          )}
+
+          {screen === 4 && (
+            <ForgotPassword
+              onBack={() => setScreen(3)}
+              onCodeSent={(email) => { setResetEmail(email); setScreen(5); }}
+            />
+          )}
+
+          {screen === 5 && (
+            <ResetPassword
+              email={resetEmail}
+              onBack={() => setScreen(4)}
+              onSuccess={() => setScreen(3)}
             />
           )}
         </div>

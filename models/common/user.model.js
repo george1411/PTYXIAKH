@@ -56,6 +56,14 @@ const User = sequelize.define('User', {
             key: 'id'
         }
     },
+    resetPasswordCode: {
+        type: DataTypes.STRING,
+        allowNull: true
+    },
+    resetPasswordExpiry: {
+        type: DataTypes.DATE,
+        allowNull: true
+    },
 }, {
     timestamps: true
 });

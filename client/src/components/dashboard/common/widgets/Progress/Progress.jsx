@@ -281,7 +281,7 @@ export const ConsistencyCalendar = () => {
     const calendarData = useMemo(() => {
         const today = new Date();
         today.setHours(0, 0, 0, 0);
-        const todayStr = today.toISOString().split('T')[0];
+        const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
 
         // Go back ~26 weeks (6 months)
         const startDate = new Date(today);
@@ -307,7 +307,7 @@ export const ConsistencyCalendar = () => {
 
             if (weeks.length === 0) weeks.push([]);
 
-            const dateStr = currentDate.toISOString().split('T')[0];
+            const dateStr = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(currentDate.getDate()).padStart(2, '0')}`;
             const isFuture = currentDate > today;
             const isWorkout = workoutDates.has(dateStr);
 
