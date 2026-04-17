@@ -4,6 +4,7 @@ import TrainerSidebar from './TrainerSidebar';
 import TrainerProfile from './TrainerProfile';
 import TrainerOverview from './TrainerOverview';
 import TrainerClients from './TrainerClients';
+import TrainerPrograms from './TrainerPrograms';
 import Schedule from '../common/widgets/Schedule/Schedule';
 import Settings from '../common/Settings/Settings';
 import CustomerMessages from '../common/Messages/CustomerMessages';
@@ -120,7 +121,7 @@ const NotificationBell = ({ onNavigateToMessages }) => {
 };
 
 const TrainerDashboard = ({ user, onLogout, onUserUpdate }) => {
-    const [activeTab, setActiveTab] = useState('clients');
+    const [activeTab, setActiveTab] = useState('overview');
 
     return (
         <div className="flex min-h-screen font-sans overflow-hidden" style={{ background: '#0a0a0a', color: '#f0f0f0' }}>
@@ -169,6 +170,8 @@ const TrainerDashboard = ({ user, onLogout, onUserUpdate }) => {
                             <TrainerOverview user={user} onNavigate={setActiveTab} />
                         ) : activeTab === 'clients' ? (
                             <TrainerClients />
+                        ) : activeTab === 'programs' ? (
+                            <TrainerPrograms />
                         ) : activeTab === 'profile' ? (
                             <TrainerProfile user={user} />
                         ) : activeTab === 'messages' ? (

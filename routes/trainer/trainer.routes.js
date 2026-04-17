@@ -1,7 +1,7 @@
 import express from 'express';
 import { getTrainerProfile, updateTrainerProfile, uploadCertFile, uploadCert, getTrainerDashboard, listTrainers, getPublicTrainer } from '../../controllers/trainer/trainerProfile.controller.js';
 import { getClients, getClientDetail, getClientProgram, saveClientProgram, deleteClientWorkout } from '../../controllers/trainer/trainerClients.controller.js';
-import { listTemplates, saveTemplate, getTemplate, deleteTemplate } from '../../controllers/trainer/programTemplate.controller.js';
+import { listTemplates, saveTemplate, getTemplate, updateTemplate, deleteTemplate } from '../../controllers/trainer/programTemplate.controller.js';
 import authorize from '../../middlewares/auth.middleware.js';
 
 const trainerRouter = express.Router();
@@ -31,6 +31,7 @@ trainerRouter.delete('/clients/:clientId/program/:workoutId', authorize, deleteC
 trainerRouter.get('/templates',     authorize, requireTrainer, listTemplates);
 trainerRouter.post('/templates',    authorize, requireTrainer, saveTemplate);
 trainerRouter.get('/templates/:id', authorize, requireTrainer, getTemplate);
+trainerRouter.put('/templates/:id', authorize, requireTrainer, updateTemplate);
 trainerRouter.delete('/templates/:id', authorize, requireTrainer, deleteTemplate);
 
 export default trainerRouter;

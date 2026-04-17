@@ -8,6 +8,7 @@ import {
     LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer,
     BarChart, Bar, Legend
 } from 'recharts';
+import * as XLSX from 'xlsx';
 import './TrainerClients.css';
 
 const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
@@ -171,40 +172,97 @@ const ProgramPanel = ({ clientId }) => {
         finally { setLoadingTpls(false); }
     };
 
-    // Export current full program as JSON file
+    // Export current full program as Excel file
     const handleExport = () => {
-        const blob = new Blob([JSON.stringify(program, null, 2)], { type: 'application/json' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `program_client${clientId}.json`;
-        a.click();
-        URL.revokeObjectURL(url);
+        const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+        const wb = XLSX.utils.book_new();
+
+        for (const day of DAYS) {
+            const workout = program.find(w => w.day === day);
+            const rows = [];
+
+            // First row: workout name
+            rows.push({ Exercise: `Workout: ${workout?.name || ''}`, Muscles: '', Sets: '', Reps: '', Weight: '', Notes: '' });
+            rows.push({}); // empty row separator
+
+            if (workout?.exercises?.length) {
+                for (const ex of workout.exercises) {
+                    rows.push({
+                        Exercise: ex.exerciseName || '',
+                        Muscles: ex.targetMuscles || '',
+                        Sets: ex.sets ?? '',
+                        Reps: ex.reps || '',
+                        Weight: ex.weight || '',
+                        Notes: ex.notes || ''
+                    });
+                }
+            }
+
+            const ws = XLSX.utils.json_to_sheet(rows);
+            // Set column widths
+            ws['!cols'] = [
+                { wch: 25 }, { wch: 18 }, { wch: 6 }, { wch: 8 }, { wch: 8 }, { wch: 25 }
+            ];
+            XLSX.utils.book_append_sheet(wb, ws, day);
+        }
+
+        XLSX.writeFile(wb, `program_client${clientId}.xlsx`);
     };
 
-    // Import program from uploaded JSON file and apply to client
+    // Import program from uploaded Excel file and apply to client
     const handleImport = (e) => {
         const file = e.target.files[0];
         if (!file) return;
         const reader = new FileReader();
         reader.onload = async (ev) => {
             try {
-                const days = JSON.parse(ev.target.result);
-                if (!Array.isArray(days)) return alert('Invalid program file.');
-                for (const w of days) {
-                    if (!w.day || !w.name) continue;
-                    await axios.post(
-                        `/api/v1/trainer/clients/${clientId}/program`,
-                        { day: w.day, name: w.name, exercises: w.exercises || [] },
-                        { withCredentials: true }
-                    );
+                const wb = XLSX.read(ev.target.result, { type: 'array' });
+                const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+
+                for (const sheetName of wb.SheetNames) {
+                    const day = DAYS.find(d => d.toLowerCase() === sheetName.toLowerCase());
+                    if (!day) continue;
+
+                    const rows = XLSX.utils.sheet_to_json(wb.Sheets[sheetName], { defval: '' });
+                    if (rows.length === 0) continue;
+
+                    // First row contains workout name as "Workout: Name"
+                    const firstRow = rows[0];
+                    const nameCell = firstRow.Exercise || firstRow.exercise || Object.values(firstRow)[0] || '';
+                    const workoutName = nameCell.replace(/^Workout:\s*/i, '').trim() || day;
+
+                    // Remaining rows (skip first row + empty separator) are exercises
+                    const exercises = [];
+                    for (let i = 1; i < rows.length; i++) {
+                        const r = rows[i];
+                        const exName = r.Exercise || r.exercise || '';
+                        if (!exName || exName.toLowerCase().startsWith('workout:')) continue;
+
+                        exercises.push({
+                            exerciseId: null,
+                            exerciseName: exName,
+                            targetMuscles: r.Muscles || r.muscles || '',
+                            sets: parseInt(r.Sets || r.sets) || 3,
+                            reps: String(r.Reps || r.reps || '10'),
+                            weight: String(r.Weight || r.weight || ''),
+                            notes: r.Notes || r.notes || ''
+                        });
+                    }
+
+                    if (workoutName) {
+                        await axios.post(
+                            `/api/v1/trainer/clients/${clientId}/program`,
+                            { day, name: workoutName, exercises },
+                            { withCredentials: true }
+                        );
+                    }
                 }
                 await loadProgram();
             } catch (err) {
                 alert('Failed to import: ' + (err.message || 'unknown error'));
             }
         };
-        reader.readAsText(file);
+        reader.readAsArrayBuffer(file);
         e.target.value = '';
     };
 
@@ -358,30 +416,30 @@ const ProgramPanel = ({ clientId }) => {
         <div className="tc-program">
             {/* Program toolbar */}
             <div className="tc-program-toolbar">
-                <input ref={importRef} type="file" accept=".json" style={{ display: 'none' }} onChange={handleImport} />
-                <button className="tc-tpl-btn" onClick={handleExport} title="Export program as JSON">
+                <input ref={importRef} type="file" accept=".xlsx,.xls" style={{ display: 'none' }} onChange={handleImport} />
+                <button className="tc-tpl-btn" onClick={handleExport} title="Export program as Excel">
                     <Download size={14} /> Export
                 </button>
-                <button className="tc-tpl-btn" onClick={() => importRef.current?.click()} title="Import program from JSON">
+                <button className="tc-tpl-btn" onClick={() => importRef.current?.click()} title="Import program from Excel">
                     <Upload size={14} /> Import
                 </button>
-                <button className="tc-tpl-btn" onClick={() => { setShowTemplateModal('save'); }} title="Save as template">
-                    <Save size={14} /> Save Template
+                <button className="tc-tpl-btn" onClick={() => { setShowTemplateModal('save'); }} title="Save as program">
+                    <Save size={14} /> Save Program
                 </button>
-                <button className="tc-tpl-btn" onClick={() => { fetchTemplates(); setShowTemplateModal('load'); }} title="Load a saved template">
-                    <BookMarked size={14} /> Load Template
+                <button className="tc-tpl-btn" onClick={() => { fetchTemplates(); setShowTemplateModal('load'); }} title="Load a saved workout">
+                    <BookMarked size={14} /> Load Workout
                 </button>
             </div>
 
-            {/* Save-as-template modal */}
+            {/* Save Program modal */}
             {showTemplateModal === 'save' && (
                 <div className="tc-tpl-modal-overlay" onClick={() => setShowTemplateModal(false)}>
                     <div className="tc-tpl-modal" onClick={e => e.stopPropagation()}>
                         <div className="tc-tpl-modal-header">
-                            <span>Save Program as Template</span>
+                            <span>Save as Program</span>
                             <button onClick={() => setShowTemplateModal(false)}><X size={16} /></button>
                         </div>
-                        <p className="tc-tpl-modal-hint">Give this week's program a name to save it for future use.</p>
+                        <p className="tc-tpl-modal-hint">This will save the current weekly program to your Programs library.</p>
                         <input
                             className="tc-tpl-name-input"
                             placeholder="e.g. Beginner Strength 4-day"
@@ -391,34 +449,31 @@ const ProgramPanel = ({ clientId }) => {
                             autoFocus
                         />
                         <button className="tc-tpl-confirm-btn" onClick={handleSaveTemplate} disabled={savingTpl || !templateName.trim()}>
-                            {savingTpl ? <Loader2 className="tc-spin" size={14} /> : <Save size={14} />} Save
+                            {savingTpl ? <Loader2 className="tc-spin" size={14} /> : <Save size={14} />} Save Program
                         </button>
                     </div>
                 </div>
             )}
 
-            {/* Load-template modal */}
+            {/* Load Workout modal */}
             {showTemplateModal === 'load' && (
                 <div className="tc-tpl-modal-overlay" onClick={() => setShowTemplateModal(false)}>
                     <div className="tc-tpl-modal" onClick={e => e.stopPropagation()}>
                         <div className="tc-tpl-modal-header">
-                            <span>Load a Template</span>
+                            <span>Load Workout</span>
                             <button onClick={() => setShowTemplateModal(false)}><X size={16} /></button>
                         </div>
-                        <p className="tc-tpl-modal-hint">Selecting a template will overwrite this client's current program.</p>
+                        <p className="tc-tpl-modal-hint">Select a program to apply to this client's weekly workout.</p>
                         {loadingTpls ? (
                             <div className="tc-tpl-loading"><Loader2 className="tc-spin" size={20} /></div>
                         ) : templates.length === 0 ? (
-                            <div className="tc-tpl-empty">No saved templates yet.</div>
+                            <div className="tc-tpl-empty">No saved programs yet. Create one in the Programs tab.</div>
                         ) : (
                             <div className="tc-tpl-list">
                                 {templates.map(t => (
                                     <div key={t.id} className="tc-tpl-item" onClick={() => handleLoadTemplate(t.id)}>
                                         <span className="tc-tpl-item-name">{t.name}</span>
                                         <span className="tc-tpl-item-date">{new Date(t.createdAt).toLocaleDateString()}</span>
-                                        <button className="tc-tpl-item-del" onClick={e => handleDeleteTemplate(t.id, e)} title="Delete">
-                                            <Trash2 size={13} />
-                                        </button>
                                     </div>
                                 ))}
                             </div>
@@ -517,14 +572,6 @@ const ProgramPanel = ({ clientId }) => {
                                             onChange={e => updateExercise(i, 'weight', e.target.value)}
                                         />
                                     </div>
-                                    <div className="tc-exercise-field tc-exercise-field-notes">
-                                        <label>Notes</label>
-                                        <input
-                                            type="text" placeholder="Optional…"
-                                            value={ex.notes ?? ''}
-                                            onChange={e => updateExercise(i, 'notes', e.target.value)}
-                                        />
-                                    </div>
                                 </div>
                             </div>
                         ))
@@ -533,42 +580,43 @@ const ProgramPanel = ({ clientId }) => {
 
                 {/* Add exercise */}
                 <div className="tc-add-exercise-wrap" ref={searchRef}>
-                    {showExSearch ? (
-                        <div className="tc-ex-search-box">
-                            <div className="tc-ex-search-input-wrap">
-                                <Search size={14} />
-                                <input
-                                    autoFocus
-                                    placeholder="Search exercises…"
-                                    value={exSearch}
-                                    onChange={e => setExSearch(e.target.value)}
-                                />
-                                <button onClick={() => setShowExSearch(false)}><X size={14} /></button>
-                            </div>
-                            <div className="tc-ex-results">
-                                {exSearch.trim() && (
-                                    <button className="tc-ex-custom-item" onClick={addCustomExercise}>
-                                        <Plus size={13} />
-                                        Add "{exSearch.trim()}" as custom exercise
-                                    </button>
-                                )}
-                                {filteredEx.length === 0 && !exSearch.trim() && (
-                                    <div className="tc-ex-none">Add an exercise</div>
-                                )}
-                                {filteredEx.slice(0, 30).map(ex => (
-                                    <button key={ex.id} className="tc-ex-result-item" onClick={() => addExercise(ex)}>
-                                        <span className="tc-ex-result-name">{ex.name}</span>
-                                        {ex.targetMuscles && (
-                                            <span className="tc-ex-result-muscle">{ex.targetMuscles}</span>
-                                        )}
-                                    </button>
-                                ))}
-                            </div>
+                    <div className="tc-ex-input-wrap">
+                        <Plus size={14} className="tc-ex-input-icon" />
+                        <input
+                            className="tc-ex-input"
+                            placeholder="Type exercise name…"
+                            value={exSearch}
+                            onChange={e => setExSearch(e.target.value)}
+                            onFocus={() => setShowExSearch(true)}
+                            onKeyDown={e => { if (e.key === 'Enter' && exSearch.trim()) { addCustomExercise(); } }}
+                        />
+                    </div>
+                    {showExSearch && (
+                        <div className="tc-ex-dropdown">
+                            {exSearch.trim() && filteredEx.length === 0 && (
+                                <button className="tc-ex-dropdown-item tc-ex-dropdown-custom" onClick={addCustomExercise}>
+                                    <Plus size={13} /> Add "{exSearch.trim()}"
+                                </button>
+                            )}
+                            {exSearch.trim() && filteredEx.length > 0 && (
+                                <button className="tc-ex-dropdown-item tc-ex-dropdown-custom" onClick={addCustomExercise}>
+                                    <Plus size={13} /> Add "{exSearch.trim()}" as new
+                                </button>
+                            )}
+                            {(exSearch.trim() ? filteredEx : allExercises).slice(0, 20).map(ex => (
+                                <button key={ex.id} className="tc-ex-dropdown-item" onClick={() => addExercise(ex)}>
+                                    <span className="tc-ex-dropdown-name">{ex.name}</span>
+                                    {ex.targetMuscles && (
+                                        <span className="tc-ex-dropdown-muscle">{
+                                            Array.isArray(ex.targetMuscles) ? ex.targetMuscles.join(', ') : ex.targetMuscles
+                                        }</span>
+                                    )}
+                                </button>
+                            ))}
+                            {allExercises.length === 0 && !exSearch.trim() && (
+                                <div className="tc-ex-dropdown-empty">Type a name and press Enter to add</div>
+                            )}
                         </div>
-                    ) : (
-                        <button className="tc-btn-add-exercise" onClick={() => setShowExSearch(true)}>
-                            <Plus size={15} /> Add Exercise
-                        </button>
                     )}
                 </div>
             </div>

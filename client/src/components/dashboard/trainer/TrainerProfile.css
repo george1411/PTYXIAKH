@@ -18,7 +18,7 @@
     width: 32px;
     height: 32px;
     border: 3px solid var(--border);
-    border-top-color: var(--accent);
+    border-top-color: var(--purple);
     border-radius: 50%;
     animation: tp-spin 0.8s linear infinite;
 }
@@ -350,14 +350,14 @@
 }
 
 .tp-spec-chip:hover:not(:disabled) {
-    border-color: var(--accent);
-    color: var(--accent);
+    border-color: var(--purple);
+    color: var(--purple);
 }
 
 .tp-spec-active {
-    background: var(--accent);
-    color: #000 !important;
-    border-color: var(--accent);
+    background: var(--purple);
+    color: #fff !important;
+    border-color: var(--purple);
 }
 
 .tp-spec-readonly {
@@ -391,8 +391,8 @@
     width: 28px;
     height: 28px;
     border-radius: 6px;
-    background: linear-gradient(135deg, var(--accent), var(--accent-hover));
-    color: #000;
+    background: linear-gradient(135deg, var(--purple), var(--purple-hover));
+    color: #fff;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -452,7 +452,7 @@
 }
 
 .tp-cert-file-link:hover {
-    color: var(--accent);
+    color: var(--purple);
     text-decoration: underline;
 }
 

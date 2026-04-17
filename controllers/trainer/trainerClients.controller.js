@@ -188,6 +188,7 @@ export const saveClientProgram = async (req, res, next) => {
         );
 
         // Insert exercises
+        console.log('[saveClientProgram] Inserting exercises:', JSON.stringify(exercises));
         for (const ex of (exercises || [])) {
             let exerciseId = ex.exerciseId || null;
 
@@ -212,7 +213,7 @@ export const saveClientProgram = async (req, res, next) => {
             if (!exerciseId) continue;
 
             await sequelize.query(
-                `INSERT INTO WorkoutExercises (workoutId, exerciseId, sets, reps, weight, notes, createdAt, updatedAt)
+                `INSERT INTO WorkoutExercises (workoutId, exerciseId, \`sets\`, reps, weight, notes, createdAt, updatedAt)
                  VALUES (:workoutId, :exerciseId, :sets, :reps, :weight, :notes, NOW(), NOW())`,
                 {
                     replacements: {
@@ -232,6 +233,7 @@ export const saveClientProgram = async (req, res, next) => {
         await t.commit();
         res.status(200).json({ success: true, message: 'Program saved' });
     } catch (error) {
+        console.error('[saveClientProgram] Error:', error.message, error.sql || '');
         await t.rollback();
         next(error);
     }

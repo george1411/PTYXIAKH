@@ -29,7 +29,7 @@
     width: 32px;
     height: 32px;
     border: 3px solid var(--border);
-    border-top-color: var(--accent);
+    border-top-color: var(--purple);
     border-radius: 50%;
     animation: to-spin 0.8s linear infinite;
 }
@@ -234,8 +234,8 @@
     flex-direction: column;
     gap: 2px;
     padding: 10px 14px;
-    background: rgba(255,255,255,0.03);
-    border-left: 3px solid var(--accent);
+    background: var(--purple-light);
+    border-left: 3px solid var(--purple);
     border-radius: 6px;
 }
 
@@ -272,7 +272,7 @@
     width: 8px;
     height: 8px;
     border-radius: 50%;
-    background: var(--accent);
+    background: var(--purple);
     margin-top: 6px;
     flex-shrink: 0;
 }
@@ -568,7 +568,7 @@
 
 .to-ct-protein-fill {
     height: 100%;
-    background: linear-gradient(90deg, var(--accent), var(--accent-hover));
+    background: linear-gradient(90deg, var(--purple), var(--purple-hover));
     border-radius: 3px;
     transition: width 0.4s ease;
 }
@@ -576,7 +576,7 @@
 .to-ct-workouts {
     font-size: 0.9rem;
     font-weight: 700;
-    color: var(--accent);
+    color: var(--purple);
 }
 
 .to-ct-muted {
@@ -605,8 +605,8 @@
     width: 36px;
     height: 36px;
     border-radius: 50%;
-    background: linear-gradient(135deg, var(--accent), var(--accent-hover));
-    color: #000;
+    background: linear-gradient(135deg, var(--purple), var(--purple-hover));
+    color: #fff;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -653,7 +653,7 @@
 
 .to-progress-fill {
     height: 100%;
-    background: linear-gradient(90deg, var(--accent), var(--accent-hover));
+    background: linear-gradient(90deg, var(--purple), var(--purple-hover));
     border-radius: 4px;
     transition: width 0.5s ease;
 }
@@ -661,7 +661,7 @@
 .to-progress-text {
     font-size: 13px;
     font-weight: 600;
-    color: var(--accent);
+    color: var(--purple);
     white-space: nowrap;
 }
 

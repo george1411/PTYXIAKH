@@ -46,7 +46,48 @@ export const getTemplate = async (req, res, next) => {
             { replacements: { id, trainerId }, type: QueryTypes.SELECT }
         );
         if (!row) return res.status(404).json({ success: false, message: 'Template not found' });
-        res.status(200).json({ success: true, data: { ...row, programData: JSON.parse(row.programData) } });
+        const programData = typeof row.programData === 'string' ? JSON.parse(row.programData) : (row.programData || []);
+        res.status(200).json({ success: true, data: { ...row, programData } });
+    } catch (error) {
+        next(error);
+    }
+};
+
+// PUT /api/v1/trainer/templates/:id — update a template
+export const updateTemplate = async (req, res, next) => {
+    try {
+        const trainerId = req.user.id;
+        const { id } = req.params;
+        const { name, programData } = req.body;
+
+        const fields = [];
+        const replacements = { id, trainerId };
+
+        if (name?.trim()) {
+            fields.push('name = :name');
+            replacements.name = name.trim();
+        }
+        if (programData && Array.isArray(programData)) {
+            fields.push('programData = :programData');
+            replacements.programData = JSON.stringify(programData);
+        }
+
+        if (fields.length === 0) {
+            return res.status(400).json({ success: false, message: 'Nothing to update' });
+        }
+
+        await sequelize.query(
+            `UPDATE WorkoutTemplates SET ${fields.join(', ')} WHERE id = :id AND trainerId = :trainerId`,
+            { replacements, type: QueryTypes.UPDATE }
+        );
+
+        const [updated] = await sequelize.query(
+            `SELECT id, name, programData FROM WorkoutTemplates WHERE id = :id AND trainerId = :trainerId`,
+            { replacements: { id, trainerId }, type: QueryTypes.SELECT }
+        );
+
+        const updatedProgramData = typeof updated.programData === 'string' ? JSON.parse(updated.programData) : (updated.programData || []);
+        res.status(200).json({ success: true, data: { ...updated, programData: updatedProgramData } });
     } catch (error) {
         next(error);
     }

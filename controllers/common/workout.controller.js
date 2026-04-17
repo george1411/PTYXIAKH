@@ -23,7 +23,7 @@ export const createWorkout = async (req, res, next) => {
         if (exercises && exercises.length > 0) {
             for (const ex of exercises) {
                 await sequelize.query(
-                    `INSERT INTO WorkoutExercises (workoutId, exerciseId, sets, reps, weight, notes, createdAt, updatedAt)
+                    `INSERT INTO WorkoutExercises (workoutId, exerciseId, \`sets\`, reps, weight, notes, createdAt, updatedAt)
                      VALUES (:workoutId, :exerciseId, :sets, :reps, :weight, :notes, NOW(), NOW())`,
                     {
                         replacements: {

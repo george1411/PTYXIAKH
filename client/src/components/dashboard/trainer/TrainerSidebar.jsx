@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
-import { Settings, LogOut, ChevronRight, User } from 'lucide-react';
+import { Settings, LogOut, ChevronRight, User, LayoutDashboard, Users, Calendar, UserCircle, MessageCircle, Dumbbell } from 'lucide-react';
 
-const NavItem = ({ label, active, onClick }) => (
+const NavItem = ({ icon: Icon, label, active, onClick }) => (
     <button
         onClick={onClick}
         className={`w-full flex items-center gap-3 px-3 py-2 rounded-md transition-all duration-200 group ${active
@@ -13,6 +13,7 @@ const NavItem = ({ label, active, onClick }) => (
             : { color: 'rgba(255,255,255,0.5)' }
         }
     >
+        {Icon && <Icon size={16} className="flex-shrink-0" />}
         <span className={`text-sm ${active ? 'font-medium' : 'font-normal'}`}>{label}</span>
     </button>
 );
@@ -22,7 +23,12 @@ const TrainerSidebar = ({ activeTab = 'overview', onNavigate, onLogout, user }) 
     const menuRef = useRef(null);
 
     const navItems = [
-        { id: 'clients', label: 'Clients' },
+        { id: 'overview', label: 'Overview', icon: LayoutDashboard },
+        { id: 'clients', label: 'Clients', icon: Users },
+        { id: 'programs', label: 'Programs', icon: Dumbbell },
+        { id: 'schedule', label: 'Schedule', icon: Calendar },
+        { id: 'messages', label: 'Messages', icon: MessageCircle },
+        { id: 'profile', label: 'Profile', icon: UserCircle },
     ];
 
     useEffect(() => {
@@ -49,6 +55,7 @@ const TrainerSidebar = ({ activeTab = 'overview', onNavigate, onLogout, user }) 
                 {navItems.map((item) => (
                     <NavItem
                         key={item.id}
+                        icon={item.icon}
                         label={item.label}
                         active={activeTab === item.id}
                         onClick={() => onNavigate(item.id)}
