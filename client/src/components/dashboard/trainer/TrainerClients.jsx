@@ -677,6 +677,17 @@ const ChatPanel = ({ clientId, clientName, trainerId }) => {
         return new Date(dateStr).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     };
 
+    const formatDateSep = (dateStr) => {
+        if (!dateStr) return '';
+        const d = new Date(dateStr);
+        const today = new Date();
+        const isToday = d.toDateString() === today.toDateString();
+        const yesterday = new Date(today); yesterday.setDate(today.getDate() - 1);
+        const isYesterday = d.toDateString() === yesterday.toDateString();
+        const label = isToday ? 'Today' : isYesterday ? 'Yesterday' : d.toLocaleDateString([], { month: 'short', day: 'numeric' });
+        return `${label} · ${formatTime(dateStr)}`;
+    };
+
     if (loading) return <div className="tc-empty"><Loader2 className="tc-spin" size={24} /> Loading messages…</div>;
 
     return (
@@ -685,20 +696,28 @@ const ChatPanel = ({ clientId, clientName, trainerId }) => {
                 {messages.length === 0 && (
                     <div className="tc-empty-small">No messages yet. Say hello!</div>
                 )}
-                {messages.map(msg => {
+                {messages.map((msg, i) => {
                     const isMe = msg.senderId !== clientId;
+                    const prev = messages[i - 1];
+                    const showSep = !prev || new Date(msg.createdAt).toDateString() !== new Date(prev.createdAt).toDateString();
                     return (
-                        <div key={msg.id} className={`tc-msg-row ${isMe ? 'me' : 'them'}`}>
-                            {!isMe && (
-                                <div className="tc-msg-avatar">
-                                    {clientName.charAt(0).toUpperCase()}
+                        <React.Fragment key={msg.id}>
+                            {showSep && (
+                                <div className="tc-msg-date-sep">
+                                    <span>{formatDateSep(msg.createdAt)}</span>
                                 </div>
                             )}
-                            <div className={`tc-msg-bubble ${isMe ? 'me' : 'them'}`}>
-                                <p>{msg.content}</p>
-                                <span className="tc-msg-time">{formatTime(msg.createdAt)}</span>
+                            <div className={`tc-msg-row ${isMe ? 'me' : 'them'}`}>
+                                {!isMe && (
+                                    <div className="tc-msg-avatar">
+                                        {clientName.charAt(0).toUpperCase()}
+                                    </div>
+                                )}
+                                <div className={`tc-msg-bubble ${isMe ? 'me' : 'them'}`}>
+                                    <p>{msg.content}</p>
+                                </div>
                             </div>
-                        </div>
+                        </React.Fragment>
                     );
                 })}
                 <div ref={bottomRef} />

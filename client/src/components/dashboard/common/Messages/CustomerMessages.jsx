@@ -107,12 +107,19 @@ const CustomerMessages = ({ user, targetTrainer }) => {
 
     const formatFullTime = (dateStr) => {
         if (!dateStr) return '';
-        const d     = new Date(dateStr);
-        const today = new Date();
-        const time  = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-        return d.toDateString() === today.toDateString()
-            ? time
-            : `${d.toLocaleDateString([], { month: 'short', day: 'numeric' })} · ${time}`;
+        const d    = new Date(dateStr);
+        return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    };
+
+    const formatDateSep = (dateStr) => {
+        if (!dateStr) return '';
+        const d         = new Date(dateStr);
+        const today     = new Date();
+        const yesterday = new Date(today); yesterday.setDate(today.getDate() - 1);
+        const isToday     = d.toDateString() === today.toDateString();
+        const isYesterday = d.toDateString() === yesterday.toDateString();
+        const label = isToday ? 'Today' : isYesterday ? 'Yesterday' : d.toLocaleDateString([], { month: 'short', day: 'numeric' });
+        return `${label} · ${d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
     };
 
     const myId = user?.id;
@@ -179,20 +186,28 @@ const CustomerMessages = ({ user, targetTrainer }) => {
                                     <p>No messages yet — say hello!</p>
                                 </div>
                             ) : (
-                                messages.map(msg => {
+                                messages.map((msg, i) => {
                                     const isMe = msg.senderId === myId;
+                                    const prev = messages[i - 1];
+                                    const showSep = !prev || new Date(msg.createdAt).toDateString() !== new Date(prev.createdAt).toDateString();
                                     return (
-                                        <div key={msg.id} className={`cm-msg-row ${isMe ? 'me' : 'them'}`}>
-                                            {!isMe && (
-                                                <div className="cm-avatar">
-                                                    {(msg.Sender?.name || active.name || 'T').charAt(0).toUpperCase()}
+                                        <React.Fragment key={msg.id}>
+                                            {showSep && (
+                                                <div className="cm-date-sep">
+                                                    <span>{formatDateSep(msg.createdAt)}</span>
                                                 </div>
                                             )}
-                                            <div className={`cm-bubble ${isMe ? 'me' : 'them'}`}>
-                                                <p>{msg.content}</p>
-                                                <span className="cm-time">{formatFullTime(msg.createdAt)}</span>
+                                            <div className={`cm-msg-row ${isMe ? 'me' : 'them'}`}>
+                                                {!isMe && (
+                                                    <div className="cm-avatar">
+                                                        {(msg.Sender?.name || active.name || 'T').charAt(0).toUpperCase()}
+                                                    </div>
+                                                )}
+                                                <div className={`cm-bubble ${isMe ? 'me' : 'them'}`}>
+                                                    <p>{msg.content}</p>
+                                                </div>
                                             </div>
-                                        </div>
+                                        </React.Fragment>
                                     );
                                 })
                             )}

@@ -127,7 +127,7 @@
     display: flex;
     flex-direction: column;
     overflow: hidden;
-    background: #111111;
+    background: #000000;
 }
 
 /* ─── Header ───────────────────────────────────────────────────── */
@@ -171,10 +171,11 @@
 .cm-messages {
     flex: 1;
     overflow-y: auto;
-    padding: 24px;
+    padding: 20px 24px;
     display: flex;
     flex-direction: column;
-    gap: 14px;
+    gap: 4px;
+    background: #000000;
 }
 
 .cm-state {
@@ -189,61 +190,78 @@
     height: 100%;
 }
 
+/* ─── Date separator ───────────────────────────────────────────── */
+.cm-date-sep {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 12px 0 8px;
+}
+.cm-date-sep span {
+    font-size: 0.72rem;
+    color: rgba(255,255,255,0.3);
+    font-weight: 500;
+    letter-spacing: 0.3px;
+}
+
 /* ─── Message rows ─────────────────────────────────────────────── */
 .cm-msg-row {
     display: flex;
     align-items: flex-end;
     gap: 8px;
+    padding: 2px 0;
 }
 
-.cm-msg-row.me   { flex-direction: row; }
-.cm-msg-row.them { flex-direction: row-reverse; }
+.cm-msg-row.me   { flex-direction: row-reverse; }
+.cm-msg-row.them { flex-direction: row; }
 
 .cm-avatar {
     width: 32px;
     height: 32px;
     border-radius: 50%;
-    background: linear-gradient(135deg, #2a2a2a, #444);
-    color: #e0e0e0;
-    font-size: 0.8rem;
+    background: #2a2a2e;
+    color: rgba(255,255,255,0.75);
+    font-size: 0.75rem;
     font-weight: 700;
     display: flex;
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
+    margin-bottom: 2px;
 }
 
 .cm-bubble {
     max-width: 65%;
-    padding: 11px 16px;
-    border-radius: 18px;
-    font-size: 0.9rem;
+    padding: 7px 14px;
+    border-radius: 14px;
+    font-size: 0.875rem;
     line-height: 1.5;
 }
 
-.cm-bubble p { margin: 0 0 4px; }
+.cm-bubble p { margin: 0 0 3px; }
 
 .cm-bubble.me {
-    background: #ffffff;
-    color: #111111;
-    border-bottom-left-radius: 4px;
+    background: #818CF8;
+    color: #0a0a0a;
+    font-weight: 600;
+    border-bottom-right-radius: 5px;
 }
 
 .cm-bubble.them {
-    background: #a5b4fc;
-    color: #111111;
-    border-bottom-right-radius: 4px;
+    background: #1a1a1a;
+    color: #f0f0f0;
+    border-bottom-left-radius: 5px;
 }
 
 .cm-time {
-    font-size: 0.68rem;
+    font-size: 0.67rem;
     opacity: 0.5;
     display: block;
+    margin-top: 2px;
     text-align: right;
 }
 
-.cm-bubble.me   .cm-time { text-align: left; }
-.cm-bubble.them .cm-time { text-align: right; }
+.cm-bubble.them .cm-time { text-align: left; }
 
 /* ─── Input row ────────────────────────────────────────────────── */
 .cm-input-row {
@@ -260,23 +278,23 @@
     padding: 11px 18px;
     border: 1px solid rgba(255,255,255,0.08);
     border-radius: 999px;
-    font-size: 0.9rem;
+    font-size: 0.875rem;
     outline: none;
-    background: #1a1a1a;
+    background: #1c1c1e;
     color: #e0e0e0;
     transition: border-color 0.15s;
 }
 
-.cm-input::placeholder { color: #555; }
-.cm-input:focus { border-color: rgba(255,255,255,0.25); }
+.cm-input::placeholder { color: rgba(255,255,255,0.25); }
+.cm-input:focus { border-color: rgba(255,255,255,0.2); }
 .cm-input:disabled { background: #161616; color: #444; }
 
 .cm-send {
     width: 44px;
     height: 44px;
     border-radius: 50%;
-    background: #ffffff;
-    color: #111111;
+    background: #818CF8;
+    color: #fff;
     border: none;
     cursor: pointer;
     display: flex;
@@ -286,7 +304,7 @@
     transition: background 0.15s, transform 0.1s;
 }
 
-.cm-send:hover  { background: #e5e5e5; }
+.cm-send:hover  { background: #a5b4fc; }
 .cm-send:active { transform: scale(0.95); }
 .cm-send:disabled { background: #2a2a2a; color: #555; cursor: not-allowed; }
 
