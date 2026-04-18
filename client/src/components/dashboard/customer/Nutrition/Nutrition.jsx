@@ -202,8 +202,8 @@ const NutritionHistoryChart = () => {
                             <Bar dataKey="Calories" fill="#e0e0e0" radius={[3, 3, 0, 0]}>
                                 <LabelList dataKey="Calories" position="top" style={{ fill: '#e0e0e0', fontSize: 10, fontWeight: 600 }} />
                             </Bar>
-                            <Bar dataKey="Protein" fill="#a5b4fc" radius={[3, 3, 0, 0]}>
-                                <LabelList dataKey="Protein" position="top" style={{ fill: '#a5b4fc', fontSize: 10, fontWeight: 600 }} />
+                            <Bar dataKey="Protein" fill="#818CF8" radius={[3, 3, 0, 0]}>
+                                <LabelList dataKey="Protein" position="top" style={{ fill: '#818CF8', fontSize: 10, fontWeight: 600 }} />
                             </Bar>
                         </BarChart>
                     </ResponsiveContainer>

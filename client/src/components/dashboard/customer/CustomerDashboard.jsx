@@ -132,9 +132,9 @@ const CustomerDashboard = ({ user, onLogout, onUserUpdate }) => {
     };
 
     return (
-        <div className="flex min-h-screen bg-[var(--bg)] text-[var(--text)] font-sans overflow-hidden">
+        <div className="flex min-h-screen text-[var(--text)] font-sans overflow-hidden" style={{ background: '#000000' }}>
             {/* Sidebar - Hidden on mobile, fixed on desktop */}
-            <div className="hidden lg:block h-screen sticky top-0">
+            <div className="hidden lg:flex flex-col p-2 h-screen sticky top-0 shrink-0">
                 <Sidebar
                     activeTab={activeTab}
                     onNavigate={navigateTo}
@@ -144,9 +144,9 @@ const CustomerDashboard = ({ user, onLogout, onUserUpdate }) => {
             </div>
 
             {/* Main Content */}
-            <div className="flex-1 flex flex-col h-screen overflow-hidden">
+            <div className="flex-1 flex flex-col h-screen overflow-hidden" style={{ background: '#000000' }}>
                 {/* Header */}
-                <header className="shrink-0" style={{ background: '#111111', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+                <header className="shrink-0" style={{ background: '#000000', borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
                     <div className="h-16 flex justify-between items-center px-8">
                         <div className="flex items-center text-sm">
                             <span style={{ color: '#a5b4fc' }}>Dashboard</span>
@@ -173,7 +173,7 @@ const CustomerDashboard = ({ user, onLogout, onUserUpdate }) => {
                 </header>
 
                 {/* Scrollable Grid Area */}
-                <main className={`flex-1 p-6 lg:p-8 custom-scrollbar bg-[var(--bg)] relative overflow-y-auto`}>
+                <main className="flex-1 p-6 lg:p-8 custom-scrollbar relative overflow-y-auto" style={{ background: '#000000' }}>
 
 
                     <div className="max-w-7xl mx-auto relative z-10 h-full">

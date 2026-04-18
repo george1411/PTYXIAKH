@@ -161,6 +161,7 @@ const WeightHistory = () => {
                                     tick={{ fontSize: 11, fill: '#555' }} tickLine={false} axisLine={false} width={40}
                                 />
                                 <Tooltip
+                                    cursor={false}
                                     contentStyle={{ background: '#1a1a1a', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 10, boxShadow: '0 4px 20px rgba(0,0,0,0.5)' }}
                                     labelStyle={{ color: '#888', fontSize: 12 }}
                                     itemStyle={{ color: '#a5b4fc' }}

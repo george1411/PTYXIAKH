@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import {
-    BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell,
-    ReferenceLine, LabelList
+    BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
+    AreaChart, Area
 } from 'recharts';
 import './TrainerOverview.css';
 
@@ -92,17 +92,21 @@ const TrainerOverview = ({ user, onNavigate }) => {
                         <div className="to-empty-small">No client data yet.</div>
                     ) : (
                         <ResponsiveContainer width="100%" height={200}>
-                            <BarChart data={workoutData} margin={{ top: 16, right: 16, left: -10, bottom: 0 }}>
-                                <XAxis dataKey="name" tick={{ fontSize: 12, fill: 'rgba(148,163,184,0.8)' }} axisLine={{ stroke: 'rgba(56,189,248,0.15)' }} tickLine={false} />
+                            <AreaChart data={workoutData} margin={{ top: 16, right: 16, left: -10, bottom: 0 }}>
+                                <defs>
+                                    <linearGradient id="workoutGradient" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="5%" stopColor="#818CF8" stopOpacity={0.3} />
+                                        <stop offset="95%" stopColor="#818CF8" stopOpacity={0} />
+                                    </linearGradient>
+                                </defs>
+                                <XAxis dataKey="name" tick={{ fontSize: 12, fill: 'rgba(148,163,184,0.8)' }} axisLine={false} tickLine={false} />
                                 <YAxis allowDecimals={false} tick={{ fontSize: 11, fill: 'rgba(148,163,184,0.7)' }} axisLine={false} tickLine={false} />
-                                <Tooltip formatter={v => [`${v} session${v !== 1 ? 's' : ''}`, 'Workouts']} contentStyle={{ background: '#1e293b', border: '1px solid rgba(56,189,248,0.3)', borderRadius: 8, color: '#f1f5f9' }} />
-                                <Bar dataKey="workouts" radius={[6,6,0,0]}>
-                                    {workoutData.map((entry, i) => (
-                                        <Cell key={i} fill={entry.workouts >= 5 ? '#38bdf8' : entry.workouts >= 3 ? '#818cf8' : entry.workouts >= 1 ? '#6366f1' : '#334155'} />
-                                    ))}
-                                    <LabelList dataKey="workouts" position="top" style={{ fontSize: 11, fill: '#94a3b8' }} />
-                                </Bar>
-                            </BarChart>
+                                <Tooltip
+                                    formatter={v => [`${v} session${v !== 1 ? 's' : ''}`, 'Workouts']}
+                                    contentStyle={{ background: '#111111', border: '1px solid rgba(129,140,248,0.3)', borderRadius: 8, color: '#f1f5f9' }}
+                                />
+                                <Area type="monotone" dataKey="workouts" stroke="#818CF8" strokeWidth={2} fill="url(#workoutGradient)" dot={{ fill: '#818CF8', r: 4 }} activeDot={{ r: 6, fill: '#a5b4fc' }} />
+                            </AreaChart>
                         </ResponsiveContainer>
                     )}
                 </div>
@@ -119,27 +123,27 @@ const TrainerOverview = ({ user, onNavigate }) => {
                                     <XAxis dataKey="name" tick={{ fontSize: 12, fill: 'rgba(148,163,184,0.8)' }} axisLine={{ stroke: 'rgba(56,189,248,0.15)' }} tickLine={false} />
                                     <YAxis tick={{ fontSize: 11, fill: 'rgba(148,163,184,0.7)' }} axisLine={false} tickLine={false} unit="kg" />
                                     <Tooltip
-                                        cursor={{ fill: 'rgba(56,189,248,0.06)' }}
+                                        cursor={{ fill: 'rgba(129,140,248,0.06)' }}
                                         content={({ active, payload }) => {
                                             if (!active || !payload?.length) return null;
                                             const d = payload[0]?.payload;
                                             return (
-                                                <div style={{ background: '#1e293b', border: '1px solid rgba(56,189,248,0.3)', borderRadius: 8, padding: '10px 14px', color: '#f1f5f9', fontSize: 12 }}>
+                                                <div style={{ background: '#111111', border: '1px solid rgba(129,140,248,0.3)', borderRadius: 8, padding: '10px 14px', color: '#f1f5f9', fontSize: 12 }}>
                                                     <div style={{ fontWeight: 700, marginBottom: 6 }}>{d.fullName}</div>
-                                                    <div style={{ color: '#38bdf8' }}>Current: {d.current} kg</div>
+                                                    <div style={{ color: '#a5b4fc' }}>Current: {d.current} kg</div>
                                                     <div style={{ color: '#94a3b8' }}>Starting: {d.start} kg</div>
                                                 </div>
                                             );
                                         }}
                                     />
-                                    {/* base = the lower weight (cyan) */}
-                                    <Bar dataKey="base" stackId="w" fill="#38bdf8" radius={[0,0,0,0]} />
+                                    {/* base = the lower weight (purple) */}
+                                    <Bar dataKey="base" stackId="w" fill="#818CF8" radius={[0,0,0,0]} />
                                     {/* diff = the change amount, colored green (loss) or red (gain) */}
                                     <Bar dataKey="diff" stackId="w" radius={[4,4,0,0]}
                                         shape={(props) => {
                                             const { x, y, width, height, index } = props;
                                             const d = weightData[index];
-                                            const color = d.gained ? '#f87171' : '#4ade80';
+                                            const color = d.gained ? '#c4b5fd' : '#818CF8';
                                             return <rect x={x} y={y} width={width} height={height} fill={color} rx={4} ry={4} />;
                                         }}
                                     />
@@ -149,7 +153,7 @@ const TrainerOverview = ({ user, onNavigate }) => {
                                 {weightData.map((c, i) => (
                                     <div key={i} className="to-last-active-row">
                                         <span className="to-last-active-name">{c.fullName}</span>
-                                        <span style={{ fontSize: '0.8rem', fontWeight: 600, color: c.change < 0 ? '#4ade80' : c.change > 0 ? '#f87171' : '#94a3b8' }}>
+                                        <span style={{ fontSize: '0.8rem', fontWeight: 600, color: c.change !== 0 ? '#a5b4fc' : '#94a3b8' }}>
                                             {c.change > 0 ? '+' : ''}{c.change} kg
                                         </span>
                                     </div>
@@ -283,7 +287,7 @@ const TrainerOverview = ({ user, onNavigate }) => {
                                                 </td>
                                                 <td className="to-ct-td to-ct-center">
                                                     {weightChange !== null
-                                                        ? <span style={{ color: weightChange < 0 ? '#4ade80' : weightChange > 0 ? '#f87171' : '#94a3b8', fontWeight: 600, fontSize: '0.85rem' }}>
+                                                        ? <span style={{ color: weightChange !== 0 ? '#a5b4fc' : '#94a3b8', fontWeight: 600, fontSize: '0.85rem' }}>
                                                             {weightChange > 0 ? '+' : ''}{weightChange} kg
                                                           </span>
                                                         : <span className="to-ct-muted">—</span>

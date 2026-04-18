@@ -126,7 +126,7 @@
 }
 
 .to-stat-card:hover {
-    box-shadow: 0 4px 16px rgba(255,255,255,0.04);
+    box-shadow: none;
 }
 
 .to-stat-icon {
@@ -180,7 +180,7 @@
 }
 
 .to-card:hover {
-    box-shadow: 0 4px 20px rgba(255,255,255,0.04);
+    box-shadow: none;
 }
 
 .to-card-clients {
@@ -219,7 +219,7 @@
 }
 
 .to-card-link:hover {
-    color: var(--text);
+    color: var(--purple);
 }
 
 /* Events */
@@ -318,9 +318,9 @@
 
 .to-empty-btn {
     margin-top: 12px;
-    background: var(--accent);
-    color: #000;
-    border: none;
+    background: var(--purple-light);
+    color: var(--purple);
+    border: 1px solid var(--purple-border);
     padding: 6px 16px;
     border-radius: 6px;
     font-size: 13px;
@@ -330,7 +330,7 @@
 }
 
 .to-empty-btn:hover {
-    background: var(--accent-hover);
+    background: var(--purple-border);
 }
 
 /* Activity */

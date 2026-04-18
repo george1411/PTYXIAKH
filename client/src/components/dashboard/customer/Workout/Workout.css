@@ -1,9 +1,7 @@
 /* Workout Container */
 .workout-container {
-    height: 100%;
     display: flex;
     flex-direction: column;
-    padding-bottom: 2rem;
 }
 
 /* Header Section */
@@ -44,10 +42,8 @@
     flex-direction: column;
     gap: 1px;
     background-color: var(--bg-dark-alt);
-    /* divider color */
     border-radius: 0 0 12px 12px;
     overflow-y: auto;
-    flex: 1;
 }
 
 .exercise-row {

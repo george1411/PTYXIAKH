@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import {
     Plus, Trash2, Save, X, Loader2, Search,
-    ChevronRight, Upload, Download, Pencil, GripVertical
+    Upload, Download, Pencil, GripVertical
 } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import './TrainerPrograms.css';
@@ -11,60 +11,89 @@ const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'
 const DAY_ABBR = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
 const TrainerPrograms = () => {
-    // ── List state ──
-    const [templates, setTemplates] = useState([]);
+    // ── Tab ──
+    const [programType, setProgramType] = useState('week'); // 'week' | 'day'
+
+    // ── Week: List state ──
+    const [templates, setTemplates]     = useState([]);
     const [loadingList, setLoadingList] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
 
-    // ── Editor state ──
-    const [selectedId, setSelectedId] = useState(null);
+    // ── Week: Editor state ──
+    const [selectedId, setSelectedId]   = useState(null);
     const [programName, setProgramName] = useState('');
-    const [program, setProgram] = useState([]); // [{day, name, exercises}]
+    const [program, setProgram]         = useState([]);
     const [selectedDay, setSelectedDay] = useState('Monday');
-    const [editState, setEditState] = useState({ name: '', exercises: [] });
-    const [saving, setSaving] = useState(false);
-    const [dirty, setDirty] = useState(false);
+    const [editState, setEditState]     = useState({ name: '', exercises: [] });
+    const [saving, setSaving]           = useState(false);
+    const [dirty, setDirty]             = useState(false);
 
-    // ── Exercise search ──
+    // ── Week: Exercise search ──
     const [allExercises, setAllExercises] = useState([]);
-    const [exSearch, setExSearch] = useState('');
+    const [exSearch, setExSearch]         = useState('');
     const [showExSearch, setShowExSearch] = useState(false);
-    const searchRef = useRef(null);
-    const importRef = useRef(null);
+    const searchRef    = useRef(null);
+    const importRef    = useRef(null);
     const newImportRef = useRef(null);
 
-    // ── Rename state ──
-    const [renaming, setRenaming] = useState(false);
+    // ── Week: Rename ──
+    const [renaming, setRenaming]       = useState(false);
     const [renameValue, setRenameValue] = useState('');
 
-    // ── Drag state ──
-    const [draggingId, setDraggingId] = useState(null);
-    const [dropHover, setDropHover] = useState(false);
+    // ── Week: Drag ──
+    const [draggingId, setDraggingId]   = useState(null);
+    const [dropHover, setDropHover]     = useState(false);
 
     // ── New program modal ──
     const [showNewModal, setShowNewModal] = useState(false);
-    const [newName, setNewName] = useState('');
-    const [creatingNew, setCreatingNew] = useState(false);
+    const [newName, setNewName]           = useState('');
+    const [creatingNew, setCreatingNew]   = useState(false);
 
-    // ── Load templates list ──
+    // ── Day: List & editor state ──
+    const [dayTemplates, setDayTemplates]   = useState([]);
+    const [daySelectedId, setDaySelectedId] = useState(null);
+    const [dayTemplateName, setDayTemplateName] = useState('');
+    const [dayExercises, setDayExercises]   = useState([]);
+    const [dayDirty, setDayDirty]           = useState(false);
+    const [dayRenaming, setDayRenaming]     = useState(false);
+    const [dayRenameValue, setDayRenameValue] = useState('');
+    const [daySaving, setDaySaving]         = useState(false);
+    const [daySearchQuery, setDaySearchQuery] = useState('');
+
+    // ── Day: Exercise search ──
+    const [dayExSearch, setDayExSearch]         = useState('');
+    const [dayShowExSearch, setDayShowExSearch] = useState(false);
+    const daySearchRef = useRef(null);
+
+    // ── Fetch week templates ──
     const fetchTemplates = async () => {
         setLoadingList(true);
         try {
-            const res = await axios.get('/api/v1/trainer/templates', { withCredentials: true });
+            const res = await axios.get('/api/v1/trainer/templates?type=week', { withCredentials: true });
             setTemplates(res.data.data || []);
         } catch (e) { console.error(e); }
         finally { setLoadingList(false); }
     };
 
-    // ── Load exercises DB ──
+    // ── Fetch day templates ──
+    const fetchDayTemplates = async () => {
+        setLoadingList(true);
+        try {
+            const res = await axios.get('/api/v1/trainer/templates?type=day', { withCredentials: true });
+            setDayTemplates(res.data.data || []);
+        } catch (e) { console.error(e); }
+        finally { setLoadingList(false); }
+    };
+
     useEffect(() => {
         fetchTemplates();
+        fetchDayTemplates();
         axios.get('/api/v1/exercises', { withCredentials: true })
             .then(r => setAllExercises(r.data.data || r.data || []))
             .catch(console.error);
     }, []);
 
-    // ── Load a template into editor ──
+    // ── Load a week template ──
     const loadTemplate = async (id) => {
         try {
             const res = await axios.get(`/api/v1/trainer/templates/${id}`, { withCredentials: true });
@@ -77,7 +106,19 @@ const TrainerPrograms = () => {
         } catch (e) { console.error(e); }
     };
 
-    // ── Sync editState when day or program changes ──
+    // ── Load a day template ──
+    const loadDayTemplate = async (id) => {
+        try {
+            const res = await axios.get(`/api/v1/trainer/templates/${id}`, { withCredentials: true });
+            const data = res.data.data;
+            setDaySelectedId(id);
+            setDayTemplateName(data.name);
+            setDayExercises(data.programData?.exercises || []);
+            setDayDirty(false);
+        } catch (e) { console.error(e); }
+    };
+
+    // ── Sync editState when day/program changes ──
     useEffect(() => {
         const workout = program.find(w => w.day === selectedDay);
         if (workout) {
@@ -87,10 +128,19 @@ const TrainerPrograms = () => {
         }
     }, [selectedDay, program]);
 
-    // ── Close exercise search on outside click ──
+    // ── Close week exercise search on outside click ──
     useEffect(() => {
         const handler = (e) => {
             if (searchRef.current && !searchRef.current.contains(e.target)) setShowExSearch(false);
+        };
+        document.addEventListener('mousedown', handler);
+        return () => document.removeEventListener('mousedown', handler);
+    }, []);
+
+    // ── Close day exercise search on outside click ──
+    useEffect(() => {
+        const handler = (e) => {
+            if (daySearchRef.current && !daySearchRef.current.contains(e.target)) setDayShowExSearch(false);
         };
         document.addEventListener('mousedown', handler);
         return () => document.removeEventListener('mousedown', handler);
@@ -111,9 +161,8 @@ const TrainerPrograms = () => {
         setDirty(true);
     };
 
-    // ── Save entire template to server ──
+    // ── Save entire week template to server ──
     const handleSaveTemplate = async () => {
-        // First save current day edits into program
         let currentProgram = program;
         const exists = currentProgram.findIndex(w => w.day === selectedDay);
         const dayData = { day: selectedDay, name: editState.name, exercises: editState.exercises };
@@ -133,7 +182,7 @@ const TrainerPrograms = () => {
                 );
             } else {
                 const res = await axios.post('/api/v1/trainer/templates',
-                    { name: programName, programData: currentProgram },
+                    { name: programName, programData: currentProgram, type: 'week' },
                     { withCredentials: true }
                 );
                 setSelectedId(res.data.data.id);
@@ -145,45 +194,87 @@ const TrainerPrograms = () => {
         finally { setSaving(false); }
     };
 
+    // ── Save day template to server ──
+    const handleSaveDayTemplate = async () => {
+        setDaySaving(true);
+        try {
+            const programData = { exercises: dayExercises };
+            if (daySelectedId) {
+                await axios.put(`/api/v1/trainer/templates/${daySelectedId}`,
+                    { name: dayTemplateName, programData },
+                    { withCredentials: true }
+                );
+            } else {
+                const res = await axios.post('/api/v1/trainer/templates',
+                    { name: dayTemplateName, programData, type: 'day' },
+                    { withCredentials: true }
+                );
+                setDaySelectedId(res.data.data.id);
+            }
+            setDayDirty(false);
+            await fetchDayTemplates();
+        } catch (e) { console.error(e); }
+        finally { setDaySaving(false); }
+    };
+
     // ── Create new program ──
     const handleCreateNew = async () => {
         if (!newName.trim()) return;
         setCreatingNew(true);
         try {
-            const res = await axios.post('/api/v1/trainer/templates',
-                { name: newName.trim(), programData: [] },
-                { withCredentials: true }
-            );
-            await fetchTemplates();
-            setShowNewModal(false);
-            setNewName('');
-            loadTemplate(res.data.data.id);
+            if (programType === 'week') {
+                const res = await axios.post('/api/v1/trainer/templates',
+                    { name: newName.trim(), programData: [], type: 'week' },
+                    { withCredentials: true }
+                );
+                await fetchTemplates();
+                setShowNewModal(false);
+                setNewName('');
+                loadTemplate(res.data.data.id);
+            } else {
+                const res = await axios.post('/api/v1/trainer/templates',
+                    { name: newName.trim(), programData: { exercises: [] }, type: 'day' },
+                    { withCredentials: true }
+                );
+                await fetchDayTemplates();
+                setShowNewModal(false);
+                setNewName('');
+                loadDayTemplate(res.data.data.id);
+            }
         } catch (e) { console.error(e); }
         finally { setCreatingNew(false); }
     };
 
-    // ── Delete template ──
+    // ── Delete week template ──
     const handleDelete = async (id, e) => {
         e.stopPropagation();
         try {
             await axios.delete(`/api/v1/trainer/templates/${id}`, { withCredentials: true });
             if (selectedId === id) {
-                setSelectedId(null);
-                setProgramName('');
-                setProgram([]);
-                setDirty(false);
+                setSelectedId(null); setProgramName(''); setProgram([]); setDirty(false);
             }
             await fetchTemplates();
         } catch (e) { console.error(e); }
     };
 
-    // ── Rename template ──
+    // ── Delete day template ──
+    const handleDeleteDay = async (id, e) => {
+        e.stopPropagation();
+        try {
+            await axios.delete(`/api/v1/trainer/templates/${id}`, { withCredentials: true });
+            if (daySelectedId === id) {
+                setDaySelectedId(null); setDayTemplateName(''); setDayExercises([]); setDayDirty(false);
+            }
+            await fetchDayTemplates();
+        } catch (e) { console.error(e); }
+    };
+
+    // ── Rename week template ──
     const handleRename = async () => {
         if (!renameValue.trim() || !selectedId) return;
         try {
             await axios.put(`/api/v1/trainer/templates/${selectedId}`,
-                { name: renameValue.trim() },
-                { withCredentials: true }
+                { name: renameValue.trim() }, { withCredentials: true }
             );
             setProgramName(renameValue.trim());
             setRenaming(false);
@@ -191,76 +282,69 @@ const TrainerPrograms = () => {
         } catch (e) { console.error(e); }
     };
 
-    // ── Exercise helpers ──
+    // ── Rename day template ──
+    const handleRenameDay = async () => {
+        if (!dayRenameValue.trim() || !daySelectedId) return;
+        try {
+            await axios.put(`/api/v1/trainer/templates/${daySelectedId}`,
+                { name: dayRenameValue.trim() }, { withCredentials: true }
+            );
+            setDayTemplateName(dayRenameValue.trim());
+            setDayRenaming(false);
+            await fetchDayTemplates();
+        } catch (e) { console.error(e); }
+    };
+
+    // ── Week exercise helpers ──
     const addExercise = (ex) => {
         setEditState(prev => ({
             ...prev,
             exercises: [...prev.exercises, {
-                exerciseId: ex.id || null,
-                exerciseName: ex.name,
-                targetMuscles: ex.targetMuscles || '',
-                sets: 3, reps: '10', weight: '', notes: ''
+                exerciseId: ex.id || null, exerciseName: ex.name,
+                targetMuscles: ex.targetMuscles || '', sets: 3, reps: '10', weight: '', notes: ''
             }]
         }));
-        setExSearch('');
-        setShowExSearch(false);
-        setDirty(true);
+        setExSearch(''); setShowExSearch(false); setDirty(true);
     };
-
-    const addCustomExercise = () => {
-        if (!exSearch.trim()) return;
-        addExercise({ id: null, name: exSearch.trim(), targetMuscles: '' });
-    };
-
-    const removeExercise = (idx) => {
-        setEditState(prev => ({
-            ...prev,
-            exercises: prev.exercises.filter((_, i) => i !== idx)
-        }));
-        setDirty(true);
-    };
-
+    const addCustomExercise = () => { if (!exSearch.trim()) return; addExercise({ id: null, name: exSearch.trim(), targetMuscles: '' }); };
+    const removeExercise = (idx) => { setEditState(prev => ({ ...prev, exercises: prev.exercises.filter((_, i) => i !== idx) })); setDirty(true); };
     const updateExercise = (idx, field, value) => {
-        setEditState(prev => {
-            const exs = [...prev.exercises];
-            exs[idx] = { ...exs[idx], [field]: value };
-            return { ...prev, exercises: exs };
-        });
+        setEditState(prev => { const exs = [...prev.exercises]; exs[idx] = { ...exs[idx], [field]: value }; return { ...prev, exercises: exs }; });
         setDirty(true);
     };
+    const filteredEx = allExercises.filter(e => e.name.toLowerCase().includes(exSearch.toLowerCase()));
 
-    const filteredEx = allExercises.filter(e =>
-        e.name.toLowerCase().includes(exSearch.toLowerCase())
-    );
+    // ── Day exercise helpers ──
+    const addDayExercise = (ex) => {
+        setDayExercises(prev => [...prev, {
+            exerciseId: ex.id || null, exerciseName: ex.name,
+            targetMuscles: ex.targetMuscles || '', sets: 3, reps: '10', weight: '', notes: ''
+        }]);
+        setDayExSearch(''); setDayShowExSearch(false); setDayDirty(true);
+    };
+    const addCustomDayExercise = () => { if (!dayExSearch.trim()) return; addDayExercise({ id: null, name: dayExSearch.trim(), targetMuscles: '' }); };
+    const removeDayExercise = (idx) => { setDayExercises(prev => prev.filter((_, i) => i !== idx)); setDayDirty(true); };
+    const updateDayExercise = (idx, field, value) => {
+        setDayExercises(prev => { const exs = [...prev]; exs[idx] = { ...exs[idx], [field]: value }; return exs; });
+        setDayDirty(true);
+    };
+    const filteredDayEx = allExercises.filter(e => e.name.toLowerCase().includes(dayExSearch.toLowerCase()));
 
     // ── Export as Excel ──
     const handleExport = () => {
-        // Save current day first
         let currentProgram = [...program];
         const exists = currentProgram.findIndex(w => w.day === selectedDay);
         const dayData = { day: selectedDay, name: editState.name, exercises: editState.exercises };
-        if (exists >= 0) {
-            currentProgram[exists] = { ...currentProgram[exists], ...dayData };
-        } else if (editState.name || editState.exercises.length) {
-            currentProgram.push(dayData);
-        }
+        if (exists >= 0) { currentProgram[exists] = { ...currentProgram[exists], ...dayData }; }
+        else if (editState.name || editState.exercises.length) { currentProgram.push(dayData); }
 
         const wb = XLSX.utils.book_new();
         for (const day of DAYS) {
             const workout = currentProgram.find(w => w.day === day);
-            const rows = [];
-            rows.push({ Exercise: `Workout: ${workout?.name || ''}`, Muscles: '', Sets: '', Reps: '', Weight: '', Notes: '' });
-            rows.push({});
+            const rows = [{ Exercise: `Workout: ${workout?.name || ''}`, Muscles: '', Sets: '', Reps: '', Weight: '', Notes: '' }, {}];
             if (workout?.exercises?.length) {
                 for (const ex of workout.exercises) {
-                    rows.push({
-                        Exercise: ex.exerciseName || '',
-                        Muscles: ex.targetMuscles || '',
-                        Sets: ex.sets ?? '',
-                        Reps: ex.reps || '',
-                        Weight: ex.weight || '',
-                        Notes: ex.notes || ''
-                    });
+                    rows.push({ Exercise: ex.exerciseName || '', Muscles: ex.targetMuscles || '', Sets: ex.sets ?? '', Reps: ex.reps || '', Weight: ex.weight || '', Notes: ex.notes || '' });
                 }
             }
             const ws = XLSX.utils.json_to_sheet(rows);
@@ -292,29 +376,18 @@ const TrainerPrograms = () => {
                         const r = rows[i];
                         const exName = r.Exercise || r.exercise || '';
                         if (!exName || exName.toLowerCase().startsWith('workout:')) continue;
-                        exercises.push({
-                            exerciseId: null,
-                            exerciseName: exName,
-                            targetMuscles: r.Muscles || r.muscles || '',
-                            sets: parseInt(r.Sets || r.sets) || 3,
-                            reps: String(r.Reps || r.reps || '10'),
-                            weight: String(r.Weight || r.weight || ''),
-                            notes: r.Notes || r.notes || ''
-                        });
+                        exercises.push({ exerciseId: null, exerciseName: exName, targetMuscles: r.Muscles || r.muscles || '', sets: parseInt(r.Sets || r.sets) || 3, reps: String(r.Reps || r.reps || '10'), weight: String(r.Weight || r.weight || ''), notes: r.Notes || r.notes || '' });
                     }
                     imported.push({ day, name: workoutName, exercises });
                 }
-                setProgram(imported);
-                setDirty(true);
-            } catch (err) {
-                alert('Failed to import: ' + (err.message || 'unknown error'));
-            }
+                setProgram(imported); setDirty(true);
+            } catch (err) { alert('Failed to import: ' + (err.message || 'unknown error')); }
         };
         reader.readAsArrayBuffer(file);
         e.target.value = '';
     };
 
-    // ── Import Excel as new program ──
+    // ── Import Excel as new week program ──
     const handleImportAsNew = (e) => {
         const file = e.target.files[0];
         if (!file) return;
@@ -336,299 +409,345 @@ const TrainerPrograms = () => {
                         const r = rows[i];
                         const exName = r.Exercise || r.exercise || '';
                         if (!exName || exName.toLowerCase().startsWith('workout:')) continue;
-                        exercises.push({
-                            exerciseId: null,
-                            exerciseName: exName,
-                            targetMuscles: r.Muscles || r.muscles || '',
-                            sets: parseInt(r.Sets || r.sets) || 3,
-                            reps: String(r.Reps || r.reps || '10'),
-                            weight: String(r.Weight || r.weight || ''),
-                            notes: r.Notes || r.notes || ''
-                        });
+                        exercises.push({ exerciseId: null, exerciseName: exName, targetMuscles: r.Muscles || r.muscles || '', sets: parseInt(r.Sets || r.sets) || 3, reps: String(r.Reps || r.reps || '10'), weight: String(r.Weight || r.weight || ''), notes: r.Notes || r.notes || '' });
                     }
                     imported.push({ day, name: workoutName, exercises });
                 }
-
-                // Use filename (without extension) as program name
                 const programTitle = file.name.replace(/\.(xlsx|xls)$/i, '').replace(/_/g, ' ');
                 const res = await axios.post('/api/v1/trainer/templates',
-                    { name: programTitle, programData: imported },
-                    { withCredentials: true }
+                    { name: programTitle, programData: imported, type: 'week' }, { withCredentials: true }
                 );
                 setShowNewModal(false);
                 await fetchTemplates();
                 loadTemplate(res.data.data.id);
-            } catch (err) {
-                alert('Failed to import: ' + (err.message || 'unknown error'));
-            }
+            } catch (err) { alert('Failed to import: ' + (err.message || 'unknown error')); }
         };
         reader.readAsArrayBuffer(file);
         e.target.value = '';
     };
 
-    // ── Filtered templates ──
-    const filteredTemplates = templates.filter(t =>
-        t.name.toLowerCase().includes(searchQuery.toLowerCase())
-    );
-
-    const dayWorkout = program.find(w => w.day === selectedDay);
+    const filteredTemplates    = templates.filter(t => t.name.toLowerCase().includes(searchQuery.toLowerCase()));
+    const filteredDayTemplates = dayTemplates.filter(t => t.name.toLowerCase().includes(daySearchQuery.toLowerCase()));
 
     return (
         <div className="tp-container">
-            <div className="tp-layout">
-                {/* ── Left: Programs list ── */}
-                <div className="tp-left">
-                    <div className="tp-left-header">
-                        <h3 className="tp-left-title">Programs</h3>
-                        <button className="tp-new-btn" onClick={() => setShowNewModal(true)} title="Create new program">
-                            <Plus size={16} />
-                        </button>
+            {/* ── Type tab switcher ── */}
+            <div className="tp-type-tabs">
+                <button
+                    className={`tp-type-tab ${programType === 'week' ? 'tp-type-tab-active' : ''}`}
+                    onClick={() => setProgramType('week')}
+                >
+                    Weekly Programs
+                </button>
+                <button
+                    className={`tp-type-tab ${programType === 'day' ? 'tp-type-tab-active' : ''}`}
+                    onClick={() => setProgramType('day')}
+                >
+                    Day Programs
+                </button>
+            </div>
+
+            {/* ── Weekly programs layout ── */}
+            {programType === 'week' && (
+                <div className="tp-layout">
+                    {/* Left: Programs list */}
+                    <div className="tp-left">
+                        <div className="tp-left-header">
+                            <h3 className="tp-left-title">Weekly Programs</h3>
+                            <button className="tp-new-btn" onClick={() => setShowNewModal(true)} title="Create new program">
+                                <Plus size={16} />
+                            </button>
+                        </div>
+
+                        <div className="tp-search-wrap">
+                            <Search size={14} className="tp-search-icon" />
+                            <input className="tp-search-input" placeholder="Search programs..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)} />
+                        </div>
+
+                        <div className="tp-list">
+                            {loadingList ? (
+                                <div className="tp-list-empty"><Loader2 size={20} className="tp-spin" /></div>
+                            ) : filteredTemplates.length === 0 ? (
+                                <div className="tp-list-empty">{searchQuery ? 'No matching programs.' : 'No programs yet. Create one!'}</div>
+                            ) : (
+                                filteredTemplates.map(t => (
+                                    <div
+                                        key={t.id}
+                                        className={`tp-list-item ${selectedId === t.id ? 'tp-list-item-active' : ''} ${draggingId === t.id ? 'tp-list-item-dragging' : ''}`}
+                                        draggable
+                                        onDragStart={(e) => { setDraggingId(t.id); e.dataTransfer.effectAllowed = 'copy'; e.dataTransfer.setData('text/plain', t.id); }}
+                                        onDragEnd={() => setDraggingId(null)}
+                                        onClick={() => loadTemplate(t.id)}
+                                    >
+                                        <div className="tp-list-item-grip"><GripVertical size={14} /></div>
+                                        <div className="tp-list-item-info">
+                                            <span className="tp-list-item-name">{t.name}</span>
+                                            <span className="tp-list-item-date">{new Date(t.createdAt).toLocaleDateString()}</span>
+                                        </div>
+                                        <div className="tp-list-item-actions">
+                                            <button className="tp-list-item-btn tp-list-item-btn-del" onClick={(e) => handleDelete(t.id, e)} title="Delete">
+                                                <Trash2 size={13} />
+                                            </button>
+                                        </div>
+                                    </div>
+                                ))
+                            )}
+                        </div>
                     </div>
 
-                    <div className="tp-search-wrap">
-                        <Search size={14} className="tp-search-icon" />
-                        <input
-                            className="tp-search-input"
-                            placeholder="Search programs..."
-                            value={searchQuery}
-                            onChange={e => setSearchQuery(e.target.value)}
-                        />
-                    </div>
-
-                    <div className="tp-list">
-                        {loadingList ? (
-                            <div className="tp-list-empty"><Loader2 size={20} className="tp-spin" /></div>
-                        ) : filteredTemplates.length === 0 ? (
-                            <div className="tp-list-empty">
-                                {searchQuery ? 'No matching programs.' : 'No programs yet. Create one!'}
+                    {/* Right: Program editor */}
+                    <div
+                        className={`tp-right ${dropHover ? 'tp-right-drop-hover' : ''}`}
+                        onDragOver={(e) => { e.preventDefault(); e.dataTransfer.dropEffect = 'copy'; setDropHover(true); }}
+                        onDragLeave={() => setDropHover(false)}
+                        onDrop={(e) => { e.preventDefault(); setDropHover(false); const id = parseInt(e.dataTransfer.getData('text/plain')); if (id) loadTemplate(id); }}
+                    >
+                        {!selectedId ? (
+                            <div className={`tp-empty-state ${dropHover ? 'tp-empty-state-hover' : ''}`}>
+                                <div className="tp-drop-zone">
+                                    <div className="tp-drop-zone-icon"><Download size={32} /></div>
+                                    <p>Drag a program here to edit</p>
+                                    <span>or click on one from the list</span>
+                                </div>
                             </div>
                         ) : (
-                            filteredTemplates.map(t => (
-                                <div
-                                    key={t.id}
-                                    className={`tp-list-item ${selectedId === t.id ? 'tp-list-item-active' : ''} ${draggingId === t.id ? 'tp-list-item-dragging' : ''}`}
-                                    draggable
-                                    onDragStart={(e) => {
-                                        setDraggingId(t.id);
-                                        e.dataTransfer.effectAllowed = 'copy';
-                                        e.dataTransfer.setData('text/plain', t.id);
-                                    }}
-                                    onDragEnd={() => setDraggingId(null)}
-                                    onClick={() => loadTemplate(t.id)}
-                                >
-                                    <div className="tp-list-item-grip">
-                                        <GripVertical size={14} />
+                            <>
+                                <div className="tp-editor-header">
+                                    <div className="tp-editor-title-row">
+                                        {renaming ? (
+                                            <div className="tp-rename-wrap">
+                                                <input className="tp-rename-input" value={renameValue} onChange={e => setRenameValue(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') handleRename(); if (e.key === 'Escape') setRenaming(false); }} autoFocus />
+                                                <button className="tp-rename-ok" onClick={handleRename}><Save size={14} /></button>
+                                                <button className="tp-rename-cancel" onClick={() => setRenaming(false)}><X size={14} /></button>
+                                            </div>
+                                        ) : (
+                                            <div className="tp-title-group">
+                                                <h2 className="tp-editor-title">{programName}</h2>
+                                                <button className="tp-rename-trigger" onClick={() => { setRenameValue(programName); setRenaming(true); }} title="Rename"><Pencil size={13} /></button>
+                                            </div>
+                                        )}
+                                        <div className="tp-editor-actions">
+                                            <input ref={importRef} type="file" accept=".xlsx,.xls" style={{ display: 'none' }} onChange={handleImport} />
+                                            <button className="tp-action-btn" onClick={() => importRef.current?.click()} title="Import from Excel"><Upload size={14} /> Import</button>
+                                            <button className="tp-action-btn" onClick={handleExport} title="Export as Excel"><Download size={14} /> Export</button>
+                                            <button className="tp-save-btn" onClick={handleSaveTemplate} disabled={saving}>
+                                                {saving ? <Loader2 size={14} className="tp-spin" /> : <Save size={14} />} Save
+                                            </button>
+                                        </div>
                                     </div>
-                                    <div className="tp-list-item-info">
-                                        <span className="tp-list-item-name">{t.name}</span>
-                                        <span className="tp-list-item-date">{new Date(t.createdAt).toLocaleDateString()}</span>
-                                    </div>
-                                    <div className="tp-list-item-actions">
-                                        <button className="tp-list-item-btn tp-list-item-btn-del" onClick={(e) => handleDelete(t.id, e)} title="Delete">
-                                            <Trash2 size={13} />
-                                        </button>
+
+                                    <div className="tp-day-tabs">
+                                        {DAYS.map((day, i) => {
+                                            const hasData = program.some(w => w.day === day && (w.name || w.exercises?.length));
+                                            return (
+                                                <button key={day} className={`tp-day-tab ${selectedDay === day ? 'tp-day-tab-active' : ''} ${hasData ? 'tp-day-tab-filled' : ''}`}
+                                                    onClick={() => { saveDayToProgram(); setSelectedDay(day); }}>
+                                                    {DAY_ABBR[i]}
+                                                </button>
+                                            );
+                                        })}
                                     </div>
                                 </div>
-                            ))
+
+                                <div className="tp-editor-body">
+                                    <div className="tp-day-card">
+                                        <div className="tp-day-card-header">
+                                            <span className="tp-day-label">{selectedDay}</span>
+                                            <input className="tp-workout-name-input" placeholder="Workout name (e.g. Upper Body)" value={editState.name}
+                                                onChange={e => { setEditState(prev => ({ ...prev, name: e.target.value })); setDirty(true); }} />
+                                        </div>
+
+                                        {editState.exercises.length === 0 ? (
+                                            <p className="tp-no-exercises">No exercises yet — add one below.</p>
+                                        ) : (
+                                            <div className="tp-exercise-list">
+                                                {editState.exercises.map((ex, idx) => (
+                                                    <div key={idx} className="tp-exercise-row">
+                                                        <div className="tp-exercise-name-col">
+                                                            <span className="tp-exercise-idx">{idx + 1}</span>
+                                                            <div>
+                                                                <div className="tp-exercise-name">{ex.exerciseName}</div>
+                                                                {ex.targetMuscles && <div className="tp-exercise-muscles">{ex.targetMuscles}</div>}
+                                                            </div>
+                                                        </div>
+                                                        <div className="tp-exercise-fields">
+                                                            <div className="tp-field"><label>Sets</label><input type="number" min="1" value={ex.sets} onChange={e => updateExercise(idx, 'sets', parseInt(e.target.value) || 0)} /></div>
+                                                            <div className="tp-field"><label>Reps</label><input value={ex.reps} onChange={e => updateExercise(idx, 'reps', e.target.value)} /></div>
+                                                            <div className="tp-field"><label>Weight</label><input value={ex.weight} onChange={e => updateExercise(idx, 'weight', e.target.value)} placeholder="kg" /></div>
+                                                        </div>
+                                                        <button className="tp-exercise-del" onClick={() => removeExercise(idx)}><Trash2 size={14} /></button>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        )}
+
+                                        <div className="tp-add-exercise" ref={searchRef}>
+                                            <div className="tp-ex-input-wrap">
+                                                <Plus size={14} className="tp-ex-input-icon" />
+                                                <input className="tp-ex-input" placeholder="Type exercise name..." value={exSearch} onChange={e => setExSearch(e.target.value)} onFocus={() => setShowExSearch(true)} onKeyDown={e => { if (e.key === 'Enter' && exSearch.trim()) addCustomExercise(); }} />
+                                            </div>
+                                            {showExSearch && (
+                                                <div className="tp-ex-dropdown">
+                                                    {exSearch.trim() && filteredEx.length === 0 && <div className="tp-ex-dropdown-item tp-ex-dropdown-custom" onClick={addCustomExercise}><Plus size={13} /> Add "{exSearch.trim()}"</div>}
+                                                    {exSearch.trim() && filteredEx.length > 0 && <div className="tp-ex-dropdown-item tp-ex-dropdown-custom" onClick={addCustomExercise}><Plus size={13} /> Add "{exSearch.trim()}" as new</div>}
+                                                    {(exSearch.trim() ? filteredEx : allExercises).slice(0, 20).map(ex => (
+                                                        <div key={ex.id} className="tp-ex-dropdown-item" onClick={() => addExercise(ex)}>
+                                                            <span className="tp-ex-dropdown-name">{ex.name}</span>
+                                                            {ex.targetMuscles && <span className="tp-ex-dropdown-muscles">{Array.isArray(ex.targetMuscles) ? ex.targetMuscles.join(', ') : ex.targetMuscles}</span>}
+                                                        </div>
+                                                    ))}
+                                                    {allExercises.length === 0 && !exSearch.trim() && <div className="tp-ex-dropdown-empty">Type a name and press Enter to add</div>}
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+                            </>
                         )}
                     </div>
                 </div>
+            )}
 
-                {/* ── Right: Program editor ── */}
-                <div
-                    className={`tp-right ${dropHover ? 'tp-right-drop-hover' : ''}`}
-                    onDragOver={(e) => { e.preventDefault(); e.dataTransfer.dropEffect = 'copy'; setDropHover(true); }}
-                    onDragLeave={() => setDropHover(false)}
-                    onDrop={(e) => {
-                        e.preventDefault();
-                        setDropHover(false);
-                        const id = parseInt(e.dataTransfer.getData('text/plain'));
-                        if (id) loadTemplate(id);
-                    }}
-                >
-                    {!selectedId ? (
-                        <div className={`tp-empty-state ${dropHover ? 'tp-empty-state-hover' : ''}`}>
-                            <div className="tp-drop-zone">
-                                <div className="tp-drop-zone-icon">
-                                    <Download size={32} />
-                                </div>
-                                <p>Drag a program here to edit</p>
-                                <span>or click on one from the list</span>
-                            </div>
+            {/* ── Day programs layout ── */}
+            {programType === 'day' && (
+                <div className="tp-layout">
+                    {/* Left: Day programs list */}
+                    <div className="tp-left">
+                        <div className="tp-left-header">
+                            <h3 className="tp-left-title">Day Programs</h3>
+                            <button className="tp-new-btn" onClick={() => setShowNewModal(true)} title="Create new day program">
+                                <Plus size={16} />
+                            </button>
                         </div>
-                    ) : (
-                        <>
-                            {/* Program header */}
-                            <div className="tp-editor-header">
-                                <div className="tp-editor-title-row">
-                                    {renaming ? (
-                                        <div className="tp-rename-wrap">
-                                            <input
-                                                className="tp-rename-input"
-                                                value={renameValue}
-                                                onChange={e => setRenameValue(e.target.value)}
-                                                onKeyDown={e => { if (e.key === 'Enter') handleRename(); if (e.key === 'Escape') setRenaming(false); }}
-                                                autoFocus
-                                            />
-                                            <button className="tp-rename-ok" onClick={handleRename}><Save size={14} /></button>
-                                            <button className="tp-rename-cancel" onClick={() => setRenaming(false)}><X size={14} /></button>
+
+                        <div className="tp-search-wrap">
+                            <Search size={14} className="tp-search-icon" />
+                            <input className="tp-search-input" placeholder="Search day programs..." value={daySearchQuery} onChange={e => setDaySearchQuery(e.target.value)} />
+                        </div>
+
+                        <div className="tp-list">
+                            {loadingList ? (
+                                <div className="tp-list-empty"><Loader2 size={20} className="tp-spin" /></div>
+                            ) : filteredDayTemplates.length === 0 ? (
+                                <div className="tp-list-empty">{daySearchQuery ? 'No matching programs.' : 'No day programs yet. Create one!'}</div>
+                            ) : (
+                                filteredDayTemplates.map(t => (
+                                    <div key={t.id} className={`tp-list-item ${daySelectedId === t.id ? 'tp-list-item-active' : ''}`} onClick={() => loadDayTemplate(t.id)}>
+                                        <div className="tp-list-item-info">
+                                            <span className="tp-list-item-name">{t.name}</span>
+                                            <span className="tp-list-item-date">{new Date(t.createdAt).toLocaleDateString()}</span>
                                         </div>
-                                    ) : (
-                                        <div className="tp-title-group">
-                                            <h2 className="tp-editor-title">{programName}</h2>
-                                            <button className="tp-rename-trigger" onClick={() => { setRenameValue(programName); setRenaming(true); }} title="Rename">
-                                                <Pencil size={13} />
+                                        <div className="tp-list-item-actions">
+                                            <button className="tp-list-item-btn tp-list-item-btn-del" onClick={(e) => handleDeleteDay(t.id, e)} title="Delete">
+                                                <Trash2 size={13} />
                                             </button>
                                         </div>
-                                    )}
-
-                                    <div className="tp-editor-actions">
-                                        <input ref={importRef} type="file" accept=".xlsx,.xls" style={{ display: 'none' }} onChange={handleImport} />
-                                        <button className="tp-action-btn" onClick={() => importRef.current?.click()} title="Import from Excel">
-                                            <Upload size={14} /> Import
-                                        </button>
-                                        <button className="tp-action-btn" onClick={handleExport} title="Export as Excel">
-                                            <Download size={14} /> Export
-                                        </button>
-                                        <button
-                                            className="tp-save-btn"
-                                            onClick={handleSaveTemplate}
-                                            disabled={saving}
-                                        >
-                                            {saving ? <Loader2 size={14} className="tp-spin" /> : <Save size={14} />}
-                                            Save
-                                        </button>
                                     </div>
-                                </div>
+                                ))
+                            )}
+                        </div>
+                    </div>
 
-                                {/* Day tabs */}
-                                <div className="tp-day-tabs">
-                                    {DAYS.map((day, i) => {
-                                        const hasData = program.some(w => w.day === day && (w.name || w.exercises?.length));
-                                        return (
-                                            <button
-                                                key={day}
-                                                className={`tp-day-tab ${selectedDay === day ? 'tp-day-tab-active' : ''} ${hasData ? 'tp-day-tab-filled' : ''}`}
-                                                onClick={() => {
-                                                    // Save current day before switching
-                                                    saveDayToProgram();
-                                                    setSelectedDay(day);
-                                                }}
-                                            >
-                                                {DAY_ABBR[i]}
-                                            </button>
-                                        );
-                                    })}
+                    {/* Right: Day editor */}
+                    <div className="tp-right">
+                        {!daySelectedId ? (
+                            <div className="tp-empty-state">
+                                <div className="tp-drop-zone">
+                                    <p>Select a day program to edit</p>
+                                    <span>or create a new one</span>
                                 </div>
                             </div>
-
-                            {/* Day editor */}
-                            <div className="tp-editor-body">
-                                <div className="tp-day-card">
-                                    <div className="tp-day-card-header">
-                                        <span className="tp-day-label">{selectedDay}</span>
-                                        <input
-                                            className="tp-workout-name-input"
-                                            placeholder="Workout name (e.g. Upper Body)"
-                                            value={editState.name}
-                                            onChange={e => { setEditState(prev => ({ ...prev, name: e.target.value })); setDirty(true); }}
-                                        />
-                                    </div>
-
-                                    {/* Exercises */}
-                                    {editState.exercises.length === 0 ? (
-                                        <p className="tp-no-exercises">No exercises yet — add one below.</p>
-                                    ) : (
-                                        <div className="tp-exercise-list">
-                                            {editState.exercises.map((ex, idx) => (
-                                                <div key={idx} className="tp-exercise-row">
-                                                    <div className="tp-exercise-name-col">
-                                                        <span className="tp-exercise-idx">{idx + 1}</span>
-                                                        <div>
-                                                            <div className="tp-exercise-name">{ex.exerciseName}</div>
-                                                            {ex.targetMuscles && <div className="tp-exercise-muscles">{ex.targetMuscles}</div>}
-                                                        </div>
-                                                    </div>
-                                                    <div className="tp-exercise-fields">
-                                                        <div className="tp-field">
-                                                            <label>Sets</label>
-                                                            <input type="number" min="1" value={ex.sets} onChange={e => updateExercise(idx, 'sets', parseInt(e.target.value) || 0)} />
-                                                        </div>
-                                                        <div className="tp-field">
-                                                            <label>Reps</label>
-                                                            <input value={ex.reps} onChange={e => updateExercise(idx, 'reps', e.target.value)} />
-                                                        </div>
-                                                        <div className="tp-field">
-                                                            <label>Weight</label>
-                                                            <input value={ex.weight} onChange={e => updateExercise(idx, 'weight', e.target.value)} placeholder="kg" />
-                                                        </div>
-                                                    </div>
-                                                    <button className="tp-exercise-del" onClick={() => removeExercise(idx)}>
-                                                        <Trash2 size={14} />
-                                                    </button>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    )}
-
-                                    {/* Add exercise */}
-                                    <div className="tp-add-exercise" ref={searchRef}>
-                                        <div className="tp-ex-input-wrap">
-                                            <Plus size={14} className="tp-ex-input-icon" />
-                                            <input
-                                                className="tp-ex-input"
-                                                placeholder="Type exercise name..."
-                                                value={exSearch}
-                                                onChange={e => setExSearch(e.target.value)}
-                                                onFocus={() => setShowExSearch(true)}
-                                                onKeyDown={e => { if (e.key === 'Enter' && exSearch.trim()) { addCustomExercise(); } }}
-                                            />
-                                        </div>
-                                        {showExSearch && (
-                                            <div className="tp-ex-dropdown">
-                                                {exSearch.trim() && filteredEx.length === 0 && (
-                                                    <div className="tp-ex-dropdown-item tp-ex-dropdown-custom" onClick={addCustomExercise}>
-                                                        <Plus size={13} /> Add "{exSearch.trim()}"
-                                                    </div>
-                                                )}
-                                                {exSearch.trim() && filteredEx.length > 0 && (
-                                                    <div className="tp-ex-dropdown-item tp-ex-dropdown-custom" onClick={addCustomExercise}>
-                                                        <Plus size={13} /> Add "{exSearch.trim()}" as new
-                                                    </div>
-                                                )}
-                                                {(exSearch.trim() ? filteredEx : allExercises).slice(0, 20).map(ex => (
-                                                    <div key={ex.id} className="tp-ex-dropdown-item" onClick={() => addExercise(ex)}>
-                                                        <span className="tp-ex-dropdown-name">{ex.name}</span>
-                                                        {ex.targetMuscles && <span className="tp-ex-dropdown-muscles">{
-                                                            Array.isArray(ex.targetMuscles) ? ex.targetMuscles.join(', ') : ex.targetMuscles
-                                                        }</span>}
-                                                    </div>
-                                                ))}
-                                                {allExercises.length === 0 && !exSearch.trim() && (
-                                                    <div className="tp-ex-dropdown-empty">Type a name and press Enter to add</div>
-                                                )}
+                        ) : (
+                            <>
+                                <div className="tp-editor-header">
+                                    <div className="tp-editor-title-row">
+                                        {dayRenaming ? (
+                                            <div className="tp-rename-wrap">
+                                                <input className="tp-rename-input" value={dayRenameValue} onChange={e => setDayRenameValue(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') handleRenameDay(); if (e.key === 'Escape') setDayRenaming(false); }} autoFocus />
+                                                <button className="tp-rename-ok" onClick={handleRenameDay}><Save size={14} /></button>
+                                                <button className="tp-rename-cancel" onClick={() => setDayRenaming(false)}><X size={14} /></button>
+                                            </div>
+                                        ) : (
+                                            <div className="tp-title-group">
+                                                <h2 className="tp-editor-title">{dayTemplateName}</h2>
+                                                <button className="tp-rename-trigger" onClick={() => { setDayRenameValue(dayTemplateName); setDayRenaming(true); }} title="Rename"><Pencil size={13} /></button>
                                             </div>
                                         )}
+                                        <div className="tp-editor-actions">
+                                            <button className="tp-save-btn" onClick={handleSaveDayTemplate} disabled={daySaving}>
+                                                {daySaving ? <Loader2 size={14} className="tp-spin" /> : <Save size={14} />} Save
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                        </>
-                    )}
+
+                                <div className="tp-editor-body">
+                                    <div className="tp-day-card">
+                                        {dayExercises.length === 0 ? (
+                                            <p className="tp-no-exercises">No exercises yet — add one below.</p>
+                                        ) : (
+                                            <div className="tp-exercise-list">
+                                                {dayExercises.map((ex, idx) => (
+                                                    <div key={idx} className="tp-exercise-row">
+                                                        <div className="tp-exercise-name-col">
+                                                            <span className="tp-exercise-idx">{idx + 1}</span>
+                                                            <div>
+                                                                <div className="tp-exercise-name">{ex.exerciseName}</div>
+                                                                {ex.targetMuscles && <div className="tp-exercise-muscles">{ex.targetMuscles}</div>}
+                                                            </div>
+                                                        </div>
+                                                        <div className="tp-exercise-fields">
+                                                            <div className="tp-field"><label>Sets</label><input type="number" min="1" value={ex.sets} onChange={e => updateDayExercise(idx, 'sets', parseInt(e.target.value) || 0)} /></div>
+                                                            <div className="tp-field"><label>Reps</label><input value={ex.reps} onChange={e => updateDayExercise(idx, 'reps', e.target.value)} /></div>
+                                                            <div className="tp-field"><label>Weight</label><input value={ex.weight} onChange={e => updateDayExercise(idx, 'weight', e.target.value)} placeholder="kg" /></div>
+                                                        </div>
+                                                        <button className="tp-exercise-del" onClick={() => removeDayExercise(idx)}><Trash2 size={14} /></button>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        )}
+
+                                        <div className="tp-add-exercise" ref={daySearchRef}>
+                                            <div className="tp-ex-input-wrap">
+                                                <Plus size={14} className="tp-ex-input-icon" />
+                                                <input className="tp-ex-input" placeholder="Type exercise name..." value={dayExSearch} onChange={e => setDayExSearch(e.target.value)} onFocus={() => setDayShowExSearch(true)} onKeyDown={e => { if (e.key === 'Enter' && dayExSearch.trim()) addCustomDayExercise(); }} />
+                                            </div>
+                                            {dayShowExSearch && (
+                                                <div className="tp-ex-dropdown">
+                                                    {dayExSearch.trim() && filteredDayEx.length === 0 && <div className="tp-ex-dropdown-item tp-ex-dropdown-custom" onClick={addCustomDayExercise}><Plus size={13} /> Add "{dayExSearch.trim()}"</div>}
+                                                    {dayExSearch.trim() && filteredDayEx.length > 0 && <div className="tp-ex-dropdown-item tp-ex-dropdown-custom" onClick={addCustomDayExercise}><Plus size={13} /> Add "{dayExSearch.trim()}" as new</div>}
+                                                    {(dayExSearch.trim() ? filteredDayEx : allExercises).slice(0, 20).map(ex => (
+                                                        <div key={ex.id} className="tp-ex-dropdown-item" onClick={() => addDayExercise(ex)}>
+                                                            <span className="tp-ex-dropdown-name">{ex.name}</span>
+                                                            {ex.targetMuscles && <span className="tp-ex-dropdown-muscles">{Array.isArray(ex.targetMuscles) ? ex.targetMuscles.join(', ') : ex.targetMuscles}</span>}
+                                                        </div>
+                                                    ))}
+                                                    {allExercises.length === 0 && !dayExSearch.trim() && <div className="tp-ex-dropdown-empty">Type a name and press Enter to add</div>}
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+                            </>
+                        )}
+                    </div>
                 </div>
-            </div>
+            )}
 
             {/* ── New program modal ── */}
             {showNewModal && (
                 <div className="tp-modal-overlay" onClick={() => setShowNewModal(false)}>
                     <div className="tp-modal" onClick={e => e.stopPropagation()}>
                         <div className="tp-modal-header">
-                            <span>New Program</span>
+                            <span>{programType === 'week' ? 'New Weekly Program' : 'New Day Program'}</span>
                             <button onClick={() => setShowNewModal(false)}><X size={16} /></button>
                         </div>
-                        <p className="tp-modal-hint">Give your new workout program a name.</p>
+                        <p className="tp-modal-hint">
+                            {programType === 'week' ? 'Give your new weekly workout program a name.' : 'Give your new day workout a name.'}
+                        </p>
                         <input
                             className="tp-modal-input"
-                            placeholder="e.g. Beginner Strength 4-day"
+                            placeholder={programType === 'week' ? 'e.g. Beginner Strength 4-day' : 'e.g. Push Day A'}
                             value={newName}
                             onChange={e => setNewName(e.target.value)}
                             onKeyDown={e => e.key === 'Enter' && handleCreateNew()}
@@ -638,14 +757,15 @@ const TrainerPrograms = () => {
                             {creatingNew ? <Loader2 size={14} className="tp-spin" /> : <Plus size={14} />} Create
                         </button>
 
-                        <div className="tp-modal-divider">
-                            <span>or</span>
-                        </div>
-
-                        <input ref={newImportRef} type="file" accept=".xlsx,.xls" style={{ display: 'none' }} onChange={handleImportAsNew} />
-                        <button className="tp-modal-import-btn" onClick={() => newImportRef.current?.click()}>
-                            <Upload size={14} /> Load Program from Excel
-                        </button>
+                        {programType === 'week' && (
+                            <>
+                                <div className="tp-modal-divider"><span>or</span></div>
+                                <input ref={newImportRef} type="file" accept=".xlsx,.xls" style={{ display: 'none' }} onChange={handleImportAsNew} />
+                                <button className="tp-modal-import-btn" onClick={() => newImportRef.current?.click()}>
+                                    <Upload size={14} /> Load Program from Excel
+                                </button>
+                            </>
+                        )}
                     </div>
                 </div>
             )}

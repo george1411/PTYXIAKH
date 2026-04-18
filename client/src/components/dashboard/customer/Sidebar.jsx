@@ -39,7 +39,7 @@ const Sidebar = ({ activeTab = 'overview', onNavigate, onLogout, user }) => {
     }, []);
 
     return (
-        <div className="w-64 h-screen flex flex-col flex-shrink-0 sticky top-0 font-sans" style={{ background: '#111111', borderRight: '1px solid rgba(255,255,255,0.06)' }}>
+        <div className="w-60 flex flex-col flex-shrink-0 font-sans overflow-hidden" style={{ background: '#121212', borderRadius: '12px', height: '100%' }}>
             {/* Logo */}
             <div className="px-6 pt-7 pb-6">
                 <span className="font-black text-xl tracking-tight text-white">

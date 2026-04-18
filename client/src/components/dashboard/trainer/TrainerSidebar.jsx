@@ -45,7 +45,7 @@ const TrainerSidebar = ({ activeTab = 'overview', onNavigate, onLogout, user }) 
         >
             <div className="p-6">
                 <div className="flex items-center gap-3 mb-2">
-                    <span className="font-bold text-xl tracking-wide" style={{ color: '#f0f0f0' }}>GymLit</span>
+                    <span className="font-bold text-xl tracking-wide" style={{ color: '#f0f0f0' }}>Gym<span style={{ color: '#818CF8' }}>Lit</span></span>
                 </div>
                 <div className="text-xs uppercase tracking-widest" style={{ color: 'rgba(255,255,255,0.3)' }}>Trainer Panel</div>
             </div>

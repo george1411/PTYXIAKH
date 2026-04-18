@@ -2,13 +2,12 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import axios from 'axios';
 import {
     Search, ChevronRight, Trash2, Plus, Save, X, Loader2, Send,
-    Upload, Download, BookMarked, Copy, CheckCircle
+    BookMarked, Copy, CheckCircle
 } from 'lucide-react';
 import {
     LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer,
     BarChart, Bar, Legend
 } from 'recharts';
-import * as XLSX from 'xlsx';
 import './TrainerClients.css';
 
 const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
@@ -25,7 +24,6 @@ const getWeekDates = () => {
         return `${d.getDate()}/${d.getMonth() + 1}`;
     });
 };
-const WEEK_DATES = getWeekDates();
 
 // ─── Helpers ─────────────────────────────────────────────────
 const lastActiveLabel = (dateStr) => {
@@ -144,6 +142,7 @@ const OverviewPanel = ({ detail }) => {
 
 // ─── Program Panel ────────────────────────────────────────────
 const ProgramPanel = ({ clientId }) => {
+    const WEEK_DATES = getWeekDates();
     const [program, setProgram]             = useState([]);  // [{id, day, name, exercises:[]}]
     const [selectedDay, setSelectedDay]     = useState('Monday');
     const [editState, setEditState]         = useState({ name: '', exercises: [] });
@@ -156,114 +155,63 @@ const ProgramPanel = ({ clientId }) => {
     const searchRef = useRef(null);
 
     // ── Template state ──────────────────────────────────────────
-    const [templates, setTemplates]         = useState([]);
+    const [templates, setTemplates]                 = useState([]);
     const [showTemplateModal, setShowTemplateModal] = useState(false); // 'save' | 'load' | false
-    const [templateName, setTemplateName]   = useState('');
-    const [savingTpl, setSavingTpl]         = useState(false);
-    const [loadingTpls, setLoadingTpls]     = useState(false);
-    const importRef = useRef(null);
+    const [templateName, setTemplateName]           = useState('');
+    const [savingTpl, setSavingTpl]                 = useState(false);
+    const [loadingTpls, setLoadingTpls]             = useState(false);
+
+    // ── Day program state ───────────────────────────────────────
+    const [showSaveDayModal, setShowSaveDayModal]   = useState(false);
+    const [saveDayName, setSaveDayName]             = useState('');
+    const [savingDay, setSavingDay]                 = useState(false);
+    const [dayTemplates, setDayTemplates]           = useState([]);
+    const [showLoadDayModal, setShowLoadDayModal]   = useState(false);
+    const [loadingDayTpls, setLoadingDayTpls]       = useState(false);
 
     const fetchTemplates = async () => {
         setLoadingTpls(true);
         try {
-            const res = await axios.get('/api/v1/trainer/templates', { withCredentials: true });
+            const res = await axios.get('/api/v1/trainer/templates?type=week', { withCredentials: true });
             setTemplates(res.data.data || []);
         } catch (e) { console.error(e); }
         finally { setLoadingTpls(false); }
     };
 
-    // Export current full program as Excel file
-    const handleExport = () => {
-        const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-        const wb = XLSX.utils.book_new();
-
-        for (const day of DAYS) {
-            const workout = program.find(w => w.day === day);
-            const rows = [];
-
-            // First row: workout name
-            rows.push({ Exercise: `Workout: ${workout?.name || ''}`, Muscles: '', Sets: '', Reps: '', Weight: '', Notes: '' });
-            rows.push({}); // empty row separator
-
-            if (workout?.exercises?.length) {
-                for (const ex of workout.exercises) {
-                    rows.push({
-                        Exercise: ex.exerciseName || '',
-                        Muscles: ex.targetMuscles || '',
-                        Sets: ex.sets ?? '',
-                        Reps: ex.reps || '',
-                        Weight: ex.weight || '',
-                        Notes: ex.notes || ''
-                    });
-                }
-            }
-
-            const ws = XLSX.utils.json_to_sheet(rows);
-            // Set column widths
-            ws['!cols'] = [
-                { wch: 25 }, { wch: 18 }, { wch: 6 }, { wch: 8 }, { wch: 8 }, { wch: 25 }
-            ];
-            XLSX.utils.book_append_sheet(wb, ws, day);
-        }
-
-        XLSX.writeFile(wb, `program_client${clientId}.xlsx`);
+    const fetchDayTemplates = async () => {
+        setLoadingDayTpls(true);
+        try {
+            const res = await axios.get('/api/v1/trainer/templates?type=day', { withCredentials: true });
+            setDayTemplates(res.data.data || []);
+        } catch (e) { console.error(e); }
+        finally { setLoadingDayTpls(false); }
     };
 
-    // Import program from uploaded Excel file and apply to client
-    const handleImport = (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
-        const reader = new FileReader();
-        reader.onload = async (ev) => {
-            try {
-                const wb = XLSX.read(ev.target.result, { type: 'array' });
-                const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+    const handleSaveDay = async () => {
+        if (!saveDayName.trim()) return;
+        setSavingDay(true);
+        try {
+            await axios.post('/api/v1/trainer/templates',
+                { name: saveDayName.trim(), programData: { exercises: editState.exercises }, type: 'day' },
+                { withCredentials: true }
+            );
+            setShowSaveDayModal(false);
+            setSaveDayName('');
+        } catch (e) { console.error(e); }
+        finally { setSavingDay(false); }
+    };
 
-                for (const sheetName of wb.SheetNames) {
-                    const day = DAYS.find(d => d.toLowerCase() === sheetName.toLowerCase());
-                    if (!day) continue;
-
-                    const rows = XLSX.utils.sheet_to_json(wb.Sheets[sheetName], { defval: '' });
-                    if (rows.length === 0) continue;
-
-                    // First row contains workout name as "Workout: Name"
-                    const firstRow = rows[0];
-                    const nameCell = firstRow.Exercise || firstRow.exercise || Object.values(firstRow)[0] || '';
-                    const workoutName = nameCell.replace(/^Workout:\s*/i, '').trim() || day;
-
-                    // Remaining rows (skip first row + empty separator) are exercises
-                    const exercises = [];
-                    for (let i = 1; i < rows.length; i++) {
-                        const r = rows[i];
-                        const exName = r.Exercise || r.exercise || '';
-                        if (!exName || exName.toLowerCase().startsWith('workout:')) continue;
-
-                        exercises.push({
-                            exerciseId: null,
-                            exerciseName: exName,
-                            targetMuscles: r.Muscles || r.muscles || '',
-                            sets: parseInt(r.Sets || r.sets) || 3,
-                            reps: String(r.Reps || r.reps || '10'),
-                            weight: String(r.Weight || r.weight || ''),
-                            notes: r.Notes || r.notes || ''
-                        });
-                    }
-
-                    if (workoutName) {
-                        await axios.post(
-                            `/api/v1/trainer/clients/${clientId}/program`,
-                            { day, name: workoutName, exercises },
-                            { withCredentials: true }
-                        );
-                    }
-                }
-                await loadProgram();
-            } catch (err) {
-                alert('Failed to import: ' + (err.message || 'unknown error'));
-            }
-        };
-        reader.readAsArrayBuffer(file);
-        e.target.value = '';
+    const handleLoadDay = async (tplId) => {
+        try {
+            const res = await axios.get(`/api/v1/trainer/templates/${tplId}`, { withCredentials: true });
+            const data = res.data.data;
+            const pd = data.programData;
+            setEditState({
+                name: pd.name || data.name || '',
+                exercises: pd.exercises || []
+            });
+            setShowLoadDayModal(false);
+        } catch (e) { console.error(e); }
     };
 
     // Save current full program as a named template
@@ -286,12 +234,15 @@ const ProgramPanel = ({ clientId }) => {
     const handleLoadTemplate = async (tplId) => {
         try {
             const res = await axios.get(`/api/v1/trainer/templates/${tplId}`, { withCredentials: true });
-            const days = res.data.data.programData || [];
+            const days = (res.data.data.programData || []).filter(w => w.day);
+            if (days.length === 0) {
+                alert('This program has no days configured yet. Add workouts to it in the Programs tab first.');
+                return;
+            }
             for (const w of days) {
-                if (!w.day || !w.name) continue;
                 await axios.post(
                     `/api/v1/trainer/clients/${clientId}/program`,
-                    { day: w.day, name: w.name, exercises: w.exercises || [] },
+                    { day: w.day, name: w.name || w.day, exercises: w.exercises || [] },
                     { withCredentials: true }
                 );
             }
@@ -416,17 +367,16 @@ const ProgramPanel = ({ clientId }) => {
         <div className="tc-program">
             {/* Program toolbar */}
             <div className="tc-program-toolbar">
-                <input ref={importRef} type="file" accept=".xlsx,.xls" style={{ display: 'none' }} onChange={handleImport} />
-                <button className="tc-tpl-btn" onClick={handleExport} title="Export program as Excel">
-                    <Download size={14} /> Export
+                <button className="tc-tpl-btn" onClick={() => { setSaveDayName(editState.name); setShowSaveDayModal(true); }} title="Save this day as a day program">
+                    <Save size={14} /> Save Day
                 </button>
-                <button className="tc-tpl-btn" onClick={() => importRef.current?.click()} title="Import program from Excel">
-                    <Upload size={14} /> Import
+                <button className="tc-tpl-btn" onClick={() => { fetchDayTemplates(); setShowLoadDayModal(true); }} title="Load a day program into this day">
+                    <BookMarked size={14} /> Load Day
                 </button>
-                <button className="tc-tpl-btn" onClick={() => { setShowTemplateModal('save'); }} title="Save as program">
+                <button className="tc-tpl-btn" onClick={() => { setShowTemplateModal('save'); }} title="Save full week as a program">
                     <Save size={14} /> Save Program
                 </button>
-                <button className="tc-tpl-btn" onClick={() => { fetchTemplates(); setShowTemplateModal('load'); }} title="Load a saved workout">
+                <button className="tc-tpl-btn" onClick={() => { fetchTemplates(); setShowTemplateModal('load'); }} title="Load a saved weekly program">
                     <BookMarked size={14} /> Load Workout
                 </button>
             </div>
@@ -472,6 +422,57 @@ const ProgramPanel = ({ clientId }) => {
                             <div className="tc-tpl-list">
                                 {templates.map(t => (
                                     <div key={t.id} className="tc-tpl-item" onClick={() => handleLoadTemplate(t.id)}>
+                                        <span className="tc-tpl-item-name">{t.name}</span>
+                                        <span className="tc-tpl-item-date">{new Date(t.createdAt).toLocaleDateString()}</span>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                </div>
+            )}
+
+            {/* Save Day modal */}
+            {showSaveDayModal && (
+                <div className="tc-tpl-modal-overlay" onClick={() => setShowSaveDayModal(false)}>
+                    <div className="tc-tpl-modal" onClick={e => e.stopPropagation()}>
+                        <div className="tc-tpl-modal-header">
+                            <span>Save Day Program</span>
+                            <button onClick={() => setShowSaveDayModal(false)}><X size={16} /></button>
+                        </div>
+                        <p className="tc-tpl-modal-hint">Save this day's workout as a reusable day program.</p>
+                        <input
+                            className="tc-tpl-name-input"
+                            placeholder="e.g. Push Day A"
+                            value={saveDayName}
+                            onChange={e => setSaveDayName(e.target.value)}
+                            onKeyDown={e => e.key === 'Enter' && handleSaveDay()}
+                            autoFocus
+                        />
+                        <button className="tc-tpl-confirm-btn" onClick={handleSaveDay} disabled={savingDay || !saveDayName.trim()}>
+                            {savingDay ? <Loader2 className="tc-spin" size={14} /> : <Save size={14} />} Save Day
+                        </button>
+                    </div>
+                </div>
+            )}
+
+            {/* Load Day modal */}
+            {showLoadDayModal && (
+                <div className="tc-tpl-modal-overlay" onClick={() => setShowLoadDayModal(false)}>
+                    <div className="tc-tpl-modal" onClick={e => e.stopPropagation()}>
+                        <div className="tc-tpl-modal-header">
+                            <span>Load Day Program</span>
+                            <button onClick={() => setShowLoadDayModal(false)}><X size={16} /></button>
+                        </div>
+                        <p className="tc-tpl-modal-hint">Select a day program to load into this day.</p>
+                        {loadingDayTpls ? (
+                            <div className="tc-tpl-loading"><Loader2 className="tc-spin" size={20} /></div>
+                        ) : dayTemplates.length === 0 ? (
+                            <div className="tc-tpl-empty">No day programs yet. Create one in the Programs tab.</div>
+                        ) : (
+                            <div className="tc-tpl-list">
+                                {dayTemplates.map(t => (
+                                    <div key={t.id} className="tc-tpl-item" onClick={() => handleLoadDay(t.id)}>
                                         <span className="tc-tpl-item-name">{t.name}</span>
                                         <span className="tc-tpl-item-date">{new Date(t.createdAt).toLocaleDateString()}</span>
                                     </div>

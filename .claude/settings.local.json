@@ -46,7 +46,10 @@
       "Bash(cat /c/Users/georg/Downloads/PTYXIAKH/config/*.js)",
       "Bash(git add:*)",
       "Bash(git commit:*)",
-      "Bash(net start:*)"
+      "Bash(net start:*)",
+      "Bash(npm run:*)",
+      "Bash(netstat -ano)",
+      "Bash(xargs -r taskkill //F //PID)"
     ]
   }
 }

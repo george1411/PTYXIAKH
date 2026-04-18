@@ -1,13 +1,42 @@
 /* ─── Layout ─────────────────────────────────────────────────── */
 .tp-container {
     height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+/* ─── Program type tab switcher ──────────────────────────────── */
+.tp-type-tabs {
+    display: flex;
+    gap: 4px;
+    padding: 10px 0 10px 0;
+    flex-shrink: 0;
+}
+
+.tp-type-tab {
+    padding: 7px 20px;
+    border-radius: 8px;
+    border: 1px solid transparent;
+    background: transparent;
+    color: rgba(255,255,255,0.4);
+    font-size: 0.82rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+.tp-type-tab:hover { background: var(--border-light); color: rgba(255,255,255,0.7); }
+.tp-type-tab-active {
+    background: var(--accent-light);
+    color: var(--text);
+    border-color: rgba(255,255,255,0.12);
 }
 
 .tp-layout {
     display: grid;
     grid-template-columns: 300px 1fr;
     gap: 0;
-    height: calc(100vh - 10rem);
+    flex: 1;
+    min-height: 0;
     border: 1px solid var(--border);
     border-radius: 16px;
     overflow: hidden;
@@ -284,7 +313,7 @@
     outline: none;
     min-width: 200px;
 }
-.tp-rename-input:focus { border-color: rgba(255,255,255,0.3); }
+.tp-rename-input:focus { border-color: var(--purple-border); }
 
 .tp-rename-ok, .tp-rename-cancel {
     display: flex;
@@ -335,14 +364,14 @@
     padding: 6px 18px;
     border: none;
     border-radius: 8px;
-    background: var(--accent);
-    color: #000;
+    background: var(--purple);
+    color: #fff;
     font-size: 0.8rem;
     font-weight: 700;
     cursor: pointer;
     transition: background 0.15s;
 }
-.tp-save-btn:hover:not(:disabled) { background: var(--accent-hover); }
+.tp-save-btn:hover:not(:disabled) { background: var(--purple-hover); }
 .tp-save-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
 /* ─── Day tabs ───────────────────────────────────────────────── */
@@ -375,7 +404,8 @@
     width: 4px;
     height: 4px;
     border-radius: 50%;
-    background: rgba(255,255,255,0.3);
+    background: var(--purple);
+    opacity: 0.5;
     margin-left: 6px;
     vertical-align: middle;
 }

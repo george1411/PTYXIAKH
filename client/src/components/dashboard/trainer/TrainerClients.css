@@ -54,7 +54,7 @@
 }
 
 .tc-search-input:focus {
-    border-color: rgba(255,255,255,0.25);
+    border-color: var(--purple-border);
 }
 
 .tc-client-list {
@@ -78,7 +78,7 @@
 }
 
 .tc-client-item:hover    { background: rgba(255,255,255,0.04); }
-.tc-client-item.selected { background: rgba(255,255,255,0.08); }
+.tc-client-item.selected { background: var(--purple-light); border-left: 2px solid var(--purple); padding-left: 10px; }
 
 .tc-client-avatar {
     width: 38px;
@@ -436,7 +436,7 @@
     color: var(--text);
 }
 .tc-tpl-name-input::placeholder { color: var(--text-muted); }
-.tc-tpl-name-input:focus { border-color: rgba(255,255,255,0.25); }
+.tc-tpl-name-input:focus { border-color: var(--purple-border); }
 
 .tc-tpl-confirm-btn {
     display: flex;
@@ -444,8 +444,8 @@
     justify-content: center;
     gap: 6px;
     padding: 9px;
-    background: var(--accent);
-    color: #000;
+    background: var(--purple);
+    color: #fff;
     border: none;
     border-radius: 8px;
     font-size: 0.88rem;
@@ -453,7 +453,7 @@
     cursor: pointer;
     transition: background 0.15s;
 }
-.tc-tpl-confirm-btn:hover:not(:disabled) { background: var(--accent-hover); }
+.tc-tpl-confirm-btn:hover:not(:disabled) { background: var(--purple-hover); }
 .tc-tpl-confirm-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
 .tc-tpl-loading, .tc-tpl-empty {

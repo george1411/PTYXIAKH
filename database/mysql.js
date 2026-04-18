@@ -60,11 +60,13 @@ const connectToDatabase = async () => {
                 trainerId INT NOT NULL,
                 name VARCHAR(255) NOT NULL,
                 programData JSON NOT NULL,
+                type ENUM('week','day') NOT NULL DEFAULT 'week',
                 createdAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
                 updatedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
                 FOREIGN KEY (trainerId) REFERENCES Users(id) ON DELETE CASCADE
             )
         `);
+        await addColumnIfNotExists('WorkoutTemplates', 'type', "ENUM('week','day') NOT NULL DEFAULT 'week'");
 
         // Create FitbitTokens table if not exists
         await sequelize.query(`
