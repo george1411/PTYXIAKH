@@ -26,7 +26,11 @@ const WeeklySteps = () => {
                 if (res.data.connected) {
                     axios.post('/api/v1/fitbit/sync', {}, { withCredentials: true })
                         .then(() => fetchData())
-                        .catch(() => {});
+                        .catch(err => {
+                            const msg = err.response?.data?.message || 'Auto-sync failed';
+                            setSyncMsg(msg);
+                            setTimeout(() => setSyncMsg(''), 5000);
+                        });
                 }
             })
             .catch(() => setFitbitConnected(false));
@@ -100,7 +104,11 @@ const WeeklySteps = () => {
                 </div>
             </div>
 
-            {syncMsg && <div className="ws-sync-msg">{syncMsg}</div>}
+            {syncMsg && (
+                <div className="ws-sync-msg" style={{ color: syncMsg.toLowerCase().includes('fail') || syncMsg.toLowerCase().includes('error') ? '#f87171' : '#00b894' }}>
+                    {syncMsg}
+                </div>
+            )}
 
             <div className="ws-stats-row">
                 <div className="ws-stat">
