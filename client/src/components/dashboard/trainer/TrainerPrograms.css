@@ -474,9 +474,20 @@
     border: 1px solid var(--accent-light);
     border-radius: 8px;
     background: rgba(255,255,255,0.02);
-    transition: background 0.15s;
+    transition: background 0.15s, border-color 0.15s;
+    cursor: grab;
 }
 .tp-exercise-row:hover { background: var(--border-light); }
+.tp-exercise-row-dragover {
+    border-color: #818CF8;
+    background: rgba(129,140,248,0.08);
+}
+.tp-exercise-grip {
+    color: rgba(255,255,255,0.18);
+    flex-shrink: 0;
+    cursor: grab;
+}
+.tp-exercise-row:hover .tp-exercise-grip { color: rgba(255,255,255,0.4); }
 
 .tp-exercise-name-col {
     display: flex;

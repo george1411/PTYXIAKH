@@ -92,7 +92,7 @@ const TrainerOverview = ({ user, onNavigate }) => {
             {/* Welcome */}
             <div className="to-welcome">
                 <h1 className="to-welcome-title">
-                    Welcome back, {user?.name?.split(' ')[0] || 'Coach'}
+                    Welcome back.
                 </h1>
                 <p className="to-welcome-sub">
                     {stats.totalClients || 0} client{stats.totalClients !== 1 ? 's' : ''} · {stats.todaySessions || 0} sessions today

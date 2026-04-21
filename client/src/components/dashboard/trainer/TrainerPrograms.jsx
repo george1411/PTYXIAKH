@@ -60,6 +60,14 @@ const TrainerPrograms = () => {
     const [daySaving, setDaySaving]         = useState(false);
     const [daySearchQuery, setDaySearchQuery] = useState('');
 
+    // ── Day: Template drag (list → panel) ──
+    const [dayDraggingId, setDayDraggingId] = useState(null);
+    const [dayDropHover, setDayDropHover]   = useState(false);
+
+    // ── Day: Exercise drag (reorder) ──
+    const [dayExDragging, setDayExDragging] = useState(null);
+    const [dayExDragOver, setDayExDragOver] = useState(null);
+
     // ── Day: Exercise search ──
     const [dayExSearch, setDayExSearch]         = useState('');
     const [dayShowExSearch, setDayShowExSearch] = useState(false);
@@ -315,6 +323,20 @@ const TrainerPrograms = () => {
     const filteredEx = allExercises.filter(e => e.name.toLowerCase().includes(exSearch.toLowerCase()));
 
     // ── Day exercise helpers ──
+    // ── Day: Exercise reorder ──
+    const handleDayExDrop = (toIdx) => {
+        if (dayExDragging === null || dayExDragging === toIdx) return;
+        setDayExercises(prev => {
+            const exs = [...prev];
+            const [moved] = exs.splice(dayExDragging, 1);
+            exs.splice(toIdx, 0, moved);
+            return exs;
+        });
+        setDayDirty(true);
+        setDayExDragging(null);
+        setDayExDragOver(null);
+    };
+
     const addDayExercise = (ex) => {
         setDayExercises(prev => [...prev, {
             exerciseId: ex.id || null, exerciseName: ex.name,
@@ -443,7 +465,7 @@ const TrainerPrograms = () => {
                     className={`tp-type-tab ${programType === 'day' ? 'tp-type-tab-active' : ''}`}
                     onClick={() => setProgramType('day')}
                 >
-                    Day Programs
+                    1-Day Programs
                 </button>
             </div>
 
@@ -608,31 +630,39 @@ const TrainerPrograms = () => {
                 </div>
             )}
 
-            {/* ── Day programs layout ── */}
+            {/* ── 1-Day programs layout ── */}
             {programType === 'day' && (
                 <div className="tp-layout">
-                    {/* Left: Day programs list */}
+                    {/* Left: 1-Day programs list */}
                     <div className="tp-left">
                         <div className="tp-left-header">
-                            <h3 className="tp-left-title">Day Programs</h3>
-                            <button className="tp-new-btn" onClick={() => setShowNewModal(true)} title="Create new day program">
+                            <h3 className="tp-left-title">1-Day Programs</h3>
+                            <button className="tp-new-btn" onClick={() => setShowNewModal(true)} title="Create new 1-day program">
                                 <Plus size={16} />
                             </button>
                         </div>
 
                         <div className="tp-search-wrap">
                             <Search size={14} className="tp-search-icon" />
-                            <input className="tp-search-input" placeholder="Search day programs..." value={daySearchQuery} onChange={e => setDaySearchQuery(e.target.value)} />
+                            <input className="tp-search-input" placeholder="Search 1-day programs..." value={daySearchQuery} onChange={e => setDaySearchQuery(e.target.value)} />
                         </div>
 
                         <div className="tp-list">
                             {loadingList ? (
                                 <div className="tp-list-empty"><Loader2 size={20} className="tp-spin" /></div>
                             ) : filteredDayTemplates.length === 0 ? (
-                                <div className="tp-list-empty">{daySearchQuery ? 'No matching programs.' : 'No day programs yet. Create one!'}</div>
+                                <div className="tp-list-empty">{daySearchQuery ? 'No matching programs.' : 'No 1-day programs yet. Create one!'}</div>
                             ) : (
                                 filteredDayTemplates.map(t => (
-                                    <div key={t.id} className={`tp-list-item ${daySelectedId === t.id ? 'tp-list-item-active' : ''}`} onClick={() => loadDayTemplate(t.id)}>
+                                    <div
+                                        key={t.id}
+                                        className={`tp-list-item ${daySelectedId === t.id ? 'tp-list-item-active' : ''} ${dayDraggingId === t.id ? 'tp-list-item-dragging' : ''}`}
+                                        draggable
+                                        onDragStart={e => { setDayDraggingId(t.id); e.dataTransfer.effectAllowed = 'copy'; e.dataTransfer.setData('text/plain', t.id); }}
+                                        onDragEnd={() => setDayDraggingId(null)}
+                                        onClick={() => loadDayTemplate(t.id)}
+                                    >
+                                        <div className="tp-list-item-grip"><GripVertical size={14} /></div>
                                         <div className="tp-list-item-info">
                                             <span className="tp-list-item-name">{t.name}</span>
                                             <span className="tp-list-item-date">{new Date(t.createdAt).toLocaleDateString()}</span>
@@ -649,12 +679,18 @@ const TrainerPrograms = () => {
                     </div>
 
                     {/* Right: Day editor */}
-                    <div className="tp-right">
+                    <div
+                        className={`tp-right ${dayDropHover ? 'tp-right-drop-hover' : ''}`}
+                        onDragOver={e => { e.preventDefault(); e.dataTransfer.dropEffect = 'copy'; setDayDropHover(true); }}
+                        onDragLeave={() => setDayDropHover(false)}
+                        onDrop={e => { e.preventDefault(); setDayDropHover(false); const id = parseInt(e.dataTransfer.getData('text/plain')); if (id) loadDayTemplate(id); }}
+                    >
                         {!daySelectedId ? (
-                            <div className="tp-empty-state">
+                            <div className={`tp-empty-state ${dayDropHover ? 'tp-empty-state-hover' : ''}`}>
                                 <div className="tp-drop-zone">
-                                    <p>Select a day program to edit</p>
-                                    <span>or create a new one</span>
+                                    <div className="tp-drop-zone-icon"><Download size={32} /></div>
+                                    <p>Drag a program here to edit</p>
+                                    <span>or click on one from the list</span>
                                 </div>
                             </div>
                         ) : (
@@ -688,7 +724,17 @@ const TrainerPrograms = () => {
                                         ) : (
                                             <div className="tp-exercise-list">
                                                 {dayExercises.map((ex, idx) => (
-                                                    <div key={idx} className="tp-exercise-row">
+                                                    <div
+                                                        key={idx}
+                                                        className={`tp-exercise-row${dayExDragOver === idx ? ' tp-exercise-row-dragover' : ''}`}
+                                                        draggable
+                                                        onDragStart={() => setDayExDragging(idx)}
+                                                        onDragOver={e => { e.preventDefault(); setDayExDragOver(idx); }}
+                                                        onDragLeave={() => setDayExDragOver(null)}
+                                                        onDrop={() => handleDayExDrop(idx)}
+                                                        onDragEnd={() => { setDayExDragging(null); setDayExDragOver(null); }}
+                                                    >
+                                                        <div className="tp-exercise-grip"><GripVertical size={14} /></div>
                                                         <div className="tp-exercise-name-col">
                                                             <span className="tp-exercise-idx">{idx + 1}</span>
                                                             <div>
@@ -739,15 +785,15 @@ const TrainerPrograms = () => {
                 <div className="tp-modal-overlay" onClick={() => setShowNewModal(false)}>
                     <div className="tp-modal" onClick={e => e.stopPropagation()}>
                         <div className="tp-modal-header">
-                            <span>{programType === 'week' ? 'New Weekly Program' : 'New Day Program'}</span>
+                            <span>{programType === 'week' ? 'New Weekly Program' : 'New 1-Day Program'}</span>
                             <button onClick={() => setShowNewModal(false)}><X size={16} /></button>
                         </div>
                         <p className="tp-modal-hint">
-                            {programType === 'week' ? 'Give your new weekly workout program a name.' : 'Give your new day workout a name.'}
+                            {programType === 'week' ? 'Give your new weekly workout program a name.' : 'Give your new 1-day workout a name.'}
                         </p>
                         <input
                             className="tp-modal-input"
-                            placeholder={programType === 'week' ? 'e.g. Beginner Strength 4-day' : 'e.g. Push Day A'}
+                            placeholder={programType === 'week' ? 'e.g. Beginner Strength 4-day' : 'e.g. Push Day'}
                             value={newName}
                             onChange={e => setNewName(e.target.value)}
                             onKeyDown={e => e.key === 'Enter' && handleCreateNew()}

@@ -94,7 +94,9 @@ const NotificationBell = ({ onNavigateToMessages }) => {
                                             <span className="text-xs font-semibold text-gray-300 truncate">{c.name}</span>
                                             <span className="text-[10px] text-gray-600 flex-shrink-0">{formatTime(c.lastAt)}</span>
                                         </div>
-                                        <p className="text-xs text-gray-500 mt-0.5 line-clamp-2 leading-relaxed">{c.lastMessage || '—'}</p>
+                                        <p className="text-xs text-gray-500 mt-0.5 line-clamp-2 leading-relaxed">
+                                            {c.lastMessage?.startsWith('__WORKOUT__') ? 'Sent a workout program' : (c.lastMessage || '—')}
+                                        </p>
                                     </div>
                                     {c.unread > 0 && (
                                         <span className="min-w-[18px] h-[18px] bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center px-1 flex-shrink-0 mt-0.5">
