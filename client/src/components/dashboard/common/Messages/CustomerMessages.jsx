@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import axios from 'axios';
-import { Send, Loader2 } from 'lucide-react';
+import { Send, Loader2, Search, Dumbbell, X } from 'lucide-react';
 import './CustomerMessages.css';
 
 const CustomerMessages = ({ user, targetTrainer }) => {
@@ -11,6 +11,11 @@ const CustomerMessages = ({ user, targetTrainer }) => {
     const [loadingConvos, setLoadingConvos] = useState(true);
     const [loadingMsgs, setLoadingMsgs]    = useState(false);
     const [sending, setSending]       = useState(false);
+    const [search, setSearch]             = useState('');
+    const [expandedWorkouts, setExpandedWorkouts]   = useState(new Set());
+    const [showWorkoutPicker, setShowWorkoutPicker] = useState(false);
+    const [pickerTemplates, setPickerTemplates]     = useState([]);
+    const [loadingPicker, setLoadingPicker]         = useState(false);
     const bottomRef                   = useRef(null);
     const pollRef                     = useRef(null);
     const inputRef                    = useRef(null);
@@ -122,6 +127,42 @@ const CustomerMessages = ({ user, targetTrainer }) => {
         return `${label} · ${d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
     };
 
+    const openWorkoutPicker = async () => {
+        setShowWorkoutPicker(true);
+        setLoadingPicker(true);
+        try {
+            const res = await axios.get('/api/v1/trainer/templates?type=day', { withCredentials: true });
+            setPickerTemplates(res.data.data || []);
+        } catch (e) { console.error(e); }
+        finally { setLoadingPicker(false); }
+    };
+
+    const sendWorkout = async (tpl) => {
+        try {
+            let exs = tpl.programData?.exercises;
+            if (!exs) {
+                const res = await axios.get(`/api/v1/trainer/templates/${tpl.id}`, { withCredentials: true });
+                exs = res.data.data?.programData?.exercises || [];
+            }
+            const content = `__WORKOUT__${JSON.stringify({ name: tpl.name, exercises: exs })}`;
+            await axios.post('/api/v1/chat', { content, receiverId: active.id }, { withCredentials: true });
+            await fetchMessages(active.id);
+            await fetchConvos();
+        } catch (e) { console.error(e); }
+        setShowWorkoutPicker(false);
+    };
+
+    const toggleWorkout = (id) => setExpandedWorkouts(prev => {
+        const s = new Set(prev); s.has(id) ? s.delete(id) : s.add(id); return s;
+    });
+
+    const isRecentlyActive = (lastAt) => lastAt && Date.now() - new Date(lastAt) < 15 * 60 * 1000;
+    const parseWorkout = (content) => {
+        if (!content?.startsWith('__WORKOUT__')) return null;
+        try { return JSON.parse(content.slice(11)); } catch { return null; }
+    };
+    const filteredConvos = convos.filter(c => c.name?.toLowerCase().includes(search.toLowerCase()));
+
     const myId = user?.id;
 
     return (
@@ -129,19 +170,31 @@ const CustomerMessages = ({ user, targetTrainer }) => {
             {/* ── Sidebar ── */}
             <div className="cm-sidebar">
                 <div className="cm-sidebar-title">Messages</div>
+                <div className="cm-sidebar-search">
+                    <Search size={13} className="cm-sidebar-search-icon" />
+                    <input
+                        className="cm-sidebar-search-input"
+                        placeholder="Search…"
+                        value={search}
+                        onChange={e => setSearch(e.target.value)}
+                    />
+                </div>
 
                 {loadingConvos ? (
                     <div className="cm-sidebar-empty"><Loader2 className="cm-spin" size={20} /></div>
-                ) : convos.length === 0 ? (
-                    <div className="cm-sidebar-empty">No conversations yet.</div>
+                ) : filteredConvos.length === 0 ? (
+                    <div className="cm-sidebar-empty">{search ? 'No results.' : 'No conversations yet.'}</div>
                 ) : (
-                    convos.map(c => (
+                    filteredConvos.map(c => (
                         <button
                             key={c.id}
                             className={`cm-convo-item ${active?.id === c.id ? 'active' : ''}`}
                             onClick={() => handleSelect(c)}
                         >
-                            <div className="cm-convo-avatar">{c.name?.charAt(0).toUpperCase()}</div>
+                            <div className="cm-convo-avatar-wrap">
+                                <div className="cm-convo-avatar">{c.name?.charAt(0).toUpperCase()}</div>
+                                <div className={`cm-convo-status-dot ${isRecentlyActive(c.lastAt) ? 'online' : 'offline'}`} />
+                            </div>
                             <div className="cm-convo-info">
                                 <div className="cm-convo-row">
                                     <span className="cm-convo-name">{c.name}</span>
@@ -190,6 +243,8 @@ const CustomerMessages = ({ user, targetTrainer }) => {
                                     const isMe = msg.senderId === myId;
                                     const prev = messages[i - 1];
                                     const showSep = !prev || new Date(msg.createdAt).toDateString() !== new Date(prev.createdAt).toDateString();
+                                    const isFirstOfCluster = !prev || prev.senderId !== msg.senderId;
+                                    const workout = parseWorkout(msg.content);
                                     return (
                                         <React.Fragment key={msg.id}>
                                             {showSep && (
@@ -199,13 +254,29 @@ const CustomerMessages = ({ user, targetTrainer }) => {
                                             )}
                                             <div className={`cm-msg-row ${isMe ? 'me' : 'them'}`}>
                                                 {!isMe && (
-                                                    <div className="cm-avatar">
-                                                        {(msg.Sender?.name || active.name || 'T').charAt(0).toUpperCase()}
+                                                    isFirstOfCluster
+                                                        ? <div className="cm-avatar">{(msg.Sender?.name || active.name || 'T').charAt(0).toUpperCase()}</div>
+                                                        : <div className="cm-avatar-spacer" />
+                                                )}
+                                                {workout ? (
+                                                    <div className={`cm-bubble cm-workout-card ${isMe ? 'me' : 'them'}`}>
+                                                        <div className="cm-workout-title">{workout.name}</div>
+                                                        {(expandedWorkouts.has(msg.id) ? workout.exercises : workout.exercises.slice(0, 4)).map((ex, j) => (
+                                                            <div key={j} className="cm-workout-ex">
+                                                                {ex.exerciseName}{ex.sets ? ` · ${ex.sets}×${ex.reps || '?'}` : ''}
+                                                            </div>
+                                                        ))}
+                                                        {workout.exercises.length > 4 && (
+                                                            <button className="cm-workout-more" onClick={() => toggleWorkout(msg.id)}>
+                                                                {expandedWorkouts.has(msg.id) ? 'Show less' : `+${workout.exercises.length - 4} more`}
+                                                            </button>
+                                                        )}
+                                                    </div>
+                                                ) : (
+                                                    <div className={`cm-bubble ${isMe ? 'me' : 'them'}`}>
+                                                        <p>{msg.content}</p>
                                                     </div>
                                                 )}
-                                                <div className={`cm-bubble ${isMe ? 'me' : 'them'}`}>
-                                                    <p>{msg.content}</p>
-                                                </div>
                                             </div>
                                         </React.Fragment>
                                     );
@@ -214,8 +285,35 @@ const CustomerMessages = ({ user, targetTrainer }) => {
                             <div ref={bottomRef} />
                         </div>
 
+                        {/* Workout picker */}
+                        {showWorkoutPicker && (
+                            <div className="cm-workout-picker">
+                                <div className="cm-workout-picker-header">
+                                    <span>Send Workout</span>
+                                    <button onClick={() => setShowWorkoutPicker(false)}><X size={14} /></button>
+                                </div>
+                                {loadingPicker ? (
+                                    <div className="cm-workout-picker-empty"><Loader2 className="cm-spin" size={16} /></div>
+                                ) : pickerTemplates.length === 0 ? (
+                                    <div className="cm-workout-picker-empty">No day programs saved yet.</div>
+                                ) : (
+                                    pickerTemplates.map(tpl => (
+                                        <button key={tpl.id} className="cm-workout-picker-item" onClick={() => sendWorkout(tpl)}>
+                                            <span>{tpl.name}</span>
+                                            <span className="cm-workout-picker-count">{(tpl.programData?.exercises || []).length} ex</span>
+                                        </button>
+                                    ))
+                                )}
+                            </div>
+                        )}
+
                         {/* Input */}
                         <form className="cm-input-row" onSubmit={handleSend}>
+                            {user?.role === 'trainer' && (
+                                <button type="button" className="cm-workout-btn" onClick={openWorkoutPicker} title="Send workout">
+                                    <Dumbbell size={16} />
+                                </button>
+                            )}
                             <input
                                 ref={inputRef}
                                 className="cm-input"

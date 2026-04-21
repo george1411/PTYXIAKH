@@ -67,6 +67,11 @@ const connectToDatabase = async () => {
             )
         `);
         await addColumnIfNotExists('WorkoutTemplates', 'type', "ENUM('week','day') NOT NULL DEFAULT 'week'");
+        await addColumnIfNotExists('DailyGoals', 'carbs', 'INT NOT NULL DEFAULT 250');
+        await addColumnIfNotExists('DailyGoals', 'fat', 'INT NOT NULL DEFAULT 70');
+        await addColumnIfNotExists('Workouts', 'weekOf', 'DATE NULL');
+        await addColumnIfNotExists('ScheduleEvents', 'clientId', 'INT NULL');
+        await sequelize.query(`ALTER TABLE WeeklyMeasurements MODIFY COLUMN weight FLOAT NOT NULL DEFAULT 0`).catch(() => {});
 
         // Create FitbitTokens table if not exists
         await sequelize.query(`

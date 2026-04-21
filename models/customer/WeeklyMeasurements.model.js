@@ -16,7 +16,7 @@ const WeeklyMeasurements = sequelize.define('WeeklyMeasurements', {
         allowNull: false
     },
     weight: {
-        type: DataTypes.INTEGER,
+        type: DataTypes.FLOAT,
         defaultValue: 0
     }
 }, {

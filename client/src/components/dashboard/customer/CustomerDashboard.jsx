@@ -180,7 +180,7 @@ const CustomerDashboard = ({ user, onLogout, onUserUpdate }) => {
                         {activeTab === 'workout' ? (
                             <Workout />
                         ) : activeTab === 'schedule' ? (
-                            <Schedule onNavigate={setActiveTab} fullPage={true} />
+                            <Schedule onNavigate={setActiveTab} fullPage={true} readOnly={true} />
                         ) : activeTab === 'progress' ? (
                             <Progress />
                         ) : activeTab === 'nutrition' ? (

@@ -55,8 +55,9 @@ const WeeklySteps = () => {
         }
     }, []);
 
-    const today = data[data.length - 1];
-    const todaySteps = today?.steps || 0;
+    const todayStr = new Date().toISOString().split('T')[0];
+    const todayEntry = data.find(d => d.date === todayStr);
+    const todaySteps = todayEntry?.steps || 0;
     const totalWeek = data.reduce((s, d) => s + d.steps, 0);
 
     const handleFitbitConnect = () => {

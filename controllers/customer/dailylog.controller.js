@@ -167,19 +167,29 @@ export const updateSteps = async (req, res) => {
 export const getWeeklySteps = async (req, res) => {
     try {
         const userId = req.user.id;
+
+        // Find Monday of the current week
+        const today = new Date();
+        const dow = today.getDay(); // 0=Sun, 1=Mon ... 6=Sat
+        const daysFromMonday = dow === 0 ? 6 : dow - 1;
+        const monday = new Date(today);
+        monday.setDate(today.getDate() - daysFromMonday);
+        monday.setHours(0, 0, 0, 0);
+        const mondayStr = monday.toISOString().split('T')[0];
+
         const rows = await sequelize.query(
             `SELECT date, COALESCE(steps, 0) as steps
              FROM DailyLogs
-             WHERE userId = :userId AND date >= DATE_SUB(CURDATE(), INTERVAL 6 DAY)
+             WHERE userId = :userId AND date >= :monday
              ORDER BY date ASC`,
-            { replacements: { userId }, type: QueryTypes.SELECT }
+            { replacements: { userId, monday: mondayStr }, type: QueryTypes.SELECT }
         );
 
-        // Build last 7 days array (fill missing days with 0)
+        // Build Mon–Sun array, future days get 0
         const result = [];
-        for (let i = 6; i >= 0; i--) {
-            const d = new Date();
-            d.setDate(d.getDate() - i);
+        for (let i = 0; i < 7; i++) {
+            const d = new Date(monday);
+            d.setDate(monday.getDate() + i);
             const dateStr = d.toISOString().split('T')[0];
             const found = rows.find(r => r.date?.toISOString?.().split('T')[0] === dateStr || r.date === dateStr);
             result.push({

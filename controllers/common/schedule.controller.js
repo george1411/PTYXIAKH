@@ -1,20 +1,42 @@
 import { sequelize } from '../../models/index.js';
 import { QueryTypes } from "sequelize";
 
-// GET all schedule events for the logged-in user
+// GET all schedule events for the logged-in user (trainer view)
 export const getScheduleEvents = async (req, res, next) => {
     try {
         const userId = req.user.id;
 
         const events = await sequelize.query(
-            `SELECT id, userId, title, day, date, startTime, endTime, color, createdAt, updatedAt
-             FROM ScheduleEvents
-             WHERE userId = :userId
-             ORDER BY day, startTime`,
-            {
-                replacements: { userId },
-                type: QueryTypes.SELECT
-            }
+            `SELECT se.id, se.userId, se.clientId, se.title, se.day, se.date,
+                    se.startTime, se.endTime, se.color,
+                    u.name AS clientName
+             FROM ScheduleEvents se
+             LEFT JOIN Users u ON u.id = se.clientId
+             WHERE se.userId = :userId
+             ORDER BY se.date ASC, se.startTime ASC`,
+            { replacements: { userId }, type: QueryTypes.SELECT }
+        );
+
+        res.status(200).json({ success: true, data: events });
+    } catch (error) {
+        next(error);
+    }
+};
+
+// GET appointments for the logged-in customer (events where clientId = userId)
+export const getMyAppointments = async (req, res, next) => {
+    try {
+        const userId = req.user.id;
+
+        const events = await sequelize.query(
+            `SELECT se.id, se.userId, se.clientId, se.title, se.day, se.date,
+                    se.startTime, se.endTime, se.color,
+                    u.name AS trainerName
+             FROM ScheduleEvents se
+             JOIN Users u ON u.id = se.userId
+             WHERE se.clientId = :userId
+             ORDER BY se.date ASC, se.startTime ASC`,
+            { replacements: { userId }, type: QueryTypes.SELECT }
         );
 
         res.status(200).json({ success: true, data: events });
@@ -35,11 +57,12 @@ export const createScheduleEvent = async (req, res, next) => {
             throw error;
         }
 
+        const { clientId } = req.body;
         const [insertId] = await sequelize.query(
-            `INSERT INTO ScheduleEvents (userId, title, day, startTime, endTime, color, date, createdAt, updatedAt)
-             VALUES (:userId, :title, :day, :startTime, :endTime, :color, :date, NOW(), NOW())`,
+            `INSERT INTO ScheduleEvents (userId, clientId, title, day, startTime, endTime, color, date, createdAt, updatedAt)
+             VALUES (:userId, :clientId, :title, :day, :startTime, :endTime, :color, :date, NOW(), NOW())`,
             {
-                replacements: { userId, title, day, startTime, endTime, color: color || 'event-1', date: date || null },
+                replacements: { userId, clientId: clientId || null, title, day, startTime, endTime, color: color || 'event-1', date: date || null },
                 type: QueryTypes.INSERT
             }
         );
@@ -64,15 +87,12 @@ export const updateScheduleEvent = async (req, res, next) => {
     try {
         const userId = req.user.id;
         const eventId = req.params.id;
-        const { title, day, startTime, endTime, color, date } = req.body;
+        const { title, day, startTime, endTime, color, date, clientId } = req.body;
 
         // Check ownership
         const [existing] = await sequelize.query(
             `SELECT id FROM ScheduleEvents WHERE id = :eventId AND userId = :userId`,
-            {
-                replacements: { eventId, userId },
-                type: QueryTypes.SELECT
-            }
+            { replacements: { eventId, userId }, type: QueryTypes.SELECT }
         );
 
         if (!existing) {
@@ -82,11 +102,11 @@ export const updateScheduleEvent = async (req, res, next) => {
         }
 
         await sequelize.query(
-            `UPDATE ScheduleEvents 
-             SET title = :title, day = :day, startTime = :startTime, endTime = :endTime, color = :color, date = :date, updatedAt = NOW()
+            `UPDATE ScheduleEvents
+             SET title = :title, day = :day, startTime = :startTime, endTime = :endTime, color = :color, date = :date, clientId = :clientId, updatedAt = NOW()
              WHERE id = :eventId AND userId = :userId`,
             {
-                replacements: { title, day, startTime, endTime, color: color || 'event-1', date: date || null, eventId, userId },
+                replacements: { title, day, startTime, endTime, color: color || 'event-1', date: date || null, clientId: clientId || null, eventId, userId },
                 type: QueryTypes.UPDATE
             }
         );

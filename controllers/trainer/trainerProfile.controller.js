@@ -342,6 +342,30 @@ export const getTrainerDashboard = async (req, res, next) => {
             }));
         }
 
+        // Business growth: new clients per month for past 12 months
+        const businessGrowthRaw = await sequelize.query(
+            `SELECT DATE_FORMAT(createdAt, '%Y-%m') AS ym, COUNT(*) AS count
+             FROM Users
+             WHERE trainerId = :userId AND role = 'customer'
+               AND createdAt >= DATE_SUB(NOW(), INTERVAL 11 MONTH)
+             GROUP BY ym ORDER BY ym ASC`,
+            { replacements: { userId }, type: QueryTypes.SELECT }
+        );
+
+        // Weekly workout volume: distinct client-days logged per week, last 12 weeks
+        let weeklyWorkoutsRaw = [];
+        if (clientIds.length > 0) {
+            weeklyWorkoutsRaw = await sequelize.query(
+                `SELECT
+                    DATE_FORMAT(DATE_SUB(DATE(loggedAt), INTERVAL WEEKDAY(DATE(loggedAt)) DAY), '%Y-%m-%d') AS weekStart,
+                    COUNT(DISTINCT CONCAT(userId, '-', DATE(loggedAt))) AS count
+                 FROM WorkoutLogs
+                 WHERE userId IN (:ids) AND loggedAt >= DATE_SUB(NOW(), INTERVAL 12 WEEK)
+                 GROUP BY weekStart ORDER BY weekStart ASC`,
+                { replacements: { ids: clientIds }, type: QueryTypes.SELECT }
+            );
+        }
+
         res.status(200).json({
             success: true,
             data: {
@@ -361,6 +385,8 @@ export const getTrainerDashboard = async (req, res, next) => {
                 clients: clientDetails,
                 clientStats,
                 clientsWithoutProgram,
+                businessGrowthRaw,
+                weeklyWorkoutsRaw,
             }
         });
     } catch (error) {

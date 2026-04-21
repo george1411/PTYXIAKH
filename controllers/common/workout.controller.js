@@ -77,16 +77,25 @@ export const createWorkout = async (req, res, next) => {
 }
 
 // ─── Get All Workouts ────────────────────────────────────────
+const getMondayOfWeek = () => {
+    const now = new Date();
+    const day = now.getDay();
+    const diff = day === 0 ? -6 : 1 - day;
+    const monday = new Date(now.getFullYear(), now.getMonth(), now.getDate() + diff);
+    return `${monday.getFullYear()}-${String(monday.getMonth() + 1).padStart(2, '0')}-${String(monday.getDate()).padStart(2, '0')}`;
+};
+
 export const getWorkouts = async (req, res, next) => {
     try {
         const userId = req.user.id;
+        const monday = getMondayOfWeek();
 
-        // 1. Fetch Workouts
+        // 1. Fetch Workouts for current week only
         const workouts = await sequelize.query(
             `SELECT * FROM Workouts
-             WHERE userId = :userId
+             WHERE userId = :userId AND (weekOf = :monday OR weekOf IS NULL)
              ORDER BY createdAt DESC`,
-            { replacements: { userId }, type: QueryTypes.SELECT }
+            { replacements: { userId, monday }, type: QueryTypes.SELECT }
         );
 
         if (workouts.length === 0) {

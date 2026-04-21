@@ -18,6 +18,10 @@ const Workout = sequelize.define('Workout', {
     status: {
         type: DataTypes.ENUM('active', 'completed', 'template'),
         defaultValue: 'active'
+    },
+    weekOf: {
+        type: DataTypes.DATEONLY,
+        allowNull: true
     }
 }, {
     timestamps: true

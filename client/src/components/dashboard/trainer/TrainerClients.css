@@ -893,12 +893,43 @@
     margin-bottom: 2px;
 }
 
+.tc-msg-avatar-spacer {
+    width: 32px;
+    flex-shrink: 0;
+}
+
 .tc-msg-bubble {
     max-width: 68%;
     padding: 7px 14px;
     border-radius: 14px;
-    font-size: 0.875rem;
+    font-size: 0.925rem;
     line-height: 1.5;
+}
+
+/* ─── Workout card bubble ─────────────────────────────────────── */
+.tc-workout-card { padding: 10px 14px; }
+.tc-workout-title {
+    font-size: 0.85rem;
+    font-weight: 700;
+    margin-bottom: 6px;
+}
+.tc-workout-ex {
+    font-size: 0.78rem;
+    opacity: 0.85;
+    padding: 2px 0;
+}
+.tc-workout-more {
+    font-size: 0.75rem;
+    opacity: 0.6;
+    margin-top: 6px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    color: inherit;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    display: block;
 }
 
 .tc-msg-bubble p { margin: 0 0 3px; }
@@ -925,6 +956,74 @@
 }
 
 .tc-msg-bubble.them .tc-msg-time { text-align: left; }
+
+/* ─── Workout picker ──────────────────────────────────────────── */
+.tc-workout-picker {
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 10px;
+    margin-bottom: 8px;
+    overflow: hidden;
+    background: #111;
+}
+.tc-workout-picker-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 12px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--text-secondary);
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+.tc-workout-picker-header button {
+    background: none; border: none; cursor: pointer; color: var(--text-muted);
+    display: flex; align-items: center;
+}
+.tc-workout-picker-empty {
+    padding: 12px;
+    text-align: center;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+.tc-workout-picker-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    padding: 9px 12px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    font-size: 0.85rem;
+    color: var(--text);
+    text-align: left;
+    transition: background 0.12s;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+}
+.tc-workout-picker-item:last-child { border-bottom: none; }
+.tc-workout-picker-item:hover { background: rgba(255,255,255,0.05); }
+.tc-workout-picker-count {
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    flex-shrink: 0;
+}
+
+/* ─── Workout send button ─────────────────────────────────────── */
+.tc-workout-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.06);
+    color: var(--text-secondary);
+    border: 1px solid rgba(255,255,255,0.08);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: background 0.15s, color 0.15s;
+}
+.tc-workout-btn:hover { background: rgba(129,140,248,0.15); color: var(--purple); border-color: var(--purple); }
 
 .tc-chat-input-row {
     display: flex;

@@ -234,6 +234,15 @@
     overflow: hidden;
 }
 
+.progress-chart-container svg,
+.progress-chart-container svg * {
+    outline: none !important;
+}
+
+.progress-chart-container .recharts-wrapper {
+    outline: none !important;
+}
+
 /* ─── PR Grid (2 columns) ──────────────────────────────────── */
 .progress-pr-grid {
     display: flex;

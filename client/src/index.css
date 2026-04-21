@@ -1,5 +1,12 @@
 @import "tailwindcss";
 
+/* Remove focus outlines from Recharts charts globally */
+.recharts-wrapper,
+.recharts-wrapper *,
+.recharts-surface {
+    outline: none !important;
+}
+
 /* Remove number input spinners globally */
 input[type="number"]::-webkit-inner-spin-button,
 input[type="number"]::-webkit-outer-spin-button {

@@ -117,10 +117,11 @@ export const getClientProgram = async (req, res, next) => {
         const owned = await verifyClientOwnership(trainerId, clientId);
         if (!owned) return res.status(403).json({ success: false, message: 'Access denied' });
 
+        const monday = getMondayOfWeek();
         const workouts = await sequelize.query(
-            `SELECT * FROM Workouts WHERE userId = :clientId
+            `SELECT * FROM Workouts WHERE userId = :clientId AND (weekOf = :monday OR weekOf IS NULL)
              ORDER BY FIELD(day,'Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday')`,
-            { replacements: { clientId }, type: QueryTypes.SELECT }
+            { replacements: { clientId, monday }, type: QueryTypes.SELECT }
         );
 
         if (workouts.length === 0) return res.status(200).json({ success: true, data: [] });
@@ -163,10 +164,12 @@ export const saveClientProgram = async (req, res, next) => {
         const owned = await verifyClientOwnership(trainerId, clientId);
         if (!owned) return res.status(403).json({ success: false, message: 'Access denied' });
 
-        // Delete existing workout for this day
+        const monday = getMondayOfWeek();
+
+        // Delete existing workout for this day this week
         const existing = await sequelize.query(
-            `SELECT id FROM Workouts WHERE userId = :clientId AND day = :day`,
-            { replacements: { clientId, day }, type: QueryTypes.SELECT, transaction: t }
+            `SELECT id FROM Workouts WHERE userId = :clientId AND day = :day AND (weekOf = :monday OR weekOf IS NULL)`,
+            { replacements: { clientId, day, monday }, type: QueryTypes.SELECT, transaction: t }
         );
         if (existing.length > 0) {
             const ids = existing.map(w => w.id);
@@ -180,11 +183,11 @@ export const saveClientProgram = async (req, res, next) => {
             );
         }
 
-        // Create new workout
+        // Create new workout for this week
         const [workoutId] = await sequelize.query(
-            `INSERT INTO Workouts (name, day, userId, status, createdAt, updatedAt)
-             VALUES (:name, :day, :clientId, 'active', NOW(), NOW())`,
-            { replacements: { name, day, clientId }, type: QueryTypes.INSERT, transaction: t }
+            `INSERT INTO Workouts (name, day, userId, status, weekOf, createdAt, updatedAt)
+             VALUES (:name, :day, :clientId, 'active', :monday, NOW(), NOW())`,
+            { replacements: { name, day, clientId, monday }, type: QueryTypes.INSERT, transaction: t }
         );
 
         // Insert exercises

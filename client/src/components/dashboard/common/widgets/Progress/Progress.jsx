@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import {
-    LineChart, Line, AreaChart, Area, BarChart, Bar, XAxis, YAxis, Tooltip,
+    LineChart, Line, BarChart, Bar, XAxis, YAxis,
     ResponsiveContainer, CartesianGrid, ReferenceLine
 } from 'recharts';
 import axios from 'axios';
@@ -31,6 +31,7 @@ const WeightHistory = () => {
     const [showLog, setShowLog] = useState(false);
     const [logValue, setLogValue] = useState('');
     const [logSaving, setLogSaving] = useState(false);
+    const [selectedIdx, setSelectedIdx] = useState(null);
 
     useEffect(() => {
         const goal = localStorage.getItem('weightGoal');
@@ -70,6 +71,29 @@ const WeightHistory = () => {
             weight: h.weight
         }));
     }, [data]);
+
+    const renderDot = (props) => {
+        const { cx, cy, index, payload } = props;
+        const isSelected = index === selectedIdx;
+        const label = `${payload.weight}kg`;
+        const labelW = label.length * 7 + 16;
+        const isLast  = index === chartData.length - 1;
+        const isFirst = index === 0;
+        let labelX = cx - labelW / 2;
+        if (isLast)  labelX = cx - labelW + 6;
+        if (isFirst) labelX = cx - 6;
+        return (
+            <g key={`dot-${index}`} style={{ cursor: 'pointer' }} onClick={() => setSelectedIdx(isSelected ? null : index)}>
+                <circle cx={cx} cy={cy} r={isSelected ? 5 : 3} fill={isSelected ? '#818CF8' : '#111'} stroke="#818CF8" strokeWidth={2} />
+                {isSelected && (
+                    <>
+                        <rect x={labelX} y={cy - 30} width={labelW} height={20} rx={10} fill="#818CF8" />
+                        <text x={labelX + labelW / 2} y={cy - 16} textAnchor="middle" fill="#fff" fontSize={11} fontWeight={700}>{label}</text>
+                    </>
+                )}
+            </g>
+        );
+    };
 
     const diffClass = data?.diff > 0 ? 'positive' : data?.diff < 0 ? 'negative' : 'neutral';
     const diffText = data?.diff > 0 ? `+${data.diff.toFixed(1)}` : data?.diff < 0 ? data.diff.toFixed(1) : '0';
@@ -138,46 +162,36 @@ const WeightHistory = () => {
                     </div>
                     <div className="progress-chart-container">
                         <ResponsiveContainer width="100%" height="100%">
-                            <AreaChart data={chartData}>
-                                <defs>
-                                    <linearGradient id="weightGradient" x1="0" y1="0" x2="0" y2="1">
-                                        <stop offset="0%" stopColor="#818CF8" stopOpacity={0.25} />
-                                        <stop offset="100%" stopColor="#818CF8" stopOpacity={0} />
-                                    </linearGradient>
-                                </defs>
+                            <LineChart data={chartData} margin={{ top: 20, right: 20, left: 0, bottom: 0 }}>
                                 <CartesianGrid stroke="rgba(255,255,255,0.05)" strokeDasharray="0" vertical={false} />
                                 <XAxis dataKey="date" tick={{ fontSize: 11, fill: '#555' }} tickLine={false} axisLine={false} interval="preserveStartEnd" />
                                 <YAxis
                                     domain={[
                                         (dataMin) => {
                                             const min = weightGoal ? Math.min(dataMin, weightGoal) : dataMin;
-                                            return Math.floor(min - 5);
+                                            return parseFloat((min - 2).toFixed(1));
                                         },
                                         (dataMax) => {
                                             const max = weightGoal ? Math.max(dataMax, weightGoal) : dataMax;
-                                            return Math.ceil(max + 5);
+                                            return parseFloat((max + 2).toFixed(1));
                                         }
                                     ]}
+                                    tickFormatter={v => v % 1 === 0 ? v : v.toFixed(1)}
                                     tick={{ fontSize: 11, fill: '#555' }} tickLine={false} axisLine={false} width={40}
                                 />
-                                <Tooltip
-                                    cursor={false}
-                                    contentStyle={{ background: '#1a1a1a', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 10, boxShadow: '0 4px 20px rgba(0,0,0,0.5)' }}
-                                    labelStyle={{ color: '#888', fontSize: 12 }}
-                                    itemStyle={{ color: '#a5b4fc' }}
-                                    formatter={(v) => [`${v} kg`, 'Weight']}
-                                />
-                                <Area type="monotone" dataKey="weight" stroke="#818CF8" strokeWidth={2.5} fill="url(#weightGradient)" dot={{ r: 3, fill: '#111', stroke: '#818CF8', strokeWidth: 2 }} activeDot={{ r: 5, fill: '#a5b4fc' }} />
+                                <Line type="monotone" dataKey="weight" stroke="#818CF8" strokeWidth={2.5} fill="none" dot={renderDot} activeDot={false} />
                                 {weightGoal && (
                                     <ReferenceLine
                                         y={weightGoal}
                                         stroke="#818CF8"
                                         strokeDasharray="6 4"
                                         strokeWidth={1.5}
-                                        label={{ value: `${weightGoal}kg goal`, position: 'right', fill: '#818CF8', fontSize: 11, fontWeight: 700 }}
+                                        label={{ content: ({ viewBox }) => (
+                                            <text x={viewBox.x + viewBox.width - 4} y={viewBox.y - 5} textAnchor="end" fill="#818CF8" fontSize={11} fontWeight={700}>{weightGoal}kg goal</text>
+                                        )}}
                                     />
                                 )}
-                            </AreaChart>
+                            </LineChart>
                         </ResponsiveContainer>
                     </div>
                 </>

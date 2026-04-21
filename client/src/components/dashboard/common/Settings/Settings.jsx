@@ -142,10 +142,9 @@ const ProfileSection = ({ user, onUpdate, isTrainer = false }) => {
     );
 };
 
-// ─── Goals Section ───────────────────────────────────────────
+// ─── Goals Section (calories + weight) ───────────────────────
 const GoalsSection = ({ user }) => {
     const [calories, setCalories] = useState(user?.dailyCalorieTarget || 2500);
-    const [protein, setProtein] = useState(user?.dailyProteinTarget || 150);
     const [weightGoal, setWeightGoal] = useState(() => localStorage.getItem('weightGoal') || '');
     const [saving, setSaving] = useState(false);
     const [toast, setToast] = useState(null);
@@ -153,13 +152,10 @@ const GoalsSection = ({ user }) => {
     const handleSave = async () => {
         setSaving(true);
         try {
-            // Save calorie/protein to DailyGoal backend
             await axios.post('/api/v1/dailygoals/update', {
                 calories: parseInt(calories),
-                protein: parseInt(protein),
             }, { withCredentials: true });
 
-            // Save weight goal to localStorage
             if (weightGoal) {
                 localStorage.setItem('weightGoal', weightGoal);
             } else {
@@ -177,7 +173,7 @@ const GoalsSection = ({ user }) => {
     return (
         <div className="settings-section">
             <div className="settings-section-header">
-                <h3>Daily Goals</h3>
+                <h3>Goals</h3>
             </div>
             {toast && <Toast {...toast} onClear={() => setToast(null)} />}
             <div className="settings-form">
@@ -187,13 +183,62 @@ const GoalsSection = ({ user }) => {
                         <input className="settings-input" type="number" value={calories} onChange={e => setCalories(e.target.value)} />
                     </div>
                     <div className="settings-field">
+                        <label className="settings-label">Weight Goal (kg)</label>
+                        <input className="settings-input" type="number" value={weightGoal} onChange={e => setWeightGoal(e.target.value)} placeholder="e.g. 75" />
+                    </div>
+                </div>
+                <button className="settings-btn settings-btn-primary" onClick={handleSave} disabled={saving}>
+                    <Check size={16} /> {saving ? 'Saving...' : 'Save Goals'}
+                </button>
+            </div>
+        </div>
+    );
+};
+
+// ─── Daily Goals Section (macros) ────────────────────────────
+const DailyGoalsSection = ({ user }) => {
+    const [protein, setProtein] = useState(user?.dailyProteinTarget || 150);
+    const [carbs, setCarbs]     = useState(user?.dailyCarbsTarget || 250);
+    const [fat, setFat]         = useState(user?.dailyFatTarget || 70);
+    const [saving, setSaving]   = useState(false);
+    const [toast, setToast]     = useState(null);
+
+    const handleSave = async () => {
+        setSaving(true);
+        try {
+            await axios.post('/api/v1/dailygoals/update', {
+                protein: parseInt(protein),
+                carbs:   parseInt(carbs),
+                fat:     parseInt(fat),
+            }, { withCredentials: true });
+            setToast({ message: 'Daily goals updated!', type: 'success' });
+        } catch (err) {
+            setToast({ message: 'Failed to update daily goals.', type: 'error' });
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    return (
+        <div className="settings-section">
+            <div className="settings-section-header">
+                <h3>Daily Goals</h3>
+            </div>
+            {toast && <Toast {...toast} onClear={() => setToast(null)} />}
+            <div className="settings-form">
+                <div className="settings-row">
+                    <div className="settings-field">
                         <label className="settings-label">Protein Target (g)</label>
                         <input className="settings-input" type="number" value={protein} onChange={e => setProtein(e.target.value)} />
                     </div>
-                </div>
-                <div className="settings-field">
-                    <label className="settings-label">Weight Goal (kg)</label>
-                    <input className="settings-input" type="number" value={weightGoal} onChange={e => setWeightGoal(e.target.value)} placeholder="e.g. 75" style={{ maxWidth: '200px' }} />
+                    <div className="settings-field">
+                        <label className="settings-label">Carbs Target (g)</label>
+                        <input className="settings-input" type="number" value={carbs} onChange={e => setCarbs(e.target.value)} />
+                    </div>
+                    <div className="settings-field">
+                        <label className="settings-label">Fat Target (g)</label>
+                        <input className="settings-input" type="number" value={fat} onChange={e => setFat(e.target.value)} />
+                    </div>
                 </div>
                 <button className="settings-btn settings-btn-primary" onClick={handleSave} disabled={saving}>
                     <Check size={16} /> {saving ? 'Saving...' : 'Save Goals'}
@@ -441,6 +486,7 @@ const Settings = ({ user, onLogout, onUserUpdate, isTrainer = false }) => {
 
             <ProfileSection user={user} onUpdate={u => { if (onUserUpdate) onUserUpdate(u); }} isTrainer={isTrainer} />
             {!isTrainer && <GoalsSection user={user} />}
+            {!isTrainer && <DailyGoalsSection user={user} />}
             {!isTrainer && <TrainerSection user={user} />}
             {!isTrainer && <FitbitSection />}
             <PasswordSection />

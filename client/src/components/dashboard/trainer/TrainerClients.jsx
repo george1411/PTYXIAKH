@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import axios from 'axios';
 import {
     Search, ChevronRight, Trash2, Plus, Save, X, Loader2, Send,
-    BookMarked, Copy, CheckCircle
+    BookMarked, Copy, CheckCircle, Dumbbell
 } from 'lucide-react';
 import {
     LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer,
@@ -627,12 +627,16 @@ const ProgramPanel = ({ clientId }) => {
 
 // ─── Chat Panel ───────────────────────────────────────────────
 const ChatPanel = ({ clientId, clientName, trainerId }) => {
-    const [messages, setMessages]   = useState([]);
-    const [text, setText]           = useState('');
-    const [loading, setLoading]     = useState(true);
-    const [sending, setSending]     = useState(false);
-    const bottomRef                 = useRef(null);
-    const pollRef                   = useRef(null);
+    const [messages, setMessages]         = useState([]);
+    const [text, setText]                 = useState('');
+    const [loading, setLoading]           = useState(true);
+    const [sending, setSending]           = useState(false);
+    const [expandedWorkouts, setExpandedWorkouts]   = useState(new Set());
+    const [showWorkoutPicker, setShowWorkoutPicker] = useState(false);
+    const [pickerTemplates, setPickerTemplates]     = useState([]);
+    const [loadingPicker, setLoadingPicker]         = useState(false);
+    const bottomRef                       = useRef(null);
+    const pollRef                         = useRef(null);
 
     const fetchMessages = async () => {
         try {
@@ -688,6 +692,39 @@ const ChatPanel = ({ clientId, clientName, trainerId }) => {
         return `${label} · ${formatTime(dateStr)}`;
     };
 
+    const toggleWorkout = (id) => setExpandedWorkouts(prev => {
+        const s = new Set(prev); s.has(id) ? s.delete(id) : s.add(id); return s;
+    });
+
+    const parseWorkout = (content) => {
+        if (!content?.startsWith('__WORKOUT__')) return null;
+        try { return JSON.parse(content.slice(11)); } catch { return null; }
+    };
+
+    const openWorkoutPicker = async () => {
+        setShowWorkoutPicker(true);
+        setLoadingPicker(true);
+        try {
+            const res = await axios.get('/api/v1/trainer/templates?type=day', { withCredentials: true });
+            setPickerTemplates(res.data.data || []);
+        } catch (e) { console.error(e); }
+        finally { setLoadingPicker(false); }
+    };
+
+    const sendWorkout = async (tpl) => {
+        try {
+            let exs = tpl.programData?.exercises;
+            if (!exs) {
+                const res = await axios.get(`/api/v1/trainer/templates/${tpl.id}`, { withCredentials: true });
+                exs = res.data.data?.programData?.exercises || [];
+            }
+            const content = `__WORKOUT__${JSON.stringify({ name: tpl.name, exercises: exs })}`;
+            await axios.post('/api/v1/chat', { content, receiverId: clientId }, { withCredentials: true });
+            await fetchMessages();
+        } catch (e) { console.error(e); }
+        setShowWorkoutPicker(false);
+    };
+
     if (loading) return <div className="tc-empty"><Loader2 className="tc-spin" size={24} /> Loading messages…</div>;
 
     return (
@@ -700,6 +737,8 @@ const ChatPanel = ({ clientId, clientName, trainerId }) => {
                     const isMe = msg.senderId !== clientId;
                     const prev = messages[i - 1];
                     const showSep = !prev || new Date(msg.createdAt).toDateString() !== new Date(prev.createdAt).toDateString();
+                    const isFirstOfCluster = !prev || prev.senderId !== msg.senderId;
+                    const workout = parseWorkout(msg.content);
                     return (
                         <React.Fragment key={msg.id}>
                             {showSep && (
@@ -709,13 +748,29 @@ const ChatPanel = ({ clientId, clientName, trainerId }) => {
                             )}
                             <div className={`tc-msg-row ${isMe ? 'me' : 'them'}`}>
                                 {!isMe && (
-                                    <div className="tc-msg-avatar">
-                                        {clientName.charAt(0).toUpperCase()}
+                                    isFirstOfCluster
+                                        ? <div className="tc-msg-avatar">{clientName.charAt(0).toUpperCase()}</div>
+                                        : <div className="tc-msg-avatar-spacer" />
+                                )}
+                                {workout ? (
+                                    <div className={`tc-msg-bubble tc-workout-card ${isMe ? 'me' : 'them'}`}>
+                                        <div className="tc-workout-title">{workout.name}</div>
+                                        {(expandedWorkouts.has(msg.id) ? workout.exercises : workout.exercises.slice(0, 4)).map((ex, j) => (
+                                            <div key={j} className="tc-workout-ex">
+                                                {ex.exerciseName}{ex.sets ? ` · ${ex.sets}×${ex.reps || '?'}` : ''}
+                                            </div>
+                                        ))}
+                                        {workout.exercises.length > 4 && (
+                                            <button className="tc-workout-more" onClick={() => toggleWorkout(msg.id)}>
+                                                {expandedWorkouts.has(msg.id) ? 'Show less' : `+${workout.exercises.length - 4} more`}
+                                            </button>
+                                        )}
+                                    </div>
+                                ) : (
+                                    <div className={`tc-msg-bubble ${isMe ? 'me' : 'them'}`}>
+                                        <p>{msg.content}</p>
                                     </div>
                                 )}
-                                <div className={`tc-msg-bubble ${isMe ? 'me' : 'them'}`}>
-                                    <p>{msg.content}</p>
-                                </div>
                             </div>
                         </React.Fragment>
                     );
@@ -723,7 +778,31 @@ const ChatPanel = ({ clientId, clientName, trainerId }) => {
                 <div ref={bottomRef} />
             </div>
 
+            {showWorkoutPicker && (
+                <div className="tc-workout-picker">
+                    <div className="tc-workout-picker-header">
+                        <span>Send Workout</span>
+                        <button onClick={() => setShowWorkoutPicker(false)}><X size={14} /></button>
+                    </div>
+                    {loadingPicker ? (
+                        <div className="tc-workout-picker-empty"><Loader2 className="tc-spin" size={16} /></div>
+                    ) : pickerTemplates.length === 0 ? (
+                        <div className="tc-workout-picker-empty">No day programs saved yet.</div>
+                    ) : (
+                        pickerTemplates.map(tpl => (
+                            <button key={tpl.id} className="tc-workout-picker-item" onClick={() => sendWorkout(tpl)}>
+                                <span>{tpl.name}</span>
+                                <span className="tc-workout-picker-count">{(tpl.programData?.exercises || []).length} ex</span>
+                            </button>
+                        ))
+                    )}
+                </div>
+            )}
+
             <form className="tc-chat-input-row" onSubmit={handleSend}>
+                <button type="button" className="tc-workout-btn" onClick={openWorkoutPicker} title="Send workout">
+                    <Dumbbell size={16} />
+                </button>
                 <input
                     className="tc-chat-input"
                     placeholder={`Message ${clientName}…`}

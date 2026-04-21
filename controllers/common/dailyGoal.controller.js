@@ -4,13 +4,13 @@ import { QueryTypes } from 'sequelize';
 export const updateGoal = async (req, res, next) => {
     try {
         const userId = req.user.id;
-        const { calories, protein } = req.body;
+        const { calories, protein, carbs, fat } = req.body;
 
         // Use local date to match getMe
         const offset = new Date().getTimezoneOffset() * 60000;
         const today = new Date(Date.now() - offset).toISOString().split('T')[0];
 
-        console.log(`[updateGoal] User: ${userId}, Calculated Today: ${today}, Update Payload:`, { calories, protein });
+        console.log(`[updateGoal] User: ${userId}, Calculated Today: ${today}, Update Payload:`, { calories, protein, carbs, fat });
 
         // Check if goal exists
         const checkQuery = `SELECT * FROM DailyGoals WHERE userId = :userId AND date = :date LIMIT 1`;
@@ -24,8 +24,8 @@ export const updateGoal = async (req, res, next) => {
         if (!goal) {
             // Create new goal
             const insertQuery = `
-                INSERT INTO DailyGoals (userId, date, calories, protein, createdAt, updatedAt)
-                VALUES (:userId, :date, :calories, :protein, NOW(), NOW())
+                INSERT INTO DailyGoals (userId, date, calories, protein, carbs, fat, createdAt, updatedAt)
+                VALUES (:userId, :date, :calories, :protein, :carbs, :fat, NOW(), NOW())
             `;
 
             await sequelize.query(insertQuery, {
@@ -33,7 +33,9 @@ export const updateGoal = async (req, res, next) => {
                     userId,
                     date: today,
                     calories: calories || 2500,
-                    protein: protein || 150
+                    protein: protein || 150,
+                    carbs: carbs || 250,
+                    fat: fat || 70
                 },
                 type: QueryTypes.INSERT
             });
@@ -58,6 +60,16 @@ export const updateGoal = async (req, res, next) => {
             if (protein !== undefined) {
                 updateFields.push('protein = :protein');
                 replacements.protein = protein;
+            }
+
+            if (carbs !== undefined) {
+                updateFields.push('carbs = :carbs');
+                replacements.carbs = carbs;
+            }
+
+            if (fat !== undefined) {
+                updateFields.push('fat = :fat');
+                replacements.fat = fat;
             }
 
             if (updateFields.length > 0) {

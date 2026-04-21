@@ -77,7 +77,6 @@ const DailyMacroTracker = ({ mealsData, balanceData, loading }) => {
                 <div className="nutrition-card-title">
                     <h3>Daily Macro Tracker</h3>
                 </div>
-                <span className="nutrition-subtext">Today's progress vs targets</span>
             </div>
             {loading ? (
                 <div className="nutrition-loading"><div className="nutrition-spinner" /></div>

@@ -7,7 +7,6 @@ import TrainerClients from './TrainerClients';
 import TrainerPrograms from './TrainerPrograms';
 import Schedule from '../common/widgets/Schedule/Schedule';
 import Settings from '../common/Settings/Settings';
-import CustomerMessages from '../common/Messages/CustomerMessages';
 import { Search, Bell } from 'lucide-react';
 
 // ─── Notification Bell ────────────────────────────────────────
@@ -155,7 +154,7 @@ const TrainerDashboard = ({ user, onLogout, onUserUpdate }) => {
                                 style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', color: '#f0f0f0' }}
                             />
                         </div>
-                        <NotificationBell onNavigateToMessages={() => setActiveTab('messages')} />
+                        <NotificationBell onNavigateToMessages={() => setActiveTab('clients')} />
                     </div>
                 </header>
 
@@ -163,7 +162,7 @@ const TrainerDashboard = ({ user, onLogout, onUserUpdate }) => {
                 <main className="flex-1 overflow-y-auto p-6 lg:p-8 custom-scrollbar relative" style={{ background: '#0a0a0a' }}>
                     <div className="max-w-7xl mx-auto relative z-10 h-full">
                         {activeTab === 'schedule' ? (
-                            <Schedule onNavigate={setActiveTab} fullPage={true} />
+                            <Schedule onNavigate={setActiveTab} fullPage={true} isTrainer={true} />
                         ) : activeTab === 'settings' ? (
                             <Settings user={user} onLogout={onLogout} isTrainer={true} onUserUpdate={onUserUpdate} />
                         ) : activeTab === 'overview' ? (
@@ -174,8 +173,6 @@ const TrainerDashboard = ({ user, onLogout, onUserUpdate }) => {
                             <TrainerPrograms />
                         ) : activeTab === 'profile' ? (
                             <TrainerProfile user={user} />
-                        ) : activeTab === 'messages' ? (
-                            <CustomerMessages user={user} />
                         ) : null}
                     </div>
                 </main>

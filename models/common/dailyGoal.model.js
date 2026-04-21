@@ -24,6 +24,16 @@ const DailyGoal = sequelize.define('DailyGoal', {
         type: DataTypes.INTEGER,
         defaultValue: 150,
         allowNull: false
+    },
+    carbs: {
+        type: DataTypes.INTEGER,
+        defaultValue: 250,
+        allowNull: false
+    },
+    fat: {
+        type: DataTypes.INTEGER,
+        defaultValue: 70,
+        allowNull: false
     }
 }, {
     timestamps: true,
