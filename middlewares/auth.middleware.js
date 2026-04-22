@@ -23,14 +23,24 @@ const authorize = async (req, res, next) => {
             return res.status(401).json({ message: 'Unauthorized' });
         }
 
-        const decoded = jwt.verify(token, JWT_SECRET);
+        let decoded;
+        try {
+            decoded = jwt.verify(token, JWT_SECRET);
+        } catch (jwtErr) {
+            console.log("JWT verify failed:", jwtErr.message);
+            return res.status(401).json({ message: 'Unauthorized', error: jwtErr.message });
+        }
+
+        console.log("JWT decoded userId:", decoded.userId);
 
         const users = await sequelize.query(
             `SELECT * FROM Users WHERE id = :userId LIMIT 1`,
             { replacements: { userId: decoded.userId }, type: QueryTypes.SELECT }
         );
 
-        if (users.length === 0) return res.status(401).json({ message: 'Unauthorized' });
+        console.log("User lookup result count:", users.length);
+
+        if (users.length === 0) return res.status(401).json({ message: 'Unauthorized', error: 'User not found' });
 
         req.user = users[0];
 
