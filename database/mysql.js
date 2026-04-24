@@ -86,6 +86,22 @@ const connectToDatabase = async () => {
                 FOREIGN KEY (userId) REFERENCES Users(id) ON DELETE CASCADE
             )
         `);
+
+        // Create ClientPainLogs table if not exists
+        await sequelize.query(`
+            CREATE TABLE IF NOT EXISTS ClientPainLogs (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                clientId INT NOT NULL,
+                trainerId INT NOT NULL,
+                zone VARCHAR(50) NOT NULL,
+                severity ENUM('Low','Moderate','High') NOT NULL DEFAULT 'Low',
+                note TEXT NULL,
+                createdAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                updatedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                FOREIGN KEY (clientId) REFERENCES Users(id) ON DELETE CASCADE,
+                FOREIGN KEY (trainerId) REFERENCES Users(id) ON DELETE CASCADE
+            )
+        `);
     } catch (error) {
         console.error('Unable to connect to the database:', error);
         process.exit(1);

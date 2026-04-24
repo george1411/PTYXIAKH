@@ -1,7 +1,48 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import axios from 'axios';
-import { Send, Loader2, Search, Dumbbell, X } from 'lucide-react';
+import { Send, Loader2, Search, Dumbbell, X, Plus, Heart, ShieldCheck } from 'lucide-react';
 import './CustomerMessages.css';
+
+// ─── Pain Report constants ────────────────────────────────────
+const PAIN_ZONE_POS = {
+    'Head':           { cx: 60,  cy: 22  }, 'Neck':           { cx: 60,  cy: 43  },
+    'Left Shoulder':  { cx: 20,  cy: 54  }, 'Right Shoulder': { cx: 100, cy: 54  },
+    'Chest':          { cx: 60,  cy: 70  }, 'Left Arm':       { cx: 19,  cy: 92  },
+    'Right Arm':      { cx: 101, cy: 92  }, 'Abdomen':        { cx: 60,  cy: 96  },
+    'Lower Back':     { cx: 60,  cy: 118 }, 'Left Hip':       { cx: 37,  cy: 140 },
+    'Right Hip':      { cx: 83,  cy: 140 }, 'Left Thigh':     { cx: 41,  cy: 166 },
+    'Right Thigh':    { cx: 79,  cy: 166 }, 'Left Knee':      { cx: 41,  cy: 192 },
+    'Right Knee':     { cx: 79,  cy: 192 }, 'Left Calf':      { cx: 41,  cy: 215 },
+    'Right Calf':     { cx: 79,  cy: 215 }, 'Left Foot':      { cx: 41,  cy: 238 },
+    'Right Foot':     { cx: 79,  cy: 238 },
+};
+const SEV_COLOR = { Mild: '#facc15', Moderate: '#f97316', High: '#f87171' };
+
+const PainBodySVG = ({ selectedZone, onSelectZone }) => (
+    <svg viewBox="0 0 120 260" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ width: '100%', height: '100%' }}>
+        <circle cx="60" cy="22" r="16" fill="#1a1a2e" stroke="#2e2e44" strokeWidth="1.5"/>
+        <rect x="54" y="37" width="12" height="12" rx="3" fill="#1a1a2e" stroke="#2e2e44" strokeWidth="1"/>
+        <rect x="28" y="46" width="64" height="88" rx="8" fill="#1a1a2e" stroke="#2e2e44" strokeWidth="1.5"/>
+        <rect x="11" y="48" width="17" height="78" rx="8" fill="#1a1a2e" stroke="#2e2e44" strokeWidth="1.5"/>
+        <rect x="92" y="48" width="17" height="78" rx="8" fill="#1a1a2e" stroke="#2e2e44" strokeWidth="1.5"/>
+        <rect x="29" y="132" width="24" height="116" rx="8" fill="#1a1a2e" stroke="#2e2e44" strokeWidth="1.5"/>
+        <rect x="67" y="132" width="24" height="116" rx="8" fill="#1a1a2e" stroke="#2e2e44" strokeWidth="1.5"/>
+        {Object.entries(PAIN_ZONE_POS).map(([zone, pos]) => {
+            const isSel = selectedZone === zone;
+            return (
+                <g key={zone} style={{ cursor: 'pointer' }} onClick={() => onSelectZone(zone)}>
+                    <circle cx={pos.cx} cy={pos.cy} r="11" fill="transparent"/>
+                    {isSel && <circle cx={pos.cx} cy={pos.cy} r="9" fill="#a5b4fc" opacity="0.2"/>}
+                    <circle cx={pos.cx} cy={pos.cy} r={isSel ? 6 : 4}
+                        fill={isSel ? '#a5b4fc' : 'rgba(255,255,255,0.15)'}
+                        stroke={isSel ? '#818cf8' : 'rgba(255,255,255,0.25)'}
+                        strokeWidth="1"
+                    />
+                </g>
+            );
+        })}
+    </svg>
+);
 
 const CustomerMessages = ({ user, targetTrainer }) => {
     const [convos, setConvos]         = useState([]);
@@ -16,9 +57,17 @@ const CustomerMessages = ({ user, targetTrainer }) => {
     const [showWorkoutPicker, setShowWorkoutPicker] = useState(false);
     const [pickerTemplates, setPickerTemplates]     = useState([]);
     const [loadingPicker, setLoadingPicker]         = useState(false);
+    const [showPlusMenu, setShowPlusMenu]           = useState(false);
+    const [showPainModal, setShowPainModal]         = useState(false);
+    const [painForm, setPainForm]                   = useState({ zone: null, severity: 'Mild', note: '' });
+    const [submittingPain, setSubmittingPain]       = useState(false);
+    const [showMyPainModal, setShowMyPainModal]     = useState(false);
+    const [myPainEntries, setMyPainEntries]         = useState([]);
+    const [loadingMyPain, setLoadingMyPain]         = useState(false);
     const bottomRef                   = useRef(null);
     const pollRef                     = useRef(null);
     const inputRef                    = useRef(null);
+    const plusMenuRef                 = useRef(null);
 
     // ── Fetch conversation list ──────────────────────────────────
     const fetchConvos = useCallback(async () => {
@@ -78,6 +127,17 @@ const CustomerMessages = ({ user, targetTrainer }) => {
     useEffect(() => {
         bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
     }, [messages]);
+
+    useEffect(() => {
+        if (!showPlusMenu) return;
+        const handler = (e) => {
+            if (plusMenuRef.current && !plusMenuRef.current.contains(e.target)) {
+                setShowPlusMenu(false);
+            }
+        };
+        document.addEventListener('mousedown', handler);
+        return () => document.removeEventListener('mousedown', handler);
+    }, [showPlusMenu]);
 
     const handleSelect = (convo) => {
         setActive({ id: convo.id, name: convo.name });
@@ -155,6 +215,39 @@ const CustomerMessages = ({ user, targetTrainer }) => {
     const toggleWorkout = (id) => setExpandedWorkouts(prev => {
         const s = new Set(prev); s.has(id) ? s.delete(id) : s.add(id); return s;
     });
+
+    const openMyPain = async () => {
+        setShowPlusMenu(false);
+        setShowMyPainModal(true);
+        setLoadingMyPain(true);
+        try {
+            const res = await axios.get('/api/v1/users/pain', { withCredentials: true });
+            setMyPainEntries(res.data.data || []);
+        } catch (e) { console.error(e); }
+        finally { setLoadingMyPain(false); }
+    };
+
+    const handleDeleteMyPain = async (id) => {
+        try {
+            await axios.delete(`/api/v1/users/pain/${id}`, { withCredentials: true });
+            setMyPainEntries(prev => prev.filter(e => e.id !== id));
+        } catch (e) { console.error(e); }
+    };
+
+    const handleSubmitPain = async () => {
+        if (!painForm.zone) return;
+        setSubmittingPain(true);
+        try {
+            await axios.post('/api/v1/users/report-pain', {
+                zone: painForm.zone,
+                severity: painForm.severity,
+                note: painForm.note,
+            }, { withCredentials: true });
+            setShowPainModal(false);
+            setPainForm({ zone: null, severity: 'Mild', note: '' });
+        } catch (e) { console.error(e); }
+        finally { setSubmittingPain(false); }
+    };
 
     const isRecentlyActive = (lastAt) => lastAt && Date.now() - new Date(lastAt) < 15 * 60 * 1000;
     const parseWorkout = (content) => {
@@ -309,11 +402,27 @@ const CustomerMessages = ({ user, targetTrainer }) => {
 
                         {/* Input */}
                         <form className="cm-input-row" onSubmit={handleSend}>
-                            {user?.role === 'trainer' && (
-                                <button type="button" className="cm-workout-btn" onClick={openWorkoutPicker} title="Send workout">
-                                    <Dumbbell size={16} />
+                            <div className="cm-plus-wrap" ref={plusMenuRef}>
+                                <button
+                                    type="button"
+                                    className={`cm-plus-btn ${showPlusMenu ? 'open' : ''}`}
+                                    onClick={() => setShowPlusMenu(v => !v)}
+                                >
+                                    <Plus size={16} />
                                 </button>
-                            )}
+                                {showPlusMenu && (
+                                    <div className="cm-plus-menu">
+                                        <button className="cm-plus-item" onClick={() => { setShowPlusMenu(false); setShowPainModal(true); }}>
+                                            <Heart size={14} className="cm-plus-item-icon pain" />
+                                            Report pain
+                                        </button>
+                                        <button className="cm-plus-item" onClick={openMyPain}>
+                                            <ShieldCheck size={14} className="cm-plus-item-icon free" />
+                                            My pain zones
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
                             <input
                                 ref={inputRef}
                                 className="cm-input"
@@ -326,6 +435,122 @@ const CustomerMessages = ({ user, targetTrainer }) => {
                                 {sending ? <Loader2 className="cm-spin" size={16} /> : <Send size={16} />}
                             </button>
                         </form>
+
+                        {/* My Pain Zones modal */}
+                        {showMyPainModal && (
+                            <div className="cm-pain-overlay" onClick={() => setShowMyPainModal(false)}>
+                                <div className="cm-pain-modal cm-mypain-modal" onClick={e => e.stopPropagation()}>
+                                    <button className="cm-pain-close" onClick={() => setShowMyPainModal(false)}><X size={15} /></button>
+                                    <div className="cm-pain-top">
+                                        <span className="cm-pain-label">PAIN ZONES</span>
+                                        <h2 className="cm-pain-title">My active pain zones</h2>
+                                        <p className="cm-pain-sub">Remove zones that are no longer bothering you</p>
+                                    </div>
+                                    <div className="cm-mypain-list">
+                                        {loadingMyPain ? (
+                                            <div className="cm-mypain-empty"><Loader2 className="cm-spin" size={20} /></div>
+                                        ) : myPainEntries.length === 0 ? (
+                                            <div className="cm-mypain-empty">
+                                                <ShieldCheck size={28} style={{ color: '#4ade80', marginBottom: 8 }} />
+                                                <span>No active pain zones — you're good!</span>
+                                            </div>
+                                        ) : myPainEntries.map(e => (
+                                            <div key={e.id} className="cm-mypain-row">
+                                                <span className="cm-mypain-dot" style={{ background: SEV_COLOR[e.severity === 'Low' ? 'Mild' : e.severity] || SEV_COLOR.Mild }} />
+                                                <div className="cm-mypain-info">
+                                                    <span className="cm-mypain-zone">{e.zone}</span>
+                                                    <span className="cm-mypain-sev" style={{ color: SEV_COLOR[e.severity === 'Low' ? 'Mild' : e.severity] || SEV_COLOR.Mild }}>
+                                                        {e.severity === 'Low' ? 'Mild' : e.severity}
+                                                    </span>
+                                                    {e.note && <span className="cm-mypain-note">{e.note}</span>}
+                                                </div>
+                                                <button className="cm-mypain-del" onClick={() => handleDeleteMyPain(e.id)} title="Mark as pain free">
+                                                    <X size={13} />
+                                                </button>
+                                            </div>
+                                        ))}
+                                    </div>
+                                    <div className="cm-pain-footer">
+                                        <button type="button" className="cm-pain-cancel" onClick={() => setShowMyPainModal(false)}>Close</button>
+                                        {myPainEntries.length > 0 && (
+                                            <button
+                                                type="button"
+                                                className="cm-pain-submit"
+                                                style={{ background: '#22c55e' }}
+                                                onClick={async () => {
+                                                    for (const e of myPainEntries) await handleDeleteMyPain(e.id);
+                                                    setShowMyPainModal(false);
+                                                }}
+                                            >
+                                                I'm completely pain free
+                                            </button>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Pain report modal */}
+                        {showPainModal && (
+                            <div className="cm-pain-overlay" onClick={() => setShowPainModal(false)}>
+                                <div className="cm-pain-modal" onClick={e => e.stopPropagation()}>
+                                    <button className="cm-pain-close" onClick={() => setShowPainModal(false)}><X size={15} /></button>
+                                    <div className="cm-pain-top">
+                                        <span className="cm-pain-label">REPORT PAIN</span>
+                                        <h2 className="cm-pain-title">Where does it hurt?</h2>
+                                        <p className="cm-pain-sub">Tap zones · your trainer will be notified</p>
+                                    </div>
+                                    <div className="cm-pain-body">
+                                        <div className="cm-pain-svg-col">
+                                            <PainBodySVG
+                                                selectedZone={painForm.zone}
+                                                onSelectZone={z => setPainForm(p => ({ ...p, zone: z }))}
+                                            />
+                                        </div>
+                                        <div className="cm-pain-controls">
+                                            <div className="cm-pain-section">
+                                                <span className="cm-pain-section-label">SEVERITY</span>
+                                                <div className="cm-pain-sev-row">
+                                                    {['Mild', 'Moderate', 'High'].map(s => (
+                                                        <button
+                                                            key={s}
+                                                            type="button"
+                                                            className={`cm-pain-sev-btn ${painForm.severity === s ? 'active' : ''}`}
+                                                            style={painForm.severity === s ? { borderColor: SEV_COLOR[s], color: SEV_COLOR[s], background: `${SEV_COLOR[s]}22` } : {}}
+                                                            onClick={() => setPainForm(p => ({ ...p, severity: s }))}
+                                                        >{s}</button>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                            <div className="cm-pain-section">
+                                                <span className="cm-pain-section-label">SELECTED</span>
+                                                <span className={`cm-pain-selected-zone ${!painForm.zone ? 'placeholder' : ''}`}>
+                                                    {painForm.zone || 'Tap a zone on the body'}
+                                                </span>
+                                            </div>
+                                            <textarea
+                                                className="cm-pain-note"
+                                                placeholder="Add a note (optional)…"
+                                                value={painForm.note}
+                                                onChange={e => setPainForm(p => ({ ...p, note: e.target.value }))}
+                                                rows={4}
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className="cm-pain-footer">
+                                        <button type="button" className="cm-pain-cancel" onClick={() => setShowPainModal(false)}>Cancel</button>
+                                        <button
+                                            type="button"
+                                            className="cm-pain-submit"
+                                            disabled={!painForm.zone || submittingPain}
+                                            onClick={handleSubmitPain}
+                                        >
+                                            {submittingPain ? <Loader2 className="cm-spin" size={14} /> : 'Notify Trainer →'}
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
                     </>
                 )}
             </div>

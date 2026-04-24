@@ -1,6 +1,7 @@
 import express from 'express';
 import { getTrainerProfile, updateTrainerProfile, uploadCertFile, uploadCert, getTrainerDashboard, listTrainers, getPublicTrainer } from '../../controllers/trainer/trainerProfile.controller.js';
 import { getClients, getClientDetail, getClientProgram, saveClientProgram, deleteClientWorkout } from '../../controllers/trainer/trainerClients.controller.js';
+import { getClientPain, logClientPain, updateClientPain, deleteClientPain } from '../../controllers/trainer/clientPain.controller.js';
 import { listTemplates, saveTemplate, getTemplate, updateTemplate, deleteTemplate } from '../../controllers/trainer/programTemplate.controller.js';
 import authorize from '../../middlewares/auth.middleware.js';
 
@@ -26,6 +27,10 @@ trainerRouter.get('/clients/:clientId',                    authorize, getClientD
 trainerRouter.get('/clients/:clientId/program',            authorize, getClientProgram);
 trainerRouter.post('/clients/:clientId/program',           authorize, saveClientProgram);
 trainerRouter.delete('/clients/:clientId/program/:workoutId', authorize, deleteClientWorkout);
+trainerRouter.get('/clients/:clientId/pain',              authorize, getClientPain);
+trainerRouter.post('/clients/:clientId/pain',             authorize, logClientPain);
+trainerRouter.put('/clients/:clientId/pain/:painId',      authorize, updateClientPain);
+trainerRouter.delete('/clients/:clientId/pain/:painId',   authorize, deleteClientPain);
 
 // ─── Program Templates ─────────────────────────────────────────
 trainerRouter.get('/templates',     authorize, requireTrainer, listTemplates);

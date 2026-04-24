@@ -15,7 +15,7 @@ import TodayWorkout from './widgets/TodayWorkout/TodayWorkout';
 import TodayEvents from './widgets/TodayEvents/TodayEvents';
 import TodayMacros from './widgets/TodayMacros/TodayMacros';
 import { ConsistencyCalendar } from '../common/widgets/Progress/Progress';
-import { Search, Bell } from 'lucide-react';
+import { Search, Bell, ShieldCheck, X, HeartCrack } from 'lucide-react';
 
 // ─── Notification Bell ────────────────────────────────────────
 const NotificationBell = ({ onNavigateToMessages }) => {
@@ -122,6 +122,111 @@ const NotificationBell = ({ onNavigateToMessages }) => {
     );
 };
 
+const SEV_COLOR = { Low: '#facc15', Mild: '#facc15', Moderate: '#f97316', High: '#f87171' };
+
+const PainBanner = () => {
+    const [zones, setZones]       = useState([]);
+    const [showModal, setShowModal] = useState(false);
+    const [selected, setSelected] = useState(new Set());
+    const [clearing, setClearing] = useState(false);
+
+    const fetchZones = useCallback(async () => {
+        try {
+            const res = await axios.get('/api/v1/users/pain', { withCredentials: true });
+            const data = res.data.data || [];
+            setZones(data);
+            // Auto-open modal every Monday
+            if (data.length > 0 && new Date().getDay() === 1) {
+                const mondayKey = new Date().toISOString().split('T')[0];
+                if (localStorage.getItem('painCheckMonday') !== mondayKey) {
+                    setShowModal(true);
+                    localStorage.setItem('painCheckMonday', mondayKey);
+                }
+            }
+        } catch { /* silent */ }
+    }, []);
+
+    useEffect(() => { fetchZones(); }, [fetchZones]);
+
+    const toggle = (id) => setSelected(prev => {
+        const s = new Set(prev); s.has(id) ? s.delete(id) : s.add(id); return s;
+    });
+
+    const handleClearSelected = async () => {
+        setClearing(true);
+        try {
+            for (const id of selected) {
+                await axios.delete(`/api/v1/users/pain/${id}`, { withCredentials: true });
+            }
+            const remaining = zones.filter(z => !selected.has(z.id));
+            setZones(remaining);
+            setSelected(new Set());
+            if (remaining.length === 0) setShowModal(false);
+        } catch { /* silent */ }
+        setClearing(false);
+    };
+
+    if (zones.length === 0) return null;
+
+    const modal = (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(6px)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}
+            onClick={() => setShowModal(false)}>
+            <div style={{ background: '#0d0d0d', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 18, width: '100%', maxWidth: 420, boxShadow: '0 24px 64px rgba(0,0,0,0.9)', overflow: 'hidden' }}
+                onClick={e => e.stopPropagation()}>
+                <div style={{ padding: '22px 24px 16px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+                    <span style={{ fontSize: '0.68rem', fontWeight: 700, letterSpacing: '0.1em', color: '#818cf8', display: 'block', marginBottom: 6 }}>PAIN CHECK-IN</span>
+                    <h2 style={{ fontSize: '1.2rem', fontWeight: 800, color: '#ffffff', margin: '0 0 4px' }}>Which zones feel better?</h2>
+                    <p style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.3)', margin: 0 }}>Select the zones you're no longer experiencing pain in.</p>
+                </div>
+                <div style={{ padding: '8px 24px', maxHeight: 240, overflowY: 'auto' }}>
+                    {zones.map(z => {
+                        const isSel = selected.has(z.id);
+                        const color = SEV_COLOR[z.severity] || '#facc15';
+                        return (
+                            <div key={z.id} onClick={() => toggle(z.id)}
+                                style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 0', borderBottom: '1px solid rgba(255,255,255,0.05)', cursor: 'pointer', userSelect: 'none' }}>
+                                <div style={{ width: 18, height: 18, borderRadius: 5, border: `2px solid ${isSel ? '#22c55e' : 'rgba(255,255,255,0.2)'}`, background: isSel ? '#22c55e' : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'all 0.15s' }}>
+                                    {isSel && <svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4L3.5 6.5L9 1" stroke="#000" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>}
+                                </div>
+                                <span style={{ width: 8, height: 8, borderRadius: '50%', flexShrink: 0, background: color }} />
+                                <span style={{ fontSize: '0.875rem', fontWeight: 600, color: '#e0e0e0', flex: 1, textDecoration: isSel ? 'line-through' : 'none', opacity: isSel ? 0.5 : 1, transition: 'all 0.15s' }}>{z.zone}</span>
+                                <span style={{ fontSize: '0.72rem', fontWeight: 600, color }}>{z.severity === 'Low' ? 'Mild' : z.severity}</span>
+                            </div>
+                        );
+                    })}
+                </div>
+                <div style={{ display: 'flex', gap: 10, padding: '14px 24px', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+                    <button onClick={() => setShowModal(false)}
+                        style={{ flex: 1, padding: '10px', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 10, background: 'transparent', color: 'rgba(255,255,255,0.45)', fontSize: '0.875rem', fontWeight: 600, cursor: 'pointer' }}>
+                        Still in pain
+                    </button>
+                    <button onClick={handleClearSelected} disabled={selected.size === 0 || clearing}
+                        style={{ flex: 1, padding: '10px', border: 'none', borderRadius: 10, background: selected.size > 0 ? '#22c55e' : 'rgba(255,255,255,0.06)', color: selected.size > 0 ? '#000' : 'rgba(255,255,255,0.2)', fontSize: '0.875rem', fontWeight: 700, cursor: selected.size > 0 ? 'pointer' : 'not-allowed', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, transition: 'all 0.2s' }}>
+                        <ShieldCheck size={14} />
+                        {clearing ? 'Clearing…' : selected.size > 0 ? `Pain free (${selected.size})` : 'Select zones'}
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+
+    return (
+        <>
+            {/* Persistent top banner */}
+            <div style={{ width: '100%', background: '#facc15', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '5px 20px', gap: 16, flexShrink: 0 }}>
+                <span style={{ fontSize: '0.75rem', color: '#000', fontWeight: 600 }}>
+                    You have {zones.length} active pain zone{zones.length !== 1 ? 's' : ''}. Are you still experiencing these?
+                </span>
+                <button onClick={() => { setSelected(new Set()); setShowModal(true); }}
+                    style={{ flexShrink: 0, padding: '3px 12px', borderRadius: 6, border: 'none', background: 'transparent', color: '#000', fontSize: '0.72rem', fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap' }}>
+                    Pain free?
+                </button>
+            </div>
+            {showModal && modal}
+        </>
+    );
+};
+
 const CustomerDashboard = ({ user, onLogout, onUserUpdate }) => {
     const [activeTab, setActiveTab]           = useState('overview');
     const [messageTarget, setMessageTarget]   = useState(null); // { id, name }
@@ -147,6 +252,7 @@ const CustomerDashboard = ({ user, onLogout, onUserUpdate }) => {
 
             {/* Main Content */}
             <div className="flex-1 flex flex-col h-screen overflow-hidden" style={{ background: '#000000' }}>
+                <PainBanner />
                 {/* Header */}
                 <header className="shrink-0" style={{ background: '#000000', borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
                     <div className="h-16 flex justify-between items-center px-8">

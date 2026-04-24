@@ -2,11 +2,10 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import axios from 'axios';
 import {
     Search, ChevronRight, Trash2, Plus, Save, X, Loader2, Send,
-    BookMarked, Copy, CheckCircle, Dumbbell, Flame, Scale, Target
+    BookMarked, Copy, CheckCircle, Dumbbell, Pencil
 } from 'lucide-react';
 import {
     LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer,
-    BarChart, Bar, Legend
 } from 'recharts';
 import './TrainerClients.css';
 
@@ -37,68 +36,273 @@ const lastActiveLabel = (dateStr) => {
 const pct = (val, max) => Math.min(100, max > 0 ? Math.round((val / max) * 100) : 0);
 
 // ─── Sub-components ───────────────────────────────────────────
-const KpiCard = ({ label, value, color, icon }) => (
+const KpiCard = ({ label, value }) => (
     <div className="tc-kpi">
-        <div className="tc-kpi-icon" style={{ background: color }}>
-            {icon}
-        </div>
-        <div>
-            <div className="tc-kpi-value">{value}</div>
-            <div className="tc-kpi-label">{label}</div>
-        </div>
+        <div className="tc-kpi-value">{value}</div>
+        <div className="tc-kpi-label">{label}</div>
     </div>
 );
 
-const ProgressBar = ({ label, value, max, unit }) => (
+const ProgressBar = ({ label, value, max, unit, fillColor }) => (
     <div className="tc-progress-item">
         <div className="tc-progress-header">
             <span className="tc-progress-label">{label}</span>
             <span className="tc-progress-val">{value} / {max}{unit}</span>
         </div>
         <div className="tc-progress-track">
-            <div className="tc-progress-fill" style={{ width: `${pct(value, max)}%` }} />
+            <div className="tc-progress-fill" style={{ width: `${pct(value, max)}%`, background: fillColor || undefined }} />
         </div>
     </div>
 );
 
+// ─── Pain & Discomfort ────────────────────────────────────────
+const PAIN_ZONES_LIST = [
+    'Head', 'Neck', 'Left Shoulder', 'Right Shoulder',
+    'Chest', 'Left Arm', 'Right Arm', 'Abdomen', 'Lower Back',
+    'Left Hip', 'Right Hip', 'Left Thigh', 'Right Thigh',
+    'Left Knee', 'Right Knee', 'Left Calf', 'Right Calf',
+    'Left Foot', 'Right Foot',
+];
+
+const SEVERITY_COLOR = { Low: '#facc15', Moderate: '#f97316', High: '#f87171' };
+
+const ZONE_DOT_POS = {
+    'Head':           { cx: 60,  cy: 22  },
+    'Neck':           { cx: 60,  cy: 43  },
+    'Left Shoulder':  { cx: 20,  cy: 54  },
+    'Right Shoulder': { cx: 100, cy: 54  },
+    'Chest':          { cx: 60,  cy: 70  },
+    'Left Arm':       { cx: 19,  cy: 92  },
+    'Right Arm':      { cx: 101, cy: 92  },
+    'Abdomen':        { cx: 60,  cy: 96  },
+    'Lower Back':     { cx: 60,  cy: 118 },
+    'Left Hip':       { cx: 37,  cy: 140 },
+    'Right Hip':      { cx: 83,  cy: 140 },
+    'Left Thigh':     { cx: 41,  cy: 166 },
+    'Right Thigh':    { cx: 79,  cy: 166 },
+    'Left Knee':      { cx: 41,  cy: 192 },
+    'Right Knee':     { cx: 79,  cy: 192 },
+    'Left Calf':      { cx: 41,  cy: 215 },
+    'Right Calf':     { cx: 79,  cy: 215 },
+    'Left Foot':      { cx: 41,  cy: 238 },
+    'Right Foot':     { cx: 79,  cy: 238 },
+};
+
+const BodySVG = ({ zoneMap, hoveredZone, onHoverZone }) => (
+    <svg viewBox="0 0 120 260" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ width: '100%', height: '100%' }}>
+        {/* Head */}
+        <circle cx="60" cy="22" r="16" fill="#1a1a2e" stroke="#2e2e44" strokeWidth="1.5"/>
+        {/* Neck */}
+        <rect x="54" y="37" width="12" height="12" rx="3" fill="#1a1a2e" stroke="#2e2e44" strokeWidth="1"/>
+        {/* Torso */}
+        <rect x="28" y="46" width="64" height="88" rx="8" fill="#1a1a2e" stroke="#2e2e44" strokeWidth="1.5"/>
+        {/* Left arm */}
+        <rect x="11" y="48" width="17" height="78" rx="8" fill="#1a1a2e" stroke="#2e2e44" strokeWidth="1.5"/>
+        {/* Right arm */}
+        <rect x="92" y="48" width="17" height="78" rx="8" fill="#1a1a2e" stroke="#2e2e44" strokeWidth="1.5"/>
+        {/* Left leg */}
+        <rect x="29" y="132" width="24" height="116" rx="8" fill="#1a1a2e" stroke="#2e2e44" strokeWidth="1.5"/>
+        {/* Right leg */}
+        <rect x="67" y="132" width="24" height="116" rx="8" fill="#1a1a2e" stroke="#2e2e44" strokeWidth="1.5"/>
+        {/* Pain dots */}
+        {Object.entries(zoneMap).map(([zone, entry]) => {
+            const pos = ZONE_DOT_POS[zone];
+            if (!pos) return null;
+            const color = SEVERITY_COLOR[entry.severity] || '#facc15';
+            const isHov = hoveredZone === zone;
+            return (
+                <g key={zone}>
+                    {isHov && <circle cx={pos.cx} cy={pos.cy} r="9" fill={color} opacity="0.25"/>}
+                    <circle
+                        cx={pos.cx} cy={pos.cy} r="5"
+                        fill={color}
+                        className="tc-pain-dot"
+                        onMouseEnter={() => onHoverZone(zone)}
+                        onMouseLeave={() => onHoverZone(null)}
+                    />
+                </g>
+            );
+        })}
+    </svg>
+);
+
+const PainDiscomfort = ({ clientId }) => {
+    const [entries, setEntries]         = useState([]);
+    const [loading, setLoading]         = useState(true);
+    const [hoveredZone, setHoveredZone] = useState(null);
+    const [showModal, setShowModal]     = useState(false);
+    const [editingEntry, setEditingEntry] = useState(null); // { id, zone, severity, note }
+    const [form, setForm]               = useState({ zone: 'Head', severity: 'Moderate', note: '' });
+    const [saving, setSaving]           = useState(false);
+
+    const fetchPain = async () => {
+        try {
+            const res = await axios.get(`/api/v1/trainer/clients/${clientId}/pain`, { withCredentials: true });
+            setEntries(res.data.data || []);
+        } catch (e) { console.error(e); }
+        finally { setLoading(false); }
+    };
+
+    useEffect(() => { setLoading(true); fetchPain(); }, [clientId]);
+
+    const openEdit = (entry) => {
+        setEditingEntry(entry);
+        setForm({ zone: entry.zone, severity: entry.severity, note: entry.note || '' });
+        setShowModal(true);
+    };
+
+    const closeModal = () => {
+        setShowModal(false);
+        setEditingEntry(null);
+        setForm({ zone: 'Head', severity: 'Moderate', note: '' });
+    };
+
+    const handleLog = async () => {
+        setSaving(true);
+        try {
+            if (editingEntry) {
+                await axios.put(`/api/v1/trainer/clients/${clientId}/pain/${editingEntry.id}`, form, { withCredentials: true });
+            } else {
+                await axios.post(`/api/v1/trainer/clients/${clientId}/pain`, form, { withCredentials: true });
+            }
+            closeModal();
+            await fetchPain();
+        } catch (e) { console.error(e); }
+        finally { setSaving(false); }
+    };
+
+    const handleDelete = async (id) => {
+        try {
+            await axios.delete(`/api/v1/trainer/clients/${clientId}/pain/${id}`, { withCredentials: true });
+            await fetchPain();
+        } catch (e) { console.error(e); }
+    };
+
+    const zoneMap = {};
+    entries.forEach(e => {
+        if (!zoneMap[e.zone] || new Date(e.createdAt) > new Date(zoneMap[e.zone].createdAt)) {
+            zoneMap[e.zone] = e;
+        }
+    });
+    const activeCount = Object.keys(zoneMap).length;
+
+    return (
+        <div className="tc-card tc-card-wide">
+            <div className="tc-pain-header">
+                <h4 className="tc-card-title" style={{ margin: 0 }}>Pain & Discomfort</h4>
+                <div className="tc-pain-header-right">
+                    <button className="tc-pain-log-btn" onClick={() => { setEditingEntry(null); setForm({ zone: 'Head', severity: 'Moderate', note: '' }); setShowModal(true); }}>
+                        <Plus size={13} /> Log Zone
+                    </button>
+                </div>
+            </div>
+
+            {loading ? (
+                <div className="tc-empty-small"><Loader2 className="tc-spin" size={16} /></div>
+            ) : (
+                <div className="tc-pain-body">
+                    <div className="tc-pain-svg-wrap">
+                        <BodySVG zoneMap={zoneMap} hoveredZone={hoveredZone} onHoverZone={setHoveredZone} />
+                    </div>
+                    <div className="tc-pain-list">
+                        {entries.length === 0 ? (
+                            <div className="tc-empty-small">No pain zones logged yet.</div>
+                        ) : entries.map(e => (
+                            <div
+                                key={e.id}
+                                className={`tc-pain-entry ${hoveredZone === e.zone ? 'hovered' : ''}`}
+                                onMouseEnter={() => setHoveredZone(e.zone)}
+                                onMouseLeave={() => setHoveredZone(null)}
+                            >
+                                <span className="tc-pain-dot-sm" style={{ background: SEVERITY_COLOR[e.severity] || '#facc15' }} />
+                                <div className="tc-pain-entry-text">
+                                    <span className="tc-pain-zone">{e.zone}</span>
+                                    <span className="tc-pain-sev-label" style={{ color: SEVERITY_COLOR[e.severity] }}>{e.severity}</span>
+                                    {e.note && <span className="tc-pain-note">{e.note}</span>}
+                                </div>
+                                <button className="tc-pain-edit" onClick={() => openEdit(e)}><Pencil size={12} /></button>
+                                <button className="tc-pain-del" onClick={() => handleDelete(e.id)}><X size={12} /></button>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
+
+            {showModal && (
+                <div className="tc-tpl-modal-overlay" onClick={closeModal}>
+                    <div className="tc-tpl-modal" onClick={ev => ev.stopPropagation()}>
+                        <div className="tc-tpl-modal-header">
+                            <span>{editingEntry ? 'Edit Pain Zone' : 'Log Pain Zone'}</span>
+                            <button onClick={closeModal}><X size={16} /></button>
+                        </div>
+                        <div>
+                            <label className="tc-pain-field-label">Zone</label>
+                            <select className="tc-tpl-name-input" value={form.zone} onChange={ev => setForm(p => ({ ...p, zone: ev.target.value }))}>
+                                {PAIN_ZONES_LIST.map(z => <option key={z} value={z}>{z}</option>)}
+                            </select>
+                        </div>
+                        <div>
+                            <label className="tc-pain-field-label">Severity</label>
+                            <div className="tc-pain-sev-btns">
+                                {['Low', 'Moderate', 'High'].map(s => (
+                                    <button
+                                        key={s}
+                                        className={`tc-pain-sev-btn ${form.severity === s ? 'active' : ''}`}
+                                        style={form.severity === s ? { borderColor: SEVERITY_COLOR[s], color: SEVERITY_COLOR[s], background: `${SEVERITY_COLOR[s]}22` } : {}}
+                                        onClick={() => setForm(p => ({ ...p, severity: s }))}
+                                    >{s}</button>
+                                ))}
+                            </div>
+                        </div>
+                        <div>
+                            <label className="tc-pain-field-label">Note (optional)</label>
+                            <textarea
+                                className="tc-pain-textarea"
+                                placeholder="Describe the discomfort…"
+                                value={form.note}
+                                onChange={ev => setForm(p => ({ ...p, note: ev.target.value }))}
+                                rows={3}
+                            />
+                        </div>
+                        <button className="tc-tpl-confirm-btn" onClick={handleLog} disabled={saving}>
+                            {saving ? <Loader2 className="tc-spin" size={14} /> : editingEntry ? <Save size={14} /> : <Plus size={14} />}
+                            {editingEntry ? 'Save Changes' : 'Log Pain Zone'}
+                        </button>
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+};
+
 // ─── Overview Panel ───────────────────────────────────────────
-const OverviewPanel = ({ detail }) => {
+const OverviewPanel = ({ detail, clientId }) => {
     if (!detail) return <div className="tc-empty">Select a client to view their overview.</div>;
 
-    const { stats, todayLog, goals, weightHistory, weeklyNutrition } = detail;
+    const { stats, todayLog, goals, weightHistory } = detail;
 
     const weightData = (weightHistory || []).map(w => ({
         date: new Date(w.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-        weight: w.weight
-    }));
-
-    const nutritionData = (weeklyNutrition || []).map(n => ({
-        day: n.dayName?.slice(0, 3),
-        Protein: Math.round(n.protein),
-        Carbs:   Math.round(n.carbs),
-        Fat:     Math.round(n.fat),
+        weight: w.weight,
     }));
 
     return (
         <div className="tc-overview">
             {/* KPI strip */}
             <div className="tc-kpi-row">
-                <KpiCard label="Day Streak"   value={`${stats.dayStreak} days`}        color="linear-gradient(135deg,#4f3f8a,#7c6bb5)" icon={<Flame size={18} color="#fff"/>} />
-                <KpiCard label="Workouts/wk"  value={stats.weeklyWorkouts}              color="linear-gradient(135deg,#1e4a6e,#2d7ab5)" icon={<Dumbbell size={18} color="#fff"/>} />
-                <KpiCard label="Last Weight"  value={weightData.length ? `${weightData[weightData.length-1]?.weight} kg` : '—'} color="linear-gradient(135deg,#1e6e4a,#2db57a)" icon={<Scale size={18} color="#fff"/>} />
-                <KpiCard label="Compliance"   value={`${stats.complianceScore}%`}      color="linear-gradient(135deg,#6e4a1e,#b57a2d)" icon={<Target size={18} color="#fff"/>} />
+                <KpiCard label="Day Streak"   value={`${stats.dayStreak} days`} />
+                <KpiCard label="Workouts / wk" value={stats.weeklyWorkouts} />
+                <KpiCard label="Last Weight"  value={weightData.length ? `${weightData[weightData.length - 1]?.weight} kg` : '—'} />
+                <KpiCard label="Compliance"   value={`${stats.complianceScore}%`} />
             </div>
 
             <div className="tc-overview-grid">
                 {/* Today's targets */}
                 <div className="tc-card">
                     <h4 className="tc-card-title">Today's Targets</h4>
-                    <ProgressBar label="Calories" value={todayLog.caloriesBurned}  max={goals.calories} unit=" kcal" />
-                    <ProgressBar label="Protein"  value={todayLog.proteinConsumed} max={goals.protein}  unit="g" />
-                    <div className="tc-water-row">
-                        <span className="tc-progress-label">Water</span>
-                        <span className="tc-progress-val">{todayLog.waterIntake} glasses</span>
-                    </div>
+                    <ProgressBar label="Calories" value={todayLog.caloriesBurned}  max={goals.calories} unit=" kcal" fillColor="#e0e0e0" />
+                    <ProgressBar label="Protein"  value={todayLog.proteinConsumed} max={goals.protein}  unit="g"    fillColor="#a5b4fc" />
+                    <ProgressBar label="Water"    value={todayLog.waterIntake}     max={8}              unit=" gl"  fillColor="#38bdf8" />
                 </div>
 
                 {/* Weight trend */}
@@ -108,9 +312,9 @@ const OverviewPanel = ({ detail }) => {
                         <ResponsiveContainer width="100%" height={160}>
                             <LineChart data={weightData}>
                                 <XAxis dataKey="date" tick={{ fontSize: 11 }} />
-                                <YAxis domain={['auto','auto']} tick={{ fontSize: 11 }} />
+                                <YAxis domain={['auto', 'auto']} tick={{ fontSize: 11 }} />
                                 <Tooltip />
-                                <Line type="monotone" dataKey="weight" stroke="#555" strokeWidth={2} dot={{ r: 3 }} />
+                                <Line type="monotone" dataKey="weight" stroke="#818cf8" strokeWidth={2} dot={{ r: 3 }} />
                             </LineChart>
                         </ResponsiveContainer>
                     ) : (
@@ -118,25 +322,8 @@ const OverviewPanel = ({ detail }) => {
                     )}
                 </div>
 
-                {/* Weekly nutrition */}
-                <div className="tc-card tc-card-wide">
-                    <h4 className="tc-card-title">This Week's Nutrition</h4>
-                    {nutritionData.length > 0 ? (
-                        <ResponsiveContainer width="100%" height={160}>
-                            <BarChart data={nutritionData}>
-                                <XAxis dataKey="day" tick={{ fontSize: 11 }} />
-                                <YAxis tick={{ fontSize: 11 }} />
-                                <Tooltip />
-                                <Legend />
-                                <Bar dataKey="Protein" stackId="a" fill="#444" />
-                                <Bar dataKey="Carbs"   stackId="a" fill="#666" />
-                                <Bar dataKey="Fat"     stackId="a" fill="#555" />
-                            </BarChart>
-                        </ResponsiveContainer>
-                    ) : (
-                        <div className="tc-empty-small">No nutrition data this week</div>
-                    )}
-                </div>
+                {/* Pain & Discomfort */}
+                <PainDiscomfort clientId={clientId} />
             </div>
         </div>
     );
@@ -1033,7 +1220,7 @@ const TrainerClients = () => {
                             {activeTab === 'overview' ? (
                                 loadingDetail
                                     ? <div className="tc-empty"><Loader2 className="tc-spin" size={24} /> Loading…</div>
-                                    : <OverviewPanel detail={detail} />
+                                    : <OverviewPanel detail={detail} clientId={selectedId} />
                             ) : activeTab === 'program' ? (
                                 <ProgramPanel clientId={selectedId} />
                             ) : (
