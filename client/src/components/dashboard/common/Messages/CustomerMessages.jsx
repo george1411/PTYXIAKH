@@ -1,48 +1,71 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import axios from 'axios';
-import { Send, Loader2, Search, Dumbbell, X, Plus, Heart, ShieldCheck } from 'lucide-react';
+import { Send, Loader2, Search, Dumbbell, X, Plus, Heart } from 'lucide-react';
 import './CustomerMessages.css';
 
 // ─── Pain Report constants ────────────────────────────────────
-const PAIN_ZONE_POS = {
-    'Head':           { cx: 60,  cy: 22  }, 'Neck':           { cx: 60,  cy: 43  },
-    'Left Shoulder':  { cx: 20,  cy: 54  }, 'Right Shoulder': { cx: 100, cy: 54  },
-    'Chest':          { cx: 60,  cy: 70  }, 'Left Arm':       { cx: 19,  cy: 92  },
-    'Right Arm':      { cx: 101, cy: 92  }, 'Abdomen':        { cx: 60,  cy: 96  },
-    'Lower Back':     { cx: 60,  cy: 118 }, 'Left Hip':       { cx: 37,  cy: 140 },
-    'Right Hip':      { cx: 83,  cy: 140 }, 'Left Thigh':     { cx: 41,  cy: 166 },
-    'Right Thigh':    { cx: 79,  cy: 166 }, 'Left Knee':      { cx: 41,  cy: 192 },
-    'Right Knee':     { cx: 79,  cy: 192 }, 'Left Calf':      { cx: 41,  cy: 215 },
-    'Right Calf':     { cx: 79,  cy: 215 }, 'Left Foot':      { cx: 41,  cy: 238 },
-    'Right Foot':     { cx: 79,  cy: 238 },
-};
-const SEV_COLOR = { Mild: '#facc15', Moderate: '#f97316', High: '#f87171' };
+const PAIN_ZONES = [
+    { id: 'neck',           label: 'Neck',           x: 150, y: 58  },
+    { id: 'left-shoulder',  label: 'Left Shoulder',  x: 108, y: 100 },
+    { id: 'right-shoulder', label: 'Right Shoulder', x: 192, y: 100 },
+    { id: 'chest',          label: 'Chest',          x: 150, y: 135 },
+    { id: 'left-elbow',     label: 'Left Elbow',     x: 80,  y: 175 },
+    { id: 'right-elbow',    label: 'Right Elbow',    x: 220, y: 175 },
+    { id: 'lower-back',     label: 'Lower Back',     x: 150, y: 210 },
+    { id: 'left-hip',       label: 'Left Hip',       x: 118, y: 248 },
+    { id: 'right-hip',      label: 'Right Hip',      x: 182, y: 248 },
+    { id: 'left-knee',      label: 'Left Knee',      x: 112, y: 330 },
+    { id: 'right-knee',     label: 'Right Knee',     x: 188, y: 330 },
+    { id: 'left-ankle',     label: 'Left Ankle',     x: 108, y: 430 },
+    { id: 'right-ankle',    label: 'Right Ankle',    x: 192, y: 430 },
+];
 
-const PainBodySVG = ({ selectedZone, onSelectZone }) => (
-    <svg viewBox="0 0 120 260" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ width: '100%', height: '100%' }}>
-        <circle cx="60" cy="22" r="16" fill="#1a1a2e" stroke="#2e2e44" strokeWidth="1.5"/>
-        <rect x="54" y="37" width="12" height="12" rx="3" fill="#1a1a2e" stroke="#2e2e44" strokeWidth="1"/>
-        <rect x="28" y="46" width="64" height="88" rx="8" fill="#1a1a2e" stroke="#2e2e44" strokeWidth="1.5"/>
-        <rect x="11" y="48" width="17" height="78" rx="8" fill="#1a1a2e" stroke="#2e2e44" strokeWidth="1.5"/>
-        <rect x="92" y="48" width="17" height="78" rx="8" fill="#1a1a2e" stroke="#2e2e44" strokeWidth="1.5"/>
-        <rect x="29" y="132" width="24" height="116" rx="8" fill="#1a1a2e" stroke="#2e2e44" strokeWidth="1.5"/>
-        <rect x="67" y="132" width="24" height="116" rx="8" fill="#1a1a2e" stroke="#2e2e44" strokeWidth="1.5"/>
-        {Object.entries(PAIN_ZONE_POS).map(([zone, pos]) => {
-            const isSel = selectedZone === zone;
-            return (
-                <g key={zone} style={{ cursor: 'pointer' }} onClick={() => onSelectZone(zone)}>
-                    <circle cx={pos.cx} cy={pos.cy} r="11" fill="transparent"/>
-                    {isSel && <circle cx={pos.cx} cy={pos.cy} r="9" fill="#a5b4fc" opacity="0.2"/>}
-                    <circle cx={pos.cx} cy={pos.cy} r={isSel ? 6 : 4}
-                        fill={isSel ? '#a5b4fc' : 'rgba(255,255,255,0.15)'}
-                        stroke={isSel ? '#818cf8' : 'rgba(255,255,255,0.25)'}
-                        strokeWidth="1"
-                    />
-                </g>
-            );
-        })}
-    </svg>
-);
+const SEV_META = {
+    Mild:     { color: '#facc15', bg: 'rgba(250,204,21,0.18)',   border: 'rgba(250,204,21,0.5)'   },
+    Moderate: { color: '#f97316', bg: 'rgba(249,115,22,0.18)',   border: 'rgba(249,115,22,0.5)'   },
+    High:     { color: '#f87171', bg: 'rgba(248,113,113,0.18)',  border: 'rgba(248,113,113,0.5)'  },
+};
+
+const PainBodySVG = ({ selectedZones, onToggleZone, hoveredZone, onHoverZone }) => {
+    const getColor = (id) => {
+        const z = selectedZones.find(z => z.id === id);
+        return z ? SEV_META[z.sev]?.color : null;
+    };
+    return (
+        <svg viewBox="0 0 300 480" width="110" height="176" style={{ display: 'block' }}>
+            <ellipse cx="150" cy="44" rx="28" ry="34" fill="#1e1e1e" stroke="rgba(255,255,255,0.07)" strokeWidth="1.5"/>
+            <rect x="138" y="75" width="24" height="18" rx="6" fill="#1e1e1e" stroke="rgba(255,255,255,0.07)" strokeWidth="1.5"/>
+            <path d="M105 92 Q90 100 85 160 Q83 200 88 240 L212 240 Q217 200 215 160 Q210 100 195 92 Z" fill="#1e1e1e" stroke="rgba(255,255,255,0.07)" strokeWidth="1.5"/>
+            <path d="M105 95 Q78 110 72 145 Q68 175 74 210 Q80 230 90 230 Q95 205 95 175 Q96 140 108 115 Z" fill="#1e1e1e" stroke="rgba(255,255,255,0.07)" strokeWidth="1.5"/>
+            <path d="M195 95 Q222 110 228 145 Q232 175 226 210 Q220 230 210 230 Q205 205 205 175 Q204 140 192 115 Z" fill="#1e1e1e" stroke="rgba(255,255,255,0.07)" strokeWidth="1.5"/>
+            <path d="M74 210 Q68 240 70 265 Q72 280 80 282 Q88 284 92 270 Q94 255 90 230 Z" fill="#1e1e1e" stroke="rgba(255,255,255,0.07)" strokeWidth="1.5"/>
+            <path d="M226 210 Q232 240 230 265 Q228 280 220 282 Q212 284 208 270 Q206 255 210 230 Z" fill="#1e1e1e" stroke="rgba(255,255,255,0.07)" strokeWidth="1.5"/>
+            <path d="M112 240 Q102 270 100 310 Q98 350 102 390 Q106 415 116 416 Q126 417 128 390 Q130 355 130 310 Q130 275 138 240 Z" fill="#1e1e1e" stroke="rgba(255,255,255,0.07)" strokeWidth="1.5"/>
+            <path d="M188 240 Q198 270 200 310 Q202 350 198 390 Q194 415 184 416 Q174 417 172 390 Q170 355 170 310 Q170 275 162 240 Z" fill="#1e1e1e" stroke="rgba(255,255,255,0.07)" strokeWidth="1.5"/>
+            <path d="M102 390 Q100 420 102 448 Q104 462 114 463 Q122 464 124 448 Q126 425 128 390 Z" fill="#1e1e1e" stroke="rgba(255,255,255,0.07)" strokeWidth="1.5"/>
+            <path d="M198 390 Q200 420 198 448 Q196 462 186 463 Q178 464 176 448 Q174 425 172 390 Z" fill="#1e1e1e" stroke="rgba(255,255,255,0.07)" strokeWidth="1.5"/>
+            {PAIN_ZONES.map(z => {
+                const color = getColor(z.id);
+                const isHov = hoveredZone === z.id;
+                return (
+                    <g key={z.id} style={{ cursor: 'pointer' }}
+                        onClick={() => onToggleZone(z)}
+                        onMouseEnter={() => onHoverZone(z.id)}
+                        onMouseLeave={() => onHoverZone(null)}>
+                        <circle cx={z.x} cy={z.y} r={14} fill="transparent"/>
+                        {color && <>
+                            <circle cx={z.x} cy={z.y} r={11} fill={color} opacity="0.15"/>
+                            <circle cx={z.x} cy={z.y} r={11} fill="none" stroke={color} strokeWidth="1.5" opacity="0.5"/>
+                        </>}
+                        <circle cx={z.x} cy={z.y} r={isHov ? 7 : 5}
+                            fill={color || (isHov ? 'rgba(255,255,255,0.3)' : 'rgba(255,255,255,0.12)')}
+                            stroke={color || 'rgba(255,255,255,0.2)'} strokeWidth="1"/>
+                    </g>
+                );
+            })}
+        </svg>
+    );
+};
 
 const CustomerMessages = ({ user, targetTrainer }) => {
     const [convos, setConvos]         = useState([]);
@@ -59,11 +82,12 @@ const CustomerMessages = ({ user, targetTrainer }) => {
     const [loadingPicker, setLoadingPicker]         = useState(false);
     const [showPlusMenu, setShowPlusMenu]           = useState(false);
     const [showPainModal, setShowPainModal]         = useState(false);
-    const [painForm, setPainForm]                   = useState({ zone: null, severity: 'Mild', note: '' });
+    const [painZones, setPainZones]                 = useState([]);
+    const [painActiveSev, setPainActiveSev]         = useState('Mild');
+    const [painNote, setPainNote]                   = useState('');
+    const [painSent, setPainSent]                   = useState(false);
+    const [painHovered, setPainHovered]             = useState(null);
     const [submittingPain, setSubmittingPain]       = useState(false);
-    const [showMyPainModal, setShowMyPainModal]     = useState(false);
-    const [myPainEntries, setMyPainEntries]         = useState([]);
-    const [loadingMyPain, setLoadingMyPain]         = useState(false);
     const bottomRef                   = useRef(null);
     const pollRef                     = useRef(null);
     const inputRef                    = useRef(null);
@@ -216,35 +240,35 @@ const CustomerMessages = ({ user, targetTrainer }) => {
         const s = new Set(prev); s.has(id) ? s.delete(id) : s.add(id); return s;
     });
 
-    const openMyPain = async () => {
-        setShowPlusMenu(false);
-        setShowMyPainModal(true);
-        setLoadingMyPain(true);
-        try {
-            const res = await axios.get('/api/v1/users/pain', { withCredentials: true });
-            setMyPainEntries(res.data.data || []);
-        } catch (e) { console.error(e); }
-        finally { setLoadingMyPain(false); }
+    const closePainModal = () => {
+        setShowPainModal(false);
+        setPainZones([]);
+        setPainActiveSev('Mild');
+        setPainNote('');
+        setPainSent(false);
+        setPainHovered(null);
     };
 
-    const handleDeleteMyPain = async (id) => {
-        try {
-            await axios.delete(`/api/v1/users/pain/${id}`, { withCredentials: true });
-            setMyPainEntries(prev => prev.filter(e => e.id !== id));
-        } catch (e) { console.error(e); }
+    const togglePainZone = (zone) => {
+        setPainZones(prev => {
+            const exists = prev.find(z => z.id === zone.id);
+            if (exists) return prev.filter(z => z.id !== zone.id);
+            return [...prev, { ...zone, sev: painActiveSev }];
+        });
     };
 
     const handleSubmitPain = async () => {
-        if (!painForm.zone) return;
+        if (painZones.length === 0) return;
         setSubmittingPain(true);
         try {
-            await axios.post('/api/v1/users/report-pain', {
-                zone: painForm.zone,
-                severity: painForm.severity,
-                note: painForm.note,
-            }, { withCredentials: true });
-            setShowPainModal(false);
-            setPainForm({ zone: null, severity: 'Mild', note: '' });
+            for (const z of painZones) {
+                await axios.post('/api/v1/users/report-pain', {
+                    zone: z.label,
+                    severity: z.sev === 'Mild' ? 'Low' : z.sev,
+                    note: painNote,
+                }, { withCredentials: true });
+            }
+            setPainSent(true);
         } catch (e) { console.error(e); }
         finally { setSubmittingPain(false); }
     };
@@ -416,10 +440,6 @@ const CustomerMessages = ({ user, targetTrainer }) => {
                                             <Heart size={14} className="cm-plus-item-icon pain" />
                                             Report pain
                                         </button>
-                                        <button className="cm-plus-item" onClick={openMyPain}>
-                                            <ShieldCheck size={14} className="cm-plus-item-icon free" />
-                                            My pain zones
-                                        </button>
                                     </div>
                                 )}
                             </div>
@@ -436,118 +456,112 @@ const CustomerMessages = ({ user, targetTrainer }) => {
                             </button>
                         </form>
 
-                        {/* My Pain Zones modal */}
-                        {showMyPainModal && (
-                            <div className="cm-pain-overlay" onClick={() => setShowMyPainModal(false)}>
-                                <div className="cm-pain-modal cm-mypain-modal" onClick={e => e.stopPropagation()}>
-                                    <button className="cm-pain-close" onClick={() => setShowMyPainModal(false)}><X size={15} /></button>
-                                    <div className="cm-pain-top">
-                                        <span className="cm-pain-label">PAIN ZONES</span>
-                                        <h2 className="cm-pain-title">My active pain zones</h2>
-                                        <p className="cm-pain-sub">Remove zones that are no longer bothering you</p>
-                                    </div>
-                                    <div className="cm-mypain-list">
-                                        {loadingMyPain ? (
-                                            <div className="cm-mypain-empty"><Loader2 className="cm-spin" size={20} /></div>
-                                        ) : myPainEntries.length === 0 ? (
-                                            <div className="cm-mypain-empty">
-                                                <ShieldCheck size={28} style={{ color: '#4ade80', marginBottom: 8 }} />
-                                                <span>No active pain zones — you're good!</span>
-                                            </div>
-                                        ) : myPainEntries.map(e => (
-                                            <div key={e.id} className="cm-mypain-row">
-                                                <span className="cm-mypain-dot" style={{ background: SEV_COLOR[e.severity === 'Low' ? 'Mild' : e.severity] || SEV_COLOR.Mild }} />
-                                                <div className="cm-mypain-info">
-                                                    <span className="cm-mypain-zone">{e.zone}</span>
-                                                    <span className="cm-mypain-sev" style={{ color: SEV_COLOR[e.severity === 'Low' ? 'Mild' : e.severity] || SEV_COLOR.Mild }}>
-                                                        {e.severity === 'Low' ? 'Mild' : e.severity}
-                                                    </span>
-                                                    {e.note && <span className="cm-mypain-note">{e.note}</span>}
-                                                </div>
-                                                <button className="cm-mypain-del" onClick={() => handleDeleteMyPain(e.id)} title="Mark as pain free">
-                                                    <X size={13} />
-                                                </button>
-                                            </div>
-                                        ))}
-                                    </div>
-                                    <div className="cm-pain-footer">
-                                        <button type="button" className="cm-pain-cancel" onClick={() => setShowMyPainModal(false)}>Close</button>
-                                        {myPainEntries.length > 0 && (
-                                            <button
-                                                type="button"
-                                                className="cm-pain-submit"
-                                                style={{ background: '#22c55e' }}
-                                                onClick={async () => {
-                                                    for (const e of myPainEntries) await handleDeleteMyPain(e.id);
-                                                    setShowMyPainModal(false);
-                                                }}
-                                            >
-                                                I'm completely pain free
-                                            </button>
-                                        )}
-                                    </div>
-                                </div>
-                            </div>
-                        )}
-
                         {/* Pain report modal */}
                         {showPainModal && (
-                            <div className="cm-pain-overlay" onClick={() => setShowPainModal(false)}>
+                            <div className="cm-pain-overlay" onClick={closePainModal}>
                                 <div className="cm-pain-modal" onClick={e => e.stopPropagation()}>
-                                    <button className="cm-pain-close" onClick={() => setShowPainModal(false)}><X size={15} /></button>
-                                    <div className="cm-pain-top">
-                                        <span className="cm-pain-label">REPORT PAIN</span>
-                                        <h2 className="cm-pain-title">Where does it hurt?</h2>
-                                        <p className="cm-pain-sub">Tap zones · your trainer will be notified</p>
-                                    </div>
-                                    <div className="cm-pain-body">
-                                        <div className="cm-pain-svg-col">
-                                            <PainBodySVG
-                                                selectedZone={painForm.zone}
-                                                onSelectZone={z => setPainForm(p => ({ ...p, zone: z }))}
-                                            />
+                                    {painSent ? (
+                                        /* ── Success screen ── */
+                                        <div className="cm-pain-sent">
+                                            <div className="cm-pain-sent-icon">
+                                                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#4ade80" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                                            </div>
+                                            <div className="cm-pain-sent-title">Trainer notified</div>
+                                            <div className="cm-pain-sent-sub">
+                                                Reported {painZones.length} zone{painZones.length > 1 ? 's' : ''}: {painZones.map(z => z.label).join(', ')}.
+                                            </div>
+                                            <button className="cm-pain-sent-done" onClick={closePainModal}>Done</button>
                                         </div>
-                                        <div className="cm-pain-controls">
-                                            <div className="cm-pain-section">
-                                                <span className="cm-pain-section-label">SEVERITY</span>
-                                                <div className="cm-pain-sev-row">
-                                                    {['Mild', 'Moderate', 'High'].map(s => (
-                                                        <button
-                                                            key={s}
-                                                            type="button"
-                                                            className={`cm-pain-sev-btn ${painForm.severity === s ? 'active' : ''}`}
-                                                            style={painForm.severity === s ? { borderColor: SEV_COLOR[s], color: SEV_COLOR[s], background: `${SEV_COLOR[s]}22` } : {}}
-                                                            onClick={() => setPainForm(p => ({ ...p, severity: s }))}
-                                                        >{s}</button>
-                                                    ))}
+                                    ) : (
+                                        <>
+                                            {/* Header */}
+                                            <div className="cm-pain-top">
+                                                <div>
+                                                    <span className="cm-pain-label">REPORT PAIN</span>
+                                                    <h2 className="cm-pain-title">Where does it hurt?</h2>
+                                                    <p className="cm-pain-sub">Tap zones · your trainer will be notified</p>
+                                                </div>
+                                                <button className="cm-pain-close" onClick={closePainModal}><X size={14} /></button>
+                                            </div>
+
+                                            {/* Severity strip */}
+                                            <div className="cm-pain-sev-strip">
+                                                {Object.entries(SEV_META).map(([sev, meta]) => (
+                                                    <button
+                                                        key={sev}
+                                                        type="button"
+                                                        className="cm-pain-sev-btn"
+                                                        style={painActiveSev === sev
+                                                            ? { borderColor: meta.border, color: meta.color, background: meta.bg }
+                                                            : {}}
+                                                        onClick={() => setPainActiveSev(sev)}
+                                                    >{sev}</button>
+                                                ))}
+                                            </div>
+
+                                            {/* Body map + selected list */}
+                                            <div className="cm-pain-body">
+                                                <div className="cm-pain-svg-col">
+                                                    <PainBodySVG
+                                                        selectedZones={painZones}
+                                                        onToggleZone={togglePainZone}
+                                                        hoveredZone={painHovered}
+                                                        onHoverZone={setPainHovered}
+                                                    />
+                                                </div>
+                                                <div className="cm-pain-right">
+                                                    <span className="cm-pain-section-label">SELECTED</span>
+                                                    {painZones.length === 0 ? (
+                                                        <div className="cm-pain-selected-zone placeholder">Tap a zone on the body</div>
+                                                    ) : (
+                                                        <div className="cm-pain-zone-list">
+                                                            {painZones.map(z => {
+                                                                const meta = SEV_META[z.sev];
+                                                                return (
+                                                                    <div
+                                                                        key={z.id}
+                                                                        className="cm-pain-zone-row"
+                                                                        onMouseEnter={() => setPainHovered(z.id)}
+                                                                        onMouseLeave={() => setPainHovered(null)}
+                                                                        style={{ background: painHovered === z.id ? 'rgba(255,255,255,0.06)' : 'rgba(255,255,255,0.03)' }}
+                                                                    >
+                                                                        <span className="cm-pain-zone-dot" style={{ background: meta.color }} />
+                                                                        <span className="cm-pain-zone-name">{z.label}</span>
+                                                                        <span className="cm-pain-zone-sev" style={{ color: meta.color }}>{z.sev}</span>
+                                                                        <button
+                                                                            type="button"
+                                                                            className="cm-pain-zone-del"
+                                                                            onClick={() => setPainZones(p => p.filter(x => x.id !== z.id))}
+                                                                        >×</button>
+                                                                    </div>
+                                                                );
+                                                            })}
+                                                        </div>
+                                                    )}
+                                                    <textarea
+                                                        className="cm-pain-note"
+                                                        placeholder="Add a note (optional)…"
+                                                        value={painNote}
+                                                        onChange={e => setPainNote(e.target.value)}
+                                                        rows={2}
+                                                    />
                                                 </div>
                                             </div>
-                                            <div className="cm-pain-section">
-                                                <span className="cm-pain-section-label">SELECTED</span>
-                                                <span className={`cm-pain-selected-zone ${!painForm.zone ? 'placeholder' : ''}`}>
-                                                    {painForm.zone || 'Tap a zone on the body'}
-                                                </span>
+
+                                            {/* Footer */}
+                                            <div className="cm-pain-footer">
+                                                <button type="button" className="cm-pain-cancel" onClick={closePainModal}>Cancel</button>
+                                                <button
+                                                    type="button"
+                                                    className={`cm-pain-submit ${painZones.length > 0 ? 'active' : ''}`}
+                                                    disabled={painZones.length === 0 || submittingPain}
+                                                    onClick={handleSubmitPain}
+                                                >
+                                                    {submittingPain ? <Loader2 className="cm-spin" size={14} /> : 'Notify Trainer →'}
+                                                </button>
                                             </div>
-                                            <textarea
-                                                className="cm-pain-note"
-                                                placeholder="Add a note (optional)…"
-                                                value={painForm.note}
-                                                onChange={e => setPainForm(p => ({ ...p, note: e.target.value }))}
-                                                rows={4}
-                                            />
-                                        </div>
-                                    </div>
-                                    <div className="cm-pain-footer">
-                                        <button type="button" className="cm-pain-cancel" onClick={() => setShowPainModal(false)}>Cancel</button>
-                                        <button
-                                            type="button"
-                                            className="cm-pain-submit"
-                                            disabled={!painForm.zone || submittingPain}
-                                            onClick={handleSubmitPain}
-                                        >
-                                            {submittingPain ? <Loader2 className="cm-spin" size={14} /> : 'Notify Trainer →'}
-                                        </button>
-                                    </div>
+                                        </>
+                                    )}
                                 </div>
                             </div>
                         )}

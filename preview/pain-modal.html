@@ -1,0 +1,198 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<title>Pain Report Modal — GymLit</title>
+<link rel="stylesheet" href="../../colors_and_type.css">
+<style>html,body{margin:0;padding:0;background:#000;min-height:100vh;display:flex;align-items:center;justify-content:center;}#root{width:100%;max-width:580px;padding:24px;box-sizing:border-box;}</style>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+</head><body><div id="root"></div>
+<script type="text/babel">
+
+const PAIN_ZONES = [
+  { id:'neck',           label:'Neck',           x:150, y:58  },
+  { id:'left-shoulder',  label:'Left Shoulder',  x:108, y:100 },
+  { id:'right-shoulder', label:'Right Shoulder', x:192, y:100 },
+  { id:'chest',          label:'Chest',          x:150, y:135 },
+  { id:'left-elbow',     label:'Left Elbow',     x:80,  y:175 },
+  { id:'right-elbow',    label:'Right Elbow',    x:220, y:175 },
+  { id:'lower-back',     label:'Lower Back',     x:150, y:210 },
+  { id:'left-hip',       label:'Left Hip',       x:118, y:248 },
+  { id:'right-hip',      label:'Right Hip',      x:182, y:248 },
+  { id:'left-knee',      label:'Left Knee',      x:112, y:330 },
+  { id:'right-knee',     label:'Right Knee',     x:188, y:330 },
+  { id:'left-ankle',     label:'Left Ankle',     x:108, y:430 },
+  { id:'right-ankle',    label:'Right Ankle',    x:192, y:430 },
+];
+
+const SEVERITIES = [
+  { id:'mild',     label:'Mild',     color:'#facc15', bg:'rgba(250,204,21,0.18)',   border:'rgba(250,204,21,0.5)'  },
+  { id:'moderate', label:'Moderate', color:'#f97316', bg:'rgba(249,115,22,0.18)',  border:'rgba(249,115,22,0.5)'  },
+  { id:'high',     label:'High',     color:'#f87171', bg:'rgba(248,113,113,0.18)', border:'rgba(248,113,113,0.5)' },
+];
+
+const PainReportModal = () => {
+  const [selected, setSelected]       = React.useState([]);
+  const [activeSev, setActiveSev]     = React.useState('mild');
+  const [note, setNote]               = React.useState('');
+  const [hoveredZone, setHoveredZone] = React.useState(null);
+  const [sent, setSent]               = React.useState(false);
+
+  const toggleZone = (zone) => {
+    setSelected(prev => {
+      const exists = prev.find(z => z.id === zone.id);
+      if (exists) return prev.filter(z => z.id !== zone.id);
+      return [...prev, { ...zone, sev: activeSev }];
+    });
+  };
+
+  const getColor = (id) => {
+    const z = selected.find(z => z.id === id);
+    return z ? SEVERITIES.find(s => s.id === z.sev)?.color : null;
+  };
+
+  const canSend = selected.length > 0;
+
+  if (sent) return (
+    <div style={{ background:'#111', border:'1px solid rgba(255,255,255,0.10)', borderRadius:20,
+      padding:40, display:'flex', flexDirection:'column', alignItems:'center', gap:12, textAlign:'center',
+      fontFamily:"'Inter',sans-serif", color:'#f0f0f0' }}>
+      <div style={{ width:52, height:52, borderRadius:'50%', background:'rgba(74,222,128,0.1)',
+        border:'1px solid rgba(74,222,128,0.25)', display:'flex', alignItems:'center', justifyContent:'center' }}>
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#4ade80" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+      </div>
+      <div style={{ fontSize:17, fontWeight:800 }}>Trainer notified</div>
+      <div style={{ fontSize:13, color:'#888', maxWidth:280, lineHeight:1.5 }}>
+        Reported {selected.length} zone{selected.length > 1 ? 's' : ''}: {selected.map(z=>z.label).join(', ')}.
+      </div>
+      <button onClick={() => { setSelected([]); setNote(''); setSent(false); }}
+        style={{ marginTop:8, background:'#fff', color:'#000', border:0, borderRadius:10,
+          padding:'10px 28px', fontSize:13, fontWeight:800, cursor:'pointer', fontFamily:'inherit' }}>
+        Done
+      </button>
+    </div>
+  );
+
+  return (
+    <div style={{ background:'#111', border:'1px solid rgba(255,255,255,0.10)', borderRadius:20,
+      fontFamily:"'Inter',sans-serif", color:'#f0f0f0', display:'flex', flexDirection:'column',
+      boxShadow:'0 25px 60px rgba(0,0,0,0.7)', overflow:'hidden' }}>
+
+      {/* header */}
+      <div style={{ padding:'22px 22px 16px', display:'flex', justifyContent:'space-between', alignItems:'flex-start' }}>
+        <div>
+          <div style={{ fontSize:10.4, fontWeight:800, letterSpacing:'.14em', color:'#818CF8', textTransform:'uppercase', marginBottom:6 }}>Report Pain</div>
+          <div style={{ fontSize:21, fontWeight:900, color:'#fff', letterSpacing:'-0.02em', lineHeight:1.15 }}>Where does it hurt?</div>
+          <div style={{ fontSize:12.5, color:'rgba(255,255,255,0.4)', marginTop:5 }}>Tap zones · your trainer will be notified</div>
+        </div>
+        <button style={{ background:'rgba(255,255,255,0.08)', border:'1px solid rgba(255,255,255,0.10)',
+          color:'#888', width:32, height:32, borderRadius:8, cursor:'pointer', fontSize:18,
+          display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>×</button>
+      </div>
+
+      {/* severity */}
+      <div style={{ display:'flex', gap:8, padding:'0 22px 14px' }}>
+        {SEVERITIES.map(s => (
+          <button key={s.id} onClick={() => setActiveSev(s.id)}
+            style={{ flex:1, padding:'9px 0', borderRadius:10,
+              border:`1px solid ${activeSev === s.id ? s.border : 'rgba(255,255,255,0.08)'}`,
+              background: activeSev === s.id ? s.bg : 'rgba(255,255,255,0.03)',
+              color: activeSev === s.id ? s.color : '#666',
+              fontSize:13, fontWeight:700, cursor:'pointer', fontFamily:'inherit', transition:'all .15s' }}>
+            {s.label}
+          </button>
+        ))}
+      </div>
+
+      {/* body map + zones */}
+      <div style={{ display:'flex', borderTop:'1px solid rgba(255,255,255,0.06)', borderBottom:'1px solid rgba(255,255,255,0.06)' }}>
+        <div style={{ padding:'14px 8px 14px 18px', flexShrink:0 }}>
+          <svg viewBox="0 0 300 480" width="110" height="176" style={{ display:'block' }}>
+            <ellipse cx="150" cy="44" rx="28" ry="34" fill="#1e1e1e" stroke="rgba(255,255,255,0.07)" strokeWidth="1.5"/>
+            <rect x="138" y="75" width="24" height="18" rx="6" fill="#1e1e1e" stroke="rgba(255,255,255,0.07)" strokeWidth="1.5"/>
+            <path d="M105 92 Q90 100 85 160 Q83 200 88 240 L212 240 Q217 200 215 160 Q210 100 195 92 Z" fill="#1e1e1e" stroke="rgba(255,255,255,0.07)" strokeWidth="1.5"/>
+            <path d="M105 95 Q78 110 72 145 Q68 175 74 210 Q80 230 90 230 Q95 205 95 175 Q96 140 108 115 Z" fill="#1e1e1e" stroke="rgba(255,255,255,0.07)" strokeWidth="1.5"/>
+            <path d="M195 95 Q222 110 228 145 Q232 175 226 210 Q220 230 210 230 Q205 205 205 175 Q204 140 192 115 Z" fill="#1e1e1e" stroke="rgba(255,255,255,0.07)" strokeWidth="1.5"/>
+            <path d="M74 210 Q68 240 70 265 Q72 280 80 282 Q88 284 92 270 Q94 255 90 230 Z" fill="#1e1e1e" stroke="rgba(255,255,255,0.07)" strokeWidth="1.5"/>
+            <path d="M226 210 Q232 240 230 265 Q228 280 220 282 Q212 284 208 270 Q206 255 210 230 Z" fill="#1e1e1e" stroke="rgba(255,255,255,0.07)" strokeWidth="1.5"/>
+            <path d="M112 240 Q102 270 100 310 Q98 350 102 390 Q106 415 116 416 Q126 417 128 390 Q130 355 130 310 Q130 275 138 240 Z" fill="#1e1e1e" stroke="rgba(255,255,255,0.07)" strokeWidth="1.5"/>
+            <path d="M188 240 Q198 270 200 310 Q202 350 198 390 Q194 415 184 416 Q174 417 172 390 Q170 355 170 310 Q170 275 162 240 Z" fill="#1e1e1e" stroke="rgba(255,255,255,0.07)" strokeWidth="1.5"/>
+            <path d="M102 390 Q100 420 102 448 Q104 462 114 463 Q122 464 124 448 Q126 425 128 390 Z" fill="#1e1e1e" stroke="rgba(255,255,255,0.07)" strokeWidth="1.5"/>
+            <path d="M198 390 Q200 420 198 448 Q196 462 186 463 Q178 464 176 448 Q174 425 172 390 Z" fill="#1e1e1e" stroke="rgba(255,255,255,0.07)" strokeWidth="1.5"/>
+            {PAIN_ZONES.map(z => {
+              const color = getColor(z.id);
+              const isHov = hoveredZone === z.id;
+              return (
+                <g key={z.id} style={{ cursor:'pointer' }}
+                  onClick={() => toggleZone(z)}
+                  onMouseEnter={() => setHoveredZone(z.id)}
+                  onMouseLeave={() => setHoveredZone(null)}>
+                  <circle cx={z.x} cy={z.y} r={14} fill="transparent"/>
+                  {color && (
+                    <React.Fragment>
+                      <circle cx={z.x} cy={z.y} r={11} fill={color} opacity="0.15"/>
+                      <circle cx={z.x} cy={z.y} r={11} fill="none" stroke={color} strokeWidth="1.5" opacity="0.5"/>
+                    </React.Fragment>
+                  )}
+                  <circle cx={z.x} cy={z.y} r={isHov ? 7 : 5}
+                    fill={color || (isHov ? 'rgba(255,255,255,0.3)' : 'rgba(255,255,255,0.12)')}
+                    stroke={color || 'rgba(255,255,255,0.2)'} strokeWidth="1"/>
+                </g>
+              );
+            })}
+          </svg>
+        </div>
+
+        <div style={{ flex:1, padding:'14px 18px', display:'flex', flexDirection:'column', gap:8 }}>
+          <div style={{ fontSize:10, fontWeight:800, letterSpacing:'.1em', color:'#555', textTransform:'uppercase' }}>Selected</div>
+          {selected.length === 0
+            ? <div style={{ fontSize:12.5, color:'#555', fontStyle:'italic', flex:1, display:'flex', alignItems:'center' }}>Tap a zone on the body</div>
+            : <div style={{ display:'flex', flexDirection:'column', gap:5, flex:1 }}>
+                {selected.map(z => {
+                  const sv = SEVERITIES.find(s => s.id === z.sev);
+                  return (
+                    <div key={z.id}
+                      onMouseEnter={() => setHoveredZone(z.id)}
+                      onMouseLeave={() => setHoveredZone(null)}
+                      style={{ display:'flex', alignItems:'center', gap:9, padding:'7px 10px',
+                        background: hoveredZone === z.id ? 'rgba(255,255,255,0.06)' : 'rgba(255,255,255,0.03)',
+                        border:`1px solid rgba(255,255,255,0.07)`, borderRadius:9 }}>
+                      <span style={{ width:8, height:8, borderRadius:'50%', background:sv.color, flexShrink:0 }}/>
+                      <span style={{ flex:1, fontSize:13, fontWeight:700, color:'#f0f0f0' }}>{z.label}</span>
+                      <span style={{ fontSize:11.5, color:sv.color, fontWeight:700 }}>{sv.label}</span>
+                      <button onClick={() => setSelected(p => p.filter(x => x.id !== z.id))}
+                        style={{ background:'none', border:0, color:'#555', cursor:'pointer', fontSize:15, padding:'0 2px' }}>×</button>
+                    </div>
+                  );
+                })}
+              </div>
+          }
+          <textarea value={note} onChange={e => setNote(e.target.value)}
+            placeholder="Add a note (optional)..." rows={2}
+            style={{ marginTop:'auto', background:'rgba(255,255,255,0.04)', border:'1px solid rgba(255,255,255,0.08)',
+              borderRadius:9, padding:'9px 12px', color:'#e0e0e0', fontSize:12.5,
+              fontFamily:'inherit', outline:'none', resize:'none', lineHeight:1.5 }}/>
+        </div>
+      </div>
+
+      {/* footer */}
+      <div style={{ display:'flex', gap:8, padding:'14px 22px' }}>
+        <button style={{ background:'rgba(255,255,255,0.05)', border:'1px solid rgba(255,255,255,0.08)',
+          color:'#888', borderRadius:11, padding:'11px 20px', fontSize:13, fontWeight:700,
+          cursor:'pointer', fontFamily:'inherit' }}>Cancel</button>
+        <button disabled={!canSend} onClick={() => setSent(true)}
+          style={{ flex:1, background: canSend ? '#fff' : 'rgba(255,255,255,0.05)',
+            color: canSend ? '#000' : '#444', border:`1px solid ${canSend ? 'transparent' : 'rgba(255,255,255,0.06)'}`,
+            borderRadius:11, padding:'11px 0', fontSize:13, fontWeight:800,
+            cursor: canSend ? 'pointer' : 'default', fontFamily:'inherit', transition:'all .2s' }}>
+          Notify Trainer →
+        </button>
+      </div>
+    </div>
+  );
+};
+
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(<PainReportModal/>);
+</script>
+</body></html>

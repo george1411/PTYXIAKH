@@ -579,8 +579,8 @@
 .cm-pain-overlay {
     position: fixed;
     inset: 0;
-    background: rgba(0,0,0,0.7);
-    backdrop-filter: blur(4px);
+    background: rgba(0,0,0,0.85);
+    backdrop-filter: blur(6px);
     z-index: 9999;
     display: flex;
     align-items: center;
@@ -589,44 +589,43 @@
 }
 
 .cm-pain-modal {
-    background: #111827;
-    border: 1px solid rgba(255,255,255,0.1);
-    border-radius: 18px;
+    background: #0d0d0d;
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 16px;
     width: 100%;
     max-width: 560px;
     display: flex;
     flex-direction: column;
     overflow: hidden;
-    box-shadow: 0 24px 64px rgba(0,0,0,0.7);
+    box-shadow: 0 32px 80px rgba(0,0,0,0.9);
     position: relative;
 }
 
 .cm-pain-close {
-    position: absolute;
-    top: 14px;
-    right: 14px;
     background: rgba(255,255,255,0.08);
-    border: none;
+    border: 1px solid rgba(255,255,255,0.10);
     color: rgba(255,255,255,0.5);
-    width: 28px;
-    height: 28px;
-    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
+    flex-shrink: 0;
     transition: background 0.15s, color 0.15s;
-    z-index: 1;
 }
 .cm-pain-close:hover { background: rgba(255,255,255,0.14); color: #fff; }
 
 .cm-pain-top {
-    padding: 24px 28px 18px;
-    border-bottom: 1px solid rgba(255,255,255,0.07);
+    padding: 22px 22px 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
 }
 
 .cm-pain-label {
-    font-size: 0.68rem;
+    font-size: 0.65rem;
     font-weight: 700;
     letter-spacing: 0.1em;
     color: #818cf8;
@@ -635,140 +634,252 @@
 }
 
 .cm-pain-title {
-    font-size: 1.35rem;
+    font-size: 1.3rem;
     font-weight: 800;
-    color: #f0f0f0;
+    color: #ffffff;
     margin: 0 0 4px;
 }
 
 .cm-pain-sub {
-    font-size: 0.8rem;
-    color: rgba(255,255,255,0.35);
+    font-size: 0.78rem;
+    color: rgba(255,255,255,0.28);
     margin: 0;
 }
 
-.cm-pain-body {
-    display: flex;
-    flex: 1;
-    border-bottom: 1px solid rgba(255,255,255,0.07);
-}
-
-.cm-pain-svg-col {
-    width: 150px;
-    flex-shrink: 0;
-    padding: 20px 16px;
-    border-right: 1px solid rgba(255,255,255,0.07);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.cm-pain-controls {
-    flex: 1;
-    padding: 20px 22px;
-    display: flex;
-    flex-direction: column;
-    gap: 18px;
-}
-
-.cm-pain-section {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-}
-
-.cm-pain-section-label {
-    font-size: 0.68rem;
-    font-weight: 700;
-    letter-spacing: 0.1em;
-    color: rgba(255,255,255,0.4);
-}
-
-.cm-pain-sev-row {
+/* severity strip */
+.cm-pain-sev-strip {
     display: flex;
     gap: 8px;
+    padding: 0 22px 14px;
 }
 
 .cm-pain-sev-btn {
     flex: 1;
-    padding: 8px;
-    border: 1px solid rgba(255,255,255,0.12);
-    border-radius: 8px;
-    background: transparent;
-    color: rgba(255,255,255,0.5);
-    font-size: 0.82rem;
-    font-weight: 600;
+    padding: 9px 0;
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 10px;
+    background: rgba(255,255,255,0.03);
+    color: rgba(255,255,255,0.4);
+    font-size: 0.8rem;
+    font-weight: 700;
     cursor: pointer;
+    font-family: inherit;
     transition: all 0.15s;
 }
-.cm-pain-sev-btn:hover:not(.active) { background: rgba(255,255,255,0.05); color: #fff; }
+.cm-pain-sev-btn:hover { background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.8); }
+
+/* body map + right panel */
+.cm-pain-body {
+    display: flex;
+    border-top: 1px solid rgba(255,255,255,0.06);
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+
+.cm-pain-svg-col {
+    padding: 14px 8px 14px 18px;
+    flex-shrink: 0;
+    background: #0a0a0a;
+    border-right: 1px solid rgba(255,255,255,0.06);
+    display: flex;
+    align-items: flex-start;
+}
+
+.cm-pain-right {
+    flex: 1;
+    padding: 14px 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-width: 0;
+}
+
+.cm-pain-section-label {
+    font-size: 0.625rem;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    color: rgba(255,255,255,0.3);
+    text-transform: uppercase;
+}
 
 .cm-pain-selected-zone {
-    font-size: 0.9rem;
-    font-weight: 600;
-    color: #e0e0e0;
-}
-.cm-pain-selected-zone.placeholder {
+    font-size: 0.82rem;
+    color: #555;
     font-style: italic;
-    color: rgba(255,255,255,0.25);
-    font-weight: 400;
+    flex: 1;
+    display: flex;
+    align-items: center;
+}
+.cm-pain-selected-zone.placeholder { color: #555; }
+
+/* zone rows in selected list */
+.cm-pain-zone-list {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    flex: 1;
+    overflow-y: auto;
+    max-height: 130px;
 }
 
-.cm-pain-note {
+.cm-pain-zone-row {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding: 7px 10px;
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 9px;
+    transition: background 0.12s;
+}
+
+.cm-pain-zone-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.cm-pain-zone-name {
     flex: 1;
-    padding: 12px 14px;
-    border: 1px solid rgba(255,255,255,0.1);
-    border-radius: 10px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #f0f0f0;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.cm-pain-zone-sev {
+    font-size: 0.72rem;
+    font-weight: 700;
+    flex-shrink: 0;
+}
+
+.cm-pain-zone-del {
+    background: none;
+    border: none;
+    color: rgba(255,255,255,0.3);
+    cursor: pointer;
+    font-size: 1rem;
+    padding: 0 2px;
+    line-height: 1;
+    transition: color 0.12s;
+}
+.cm-pain-zone-del:hover { color: #fff; }
+
+.cm-pain-note {
+    margin-top: auto;
+    padding: 9px 12px;
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 9px;
     background: rgba(255,255,255,0.04);
     color: #e0e0e0;
-    font-size: 0.875rem;
+    font-size: 0.8rem;
     font-family: inherit;
     resize: none;
     outline: none;
     transition: border-color 0.15s;
-    min-height: 80px;
+    line-height: 1.5;
 }
-.cm-pain-note::placeholder { color: rgba(255,255,255,0.2); }
-.cm-pain-note:focus { border-color: rgba(255,255,255,0.2); }
+.cm-pain-note::placeholder { color: rgba(255,255,255,0.18); }
+.cm-pain-note:focus { border-color: rgba(255,255,255,0.15); }
 
 .cm-pain-footer {
     display: flex;
-    gap: 10px;
-    padding: 16px 22px;
+    gap: 8px;
+    padding: 14px 22px;
     align-items: center;
 }
 
 .cm-pain-cancel {
-    padding: 10px 22px;
-    border: 1px solid rgba(255,255,255,0.1);
-    border-radius: 10px;
-    background: transparent;
+    padding: 11px 20px;
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 11px;
+    background: rgba(255,255,255,0.05);
     color: rgba(255,255,255,0.5);
-    font-size: 0.875rem;
-    font-weight: 600;
+    font-size: 0.85rem;
+    font-weight: 700;
     cursor: pointer;
+    font-family: inherit;
     transition: all 0.15s;
 }
-.cm-pain-cancel:hover { background: rgba(255,255,255,0.05); color: #fff; }
+.cm-pain-cancel:hover { background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.8); }
 
 .cm-pain-submit {
     flex: 1;
-    padding: 10px 22px;
-    border: none;
-    border-radius: 10px;
-    background: #818cf8;
-    color: #fff;
-    font-size: 0.875rem;
-    font-weight: 700;
-    cursor: pointer;
+    padding: 11px 20px;
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 11px;
+    background: rgba(255,255,255,0.05);
+    color: rgba(255,255,255,0.2);
+    font-size: 0.85rem;
+    font-weight: 800;
+    cursor: default;
+    font-family: inherit;
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 6px;
+    transition: all 0.2s;
+}
+.cm-pain-submit.active {
+    background: #fff;
+    color: #000;
+    border-color: transparent;
+    cursor: pointer;
+}
+.cm-pain-submit.active:hover { background: #e5e5e5; }
+.cm-pain-submit:disabled { cursor: not-allowed; }
+
+/* ─── Pain success screen ──────────────────────────────────────── */
+.cm-pain-sent {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 44px 32px;
+    text-align: center;
+    gap: 10px;
+}
+
+.cm-pain-sent-icon {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    background: rgba(74,222,128,0.1);
+    border: 1px solid rgba(74,222,128,0.25);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 4px;
+}
+
+.cm-pain-sent-title {
+    font-size: 1.05rem;
+    font-weight: 800;
+    color: #f0f0f0;
+}
+
+.cm-pain-sent-sub {
+    font-size: 0.8rem;
+    color: rgba(255,255,255,0.35);
+    max-width: 280px;
+    line-height: 1.55;
+}
+
+.cm-pain-sent-done {
+    margin-top: 10px;
+    background: #fff;
+    color: #000;
+    border: none;
+    border-radius: 10px;
+    padding: 10px 32px;
+    font-size: 0.85rem;
+    font-weight: 800;
+    cursor: pointer;
+    font-family: inherit;
     transition: background 0.15s;
 }
-.cm-pain-submit:hover:not(:disabled) { background: #a5b4fc; }
-.cm-pain-submit:disabled { background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.25); cursor: not-allowed; }
+.cm-pain-sent-done:hover { background: #e5e5e5; }
 
 /* ─── Spinner ──────────────────────────────────────────────────── */
 @keyframes cm-spin {
