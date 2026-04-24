@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import axios from 'axios';
 import {
     Search, ChevronRight, Trash2, Plus, Save, X, Loader2, Send,
-    BookMarked, Copy, CheckCircle, Dumbbell
+    BookMarked, Copy, CheckCircle, Dumbbell, Flame, Scale, Target
 } from 'lucide-react';
 import {
     LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer,
@@ -37,9 +37,11 @@ const lastActiveLabel = (dateStr) => {
 const pct = (val, max) => Math.min(100, max > 0 ? Math.round((val / max) * 100) : 0);
 
 // ─── Sub-components ───────────────────────────────────────────
-const KpiCard = ({ label, value, color }) => (
+const KpiCard = ({ label, value, color, icon }) => (
     <div className="tc-kpi">
-        <div className="tc-kpi-icon" style={{ background: color }} />
+        <div className="tc-kpi-icon" style={{ background: color }}>
+            {icon}
+        </div>
         <div>
             <div className="tc-kpi-value">{value}</div>
             <div className="tc-kpi-label">{label}</div>
@@ -81,10 +83,10 @@ const OverviewPanel = ({ detail }) => {
         <div className="tc-overview">
             {/* KPI strip */}
             <div className="tc-kpi-row">
-                <KpiCard label="Day Streak"   value={`${stats.dayStreak} days`}        color="linear-gradient(135deg,#333,#555)" />
-                <KpiCard label="Workouts/wk"  value={stats.weeklyWorkouts}              color="linear-gradient(135deg,#444,#666)" />
-                <KpiCard label="Last Weight"  value={weightData.length ? `${weightData[weightData.length-1]?.weight} kg` : '—'} color="linear-gradient(135deg,#555,#777)" />
-                <KpiCard label="Compliance"   value={`${stats.complianceScore}%`}      color="linear-gradient(135deg,#666,#888)" />
+                <KpiCard label="Day Streak"   value={`${stats.dayStreak} days`}        color="linear-gradient(135deg,#4f3f8a,#7c6bb5)" icon={<Flame size={18} color="#fff"/>} />
+                <KpiCard label="Workouts/wk"  value={stats.weeklyWorkouts}              color="linear-gradient(135deg,#1e4a6e,#2d7ab5)" icon={<Dumbbell size={18} color="#fff"/>} />
+                <KpiCard label="Last Weight"  value={weightData.length ? `${weightData[weightData.length-1]?.weight} kg` : '—'} color="linear-gradient(135deg,#1e6e4a,#2db57a)" icon={<Scale size={18} color="#fff"/>} />
+                <KpiCard label="Compliance"   value={`${stats.complianceScore}%`}      color="linear-gradient(135deg,#6e4a1e,#b57a2d)" icon={<Target size={18} color="#fff"/>} />
             </div>
 
             <div className="tc-overview-grid">
