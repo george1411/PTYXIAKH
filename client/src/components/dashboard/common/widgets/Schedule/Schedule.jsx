@@ -65,7 +65,10 @@ const AppointmentModal = ({ initialDate, event, onSave, onDelete, onClose, isNew
     const [date,     setDate]     = useState(event?.date     || initialDate || dateStr(new Date()));
     const [start,    setStart]    = useState(event?.start    || '09:00');
     const [clientId, setClientId] = useState(event?.clientId ? String(event.clientId) : '');
+    const [groupId,  setGroupId]  = useState(event?.groupId  ? String(event.groupId)  : '');
+    const [assignTo, setAssignTo] = useState(event?.groupId ? 'group' : event?.clientId ? 'client' : 'none');
     const [clients,  setClients]  = useState([]);
+    const [groups,   setGroups]   = useState([]);
     const [duration, setDuration] = useState(() => {
         if (event?.start && event?.end) return timeToMinutes(event.end) - timeToMinutes(event.start);
         return 60;
@@ -74,19 +77,26 @@ const AppointmentModal = ({ initialDate, event, onSave, onDelete, onClose, isNew
 
     useEffect(() => {
         if (!isTrainer) return;
-        axios.get('/api/v1/trainer/clients', { withCredentials: true })
-            .then(res => setClients(res.data.data || []))
-            .catch(() => {});
+        Promise.all([
+            axios.get('/api/v1/trainer/clients', { withCredentials: true }).then(r => setClients(r.data.data || [])),
+            axios.get('/api/v1/groups', { withCredentials: true }).then(r => setGroups(r.data.data || [])),
+        ]).catch(() => {});
     }, [isTrainer]);
 
     const end = minutesToTime(Math.min(timeToMinutes(start) + duration, 24*60));
     const selectedClient = clients.find(c => String(c.id) === clientId);
+    const selectedGroup  = groups.find(g => String(g.id) === groupId);
 
     const handleSave = () => {
         if (!title.trim() || !date) return;
-        onSave({ ...event, title: title.trim(), date, day: dayNameFromDate(date), start, end, color,
-            clientId: clientId ? parseInt(clientId) : null,
-            clientName: selectedClient?.name || null });
+        onSave({
+            ...event,
+            title: title.trim(), date, day: dayNameFromDate(date), start, end, color,
+            clientId: assignTo === 'client' && clientId ? parseInt(clientId) : null,
+            clientName: assignTo === 'client' ? selectedClient?.name || null : null,
+            groupId: assignTo === 'group' && groupId ? parseInt(groupId) : null,
+            groupName: assignTo === 'group' ? selectedGroup?.name || null : null,
+        });
     };
 
     return (
@@ -121,13 +131,34 @@ const AppointmentModal = ({ initialDate, event, onSave, onDelete, onClose, isNew
                         </label>
                     </div>
                     {isTrainer && (
-                        <label className="sched-label">
-                            Client
-                            <select className="sched-input" value={clientId} onChange={e=>setClientId(e.target.value)}>
-                                <option value="">— No client —</option>
-                                {clients.map(c=><option key={c.id} value={c.id}>{c.name}</option>)}
-                            </select>
-                        </label>
+                        <>
+                            <label className="sched-label">
+                                Assign to
+                                <select className="sched-input" value={assignTo} onChange={e=>setAssignTo(e.target.value)}>
+                                    <option value="none">— No assignment —</option>
+                                    <option value="client">Client</option>
+                                    <option value="group">Group</option>
+                                </select>
+                            </label>
+                            {assignTo === 'client' && (
+                                <label className="sched-label">
+                                    Client
+                                    <select className="sched-input" value={clientId} onChange={e=>setClientId(e.target.value)}>
+                                        <option value="">— Select client —</option>
+                                        {clients.map(c=><option key={c.id} value={c.id}>{c.name}</option>)}
+                                    </select>
+                                </label>
+                            )}
+                            {assignTo === 'group' && (
+                                <label className="sched-label">
+                                    Group
+                                    <select className="sched-input" value={groupId} onChange={e=>setGroupId(e.target.value)}>
+                                        <option value="">— Select group —</option>
+                                        {groups.map(g=><option key={g.id} value={g.id}>{g.name}</option>)}
+                                    </select>
+                                </label>
+                            )}
+                        </>
                     )}
                     <div className="sched-label">
                         Color
@@ -203,10 +234,11 @@ const MonthlyView = ({ currentDate, events, onDayClick, onEventClick }) => {
                                             style={{background: getColorBg(ev.color)}}
                                             onClick={e=>{e.stopPropagation();onEventClick(ev);}}>
                                             <span className="cal-pill-top">{formatTime12(ev.start)} · {ev.title}</span>
-                                            {(ev.clientName || durLabel) && (
+                                            {(ev.clientName || ev.groupName || durLabel) && (
                                                 <span className="cal-pill-sub">
-                                                    {ev.clientName && ev.clientName.split(' ')[0]}
-                                                    {ev.clientName && durLabel && ' · '}
+                                                    {ev.groupName && `👥 ${ev.groupName.split(' ')[0]}`}
+                                                    {ev.clientName && !ev.groupName && ev.clientName.split(' ')[0]}
+                                                    {(ev.clientName || ev.groupName) && durLabel && ' · '}
                                                     {durLabel}
                                                 </span>
                                             )}
@@ -364,6 +396,8 @@ const Schedule = ({ onNavigate, fullPage, hideTitle, isTrainer, readOnly }) => {
         date:       ev.date ? String(ev.date).split('T')[0] : null,
         clientId:   ev.clientId || null,
         clientName: ev.clientName || ev.trainerName || null,
+        groupId:    ev.groupId || null,
+        groupName:  ev.groupName || null,
     });
 
     useEffect(() => {
@@ -410,11 +444,12 @@ const Schedule = ({ onNavigate, fullPage, hideTitle, isTrainer, readOnly }) => {
                 startTime: data.start, endTime: data.end,
                 color: data.color, date: data.date,
                 clientId: data.clientId || null,
+                groupId: data.groupId || null,
             };
             if (modal.isNew) {
                 const res = await axios.post('/api/v1/schedule', body, { withCredentials: true });
                 const c = res.data.data;
-                setEvents(prev=>[...prev, { ...mapEvent(c), clientName: data.clientName, date: data.date }]);
+                setEvents(prev=>[...prev, { ...mapEvent(c), clientName: data.clientName, groupName: data.groupName, date: data.date }]);
             } else {
                 await axios.put(`/api/v1/schedule/${data.id}`, body, { withCredentials: true });
                 setEvents(prev=>prev.map(ev=>ev.id===data.id ? { ...data } : ev));

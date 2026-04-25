@@ -102,6 +102,49 @@ const connectToDatabase = async () => {
                 FOREIGN KEY (trainerId) REFERENCES Users(id) ON DELETE CASCADE
             )
         `);
+
+        // Create Groups table
+        await sequelize.query(`
+            CREATE TABLE IF NOT EXISTS \`Groups\` (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                trainerId INT NOT NULL,
+                name VARCHAR(100) NOT NULL,
+                createdAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                updatedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                FOREIGN KEY (trainerId) REFERENCES Users(id) ON DELETE CASCADE
+            )
+        `);
+
+        // Create GroupMembers table
+        await sequelize.query(`
+            CREATE TABLE IF NOT EXISTS GroupMembers (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                groupId INT NOT NULL,
+                userId INT NOT NULL,
+                createdAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                UNIQUE KEY uq_group_user (groupId, userId),
+                FOREIGN KEY (groupId) REFERENCES \`Groups\`(id) ON DELETE CASCADE,
+                FOREIGN KEY (userId) REFERENCES Users(id) ON DELETE CASCADE
+            )
+        `);
+
+        // Create GroupMessages table
+        await sequelize.query(`
+            CREATE TABLE IF NOT EXISTS GroupMessages (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                groupId INT NOT NULL,
+                senderId INT NOT NULL,
+                content TEXT NOT NULL,
+                createdAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                updatedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                FOREIGN KEY (groupId) REFERENCES \`Groups\`(id) ON DELETE CASCADE,
+                FOREIGN KEY (senderId) REFERENCES Users(id) ON DELETE CASCADE
+            )
+        `);
+
+        // Add groupId to ScheduleEvents
+        await addColumnIfNotExists('ScheduleEvents', 'groupId', 'INT NULL');
+
     } catch (error) {
         console.error('Unable to connect to the database:', error);
         process.exit(1);

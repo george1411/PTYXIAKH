@@ -5,6 +5,7 @@ import TrainerProfile from './TrainerProfile';
 import TrainerOverview from './TrainerOverview';
 import TrainerClients from './TrainerClients';
 import TrainerPrograms from './TrainerPrograms';
+import TrainerGroups from './TrainerGroups';
 import Schedule from '../common/widgets/Schedule/Schedule';
 import Settings from '../common/Settings/Settings';
 import { Search, Bell } from 'lucide-react';
@@ -171,6 +172,8 @@ const TrainerDashboard = ({ user, onLogout, onUserUpdate }) => {
                             <TrainerOverview user={user} onNavigate={setActiveTab} />
                         ) : activeTab === 'clients' ? (
                             <TrainerClients />
+                        ) : activeTab === 'groups' ? (
+                            <TrainerGroups user={user} />
                         ) : activeTab === 'programs' ? (
                             <TrainerPrograms />
                         ) : activeTab === 'profile' ? (

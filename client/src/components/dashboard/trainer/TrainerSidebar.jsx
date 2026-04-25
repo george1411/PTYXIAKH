@@ -4,6 +4,7 @@ import { Settings, LogOut, ChevronRight, User } from 'lucide-react';
 const NAV_ITEMS = [
     { id: 'overview',  label: 'Overview' },
     { id: 'clients',   label: 'Clients' },
+    { id: 'groups',    label: 'Groups' },
     { id: 'programs',  label: 'Programs' },
     { id: 'schedule',  label: 'Schedule' },
     { id: 'profile',   label: 'Profile' },

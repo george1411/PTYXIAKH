@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import axios from 'axios';
-import { Send, Loader2, Search, Dumbbell, X, Plus, Heart } from 'lucide-react';
+import { Send, Loader2, Search, X, Plus, Heart, Users } from 'lucide-react';
 import './CustomerMessages.css';
 
 // ─── Pain Report constants ────────────────────────────────────
@@ -80,6 +80,15 @@ const CustomerMessages = ({ user, targetTrainer }) => {
     const [showWorkoutPicker, setShowWorkoutPicker] = useState(false);
     const [pickerTemplates, setPickerTemplates]     = useState([]);
     const [loadingPicker, setLoadingPicker]         = useState(false);
+    const [groups, setGroups]                       = useState([]);
+    const [activeGroup, setActiveGroup]             = useState(null); // { id, name }
+    const [groupMessages, setGroupMessages]         = useState([]);
+    const [loadingGroup, setLoadingGroup]           = useState(false);
+    const [groupText, setGroupText]                 = useState('');
+    const [sendingGroup, setSendingGroup]           = useState(false);
+    const groupPollRef                              = useRef(null);
+    const groupBottomRef                            = useRef(null);
+    const groupInputRef                             = useRef(null);
     const [showPlusMenu, setShowPlusMenu]           = useState(false);
     const [showPainModal, setShowPainModal]         = useState(false);
     const [painZones, setPainZones]                 = useState([]);
@@ -112,15 +121,31 @@ const CustomerMessages = ({ user, targetTrainer }) => {
         } catch { /* silent */ }
     }, []);
 
-    // ── Init: load convos, handle targetTrainer ──────────────────
+    // ── Fetch groups ─────────────────────────────────────────────
+    const fetchGroups = useCallback(async () => {
+        try {
+            const res = await axios.get('/api/v1/groups', { withCredentials: true });
+            setGroups(res.data.data || []);
+        } catch { /* silent */ }
+    }, []);
+
+    // ── Fetch group messages ─────────────────────────────────────
+    const fetchGroupMessages = useCallback(async (groupId) => {
+        try {
+            const res = await axios.get(`/api/v1/groups/${groupId}/messages`, { withCredentials: true });
+            setGroupMessages(res.data.data || []);
+        } catch { /* silent */ }
+    }, []);
+
+    // ── Init: load convos + groups ───────────────────────────────
     useEffect(() => {
         const init = async () => {
             setLoadingConvos(true);
-            await fetchConvos();
+            await Promise.all([fetchConvos(), fetchGroups()]);
             setLoadingConvos(false);
         };
         init();
-    }, [fetchConvos]);
+    }, [fetchConvos, fetchGroups]);
 
     // ── When targetTrainer changes (from Find a Trainer) ─────────
     useEffect(() => {
@@ -152,6 +177,21 @@ const CustomerMessages = ({ user, targetTrainer }) => {
         bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
     }, [messages]);
 
+    // ── When active group changes, load its messages ─────────────
+    useEffect(() => {
+        if (!activeGroup?.id) return;
+        setLoadingGroup(true);
+        setGroupMessages([]);
+        fetchGroupMessages(activeGroup.id).finally(() => setLoadingGroup(false));
+        clearInterval(groupPollRef.current);
+        groupPollRef.current = setInterval(() => fetchGroupMessages(activeGroup.id), 4000);
+        return () => clearInterval(groupPollRef.current);
+    }, [activeGroup?.id, fetchGroupMessages]);
+
+    useEffect(() => {
+        groupBottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }, [groupMessages]);
+
     useEffect(() => {
         if (!showPlusMenu) return;
         const handler = (e) => {
@@ -164,7 +204,25 @@ const CustomerMessages = ({ user, targetTrainer }) => {
     }, [showPlusMenu]);
 
     const handleSelect = (convo) => {
+        setActiveGroup(null);
         setActive({ id: convo.id, name: convo.name });
+    };
+
+    const handleSelectGroup = (g) => {
+        setActive(null);
+        setActiveGroup({ id: g.id, name: g.name });
+    };
+
+    const handleSendGroup = async (e) => {
+        e.preventDefault();
+        if (!groupText.trim() || sendingGroup || !activeGroup) return;
+        setSendingGroup(true);
+        try {
+            await axios.post(`/api/v1/groups/${activeGroup.id}/messages`, { content: groupText.trim() }, { withCredentials: true });
+            setGroupText('');
+            await fetchGroupMessages(activeGroup.id);
+            groupInputRef.current?.focus();
+        } catch { /* silent */ } finally { setSendingGroup(false); }
     };
 
     const handleSend = async (e) => {
@@ -299,37 +357,120 @@ const CustomerMessages = ({ user, targetTrainer }) => {
 
                 {loadingConvos ? (
                     <div className="cm-sidebar-empty"><Loader2 className="cm-spin" size={20} /></div>
-                ) : filteredConvos.length === 0 ? (
-                    <div className="cm-sidebar-empty">{search ? 'No results.' : 'No conversations yet.'}</div>
                 ) : (
-                    filteredConvos.map(c => (
-                        <button
-                            key={c.id}
-                            className={`cm-convo-item ${active?.id === c.id ? 'active' : ''}`}
-                            onClick={() => handleSelect(c)}
-                        >
-                            <div className="cm-convo-avatar-wrap">
-                                <div className="cm-convo-avatar">{c.name?.charAt(0).toUpperCase()}</div>
-                                <div className={`cm-convo-status-dot ${isRecentlyActive(c.lastAt) ? 'online' : 'offline'}`} />
-                            </div>
-                            <div className="cm-convo-info">
-                                <div className="cm-convo-row">
-                                    <span className="cm-convo-name">{c.name}</span>
-                                    <span className="cm-convo-time">{formatTime(c.lastAt)}</span>
-                                </div>
-                                <div className="cm-convo-row">
-                                    <span className="cm-convo-preview">{c.lastMessage?.slice(0, 35) || 'Start a conversation'}{c.lastMessage?.length > 35 ? '…' : ''}</span>
-                                    {c.unread > 0 && <span className="cm-convo-badge">{c.unread}</span>}
-                                </div>
-                            </div>
-                        </button>
-                    ))
+                    <>
+                        {filteredConvos.length > 0 && (
+                            <>
+                                <div className="cm-sidebar-section-label">Direct</div>
+                                {filteredConvos.map(c => (
+                                    <button
+                                        key={c.id}
+                                        className={`cm-convo-item ${active?.id === c.id ? 'active' : ''}`}
+                                        onClick={() => handleSelect(c)}
+                                    >
+                                        <div className="cm-convo-avatar-wrap">
+                                            <div className="cm-convo-avatar">{c.name?.charAt(0).toUpperCase()}</div>
+                                            <div className={`cm-convo-status-dot ${isRecentlyActive(c.lastAt) ? 'online' : 'offline'}`} />
+                                        </div>
+                                        <div className="cm-convo-info">
+                                            <div className="cm-convo-row">
+                                                <span className="cm-convo-name">{c.name}</span>
+                                                <span className="cm-convo-time">{formatTime(c.lastAt)}</span>
+                                            </div>
+                                            <div className="cm-convo-row">
+                                                <span className="cm-convo-preview">{c.lastMessage?.slice(0, 35) || 'Start a conversation'}{c.lastMessage?.length > 35 ? '…' : ''}</span>
+                                                {c.unread > 0 && <span className="cm-convo-badge">{c.unread}</span>}
+                                            </div>
+                                        </div>
+                                    </button>
+                                ))}
+                            </>
+                        )}
+                        {groups.length > 0 && (
+                            <>
+                                <div className="cm-sidebar-section-label">Groups</div>
+                                {groups.filter(g => g.name?.toLowerCase().includes(search.toLowerCase())).map(g => (
+                                    <button
+                                        key={`g-${g.id}`}
+                                        className={`cm-convo-item ${activeGroup?.id === g.id ? 'active' : ''}`}
+                                        onClick={() => handleSelectGroup(g)}
+                                    >
+                                        <div className="cm-convo-avatar-wrap">
+                                            <div className="cm-convo-avatar cm-group-avatar"><Users size={13} /></div>
+                                        </div>
+                                        <div className="cm-convo-info">
+                                            <div className="cm-convo-row">
+                                                <span className="cm-convo-name">{g.name}</span>
+                                            </div>
+                                            <div className="cm-convo-row">
+                                                <span className="cm-convo-preview">{g.memberCount} member{g.memberCount !== 1 ? 's' : ''}</span>
+                                            </div>
+                                        </div>
+                                    </button>
+                                ))}
+                            </>
+                        )}
+                        {filteredConvos.length === 0 && groups.length === 0 && (
+                            <div className="cm-sidebar-empty">{search ? 'No results.' : 'No conversations yet.'}</div>
+                        )}
+                    </>
                 )}
             </div>
 
             {/* ── Chat panel ── */}
             <div className="cm-container">
-                {!active ? (
+                {/* ── Group chat panel ── */}
+                {activeGroup ? (
+                    <>
+                        <div className="cm-header">
+                            <div className="cm-header-avatar cm-group-avatar"><Users size={16} /></div>
+                            <div className="cm-header-info">
+                                <h2>{activeGroup.name}</h2>
+                                <span>Group</span>
+                            </div>
+                        </div>
+                        <div className="cm-messages">
+                            {loadingGroup ? (
+                                <div className="cm-state"><Loader2 className="cm-spin" size={24} /><p>Loading…</p></div>
+                            ) : groupMessages.length === 0 ? (
+                                <div className="cm-state"><p>No messages yet — say hello!</p></div>
+                            ) : (
+                                groupMessages.map((msg, i) => {
+                                    const isMe = msg.senderId === myId;
+                                    const prev = groupMessages[i - 1];
+                                    const showSep = !prev || new Date(msg.createdAt).toDateString() !== new Date(prev.createdAt).toDateString();
+                                    const showName = !isMe && (!prev || prev.senderId !== msg.senderId || showSep);
+                                    return (
+                                        <React.Fragment key={msg.id}>
+                                            {showSep && <div className="cm-date-sep"><span>{formatDateSep(msg.createdAt)}</span></div>}
+                                            <div className={`cm-msg-row ${isMe ? 'me' : 'them'}`}>
+                                                {!isMe && <div className="cm-avatar">{(msg.senderName || '?').charAt(0).toUpperCase()}</div>}
+                                                <div className="cm-bubble-wrap">
+                                                    {showName && <span className="cm-sender-name">{msg.senderName}</span>}
+                                                    <div className={`cm-bubble ${isMe ? 'me' : 'them'}`}><p>{msg.content}</p></div>
+                                                </div>
+                                            </div>
+                                        </React.Fragment>
+                                    );
+                                })
+                            )}
+                            <div ref={groupBottomRef} />
+                        </div>
+                        <form className="cm-input-row" onSubmit={handleSendGroup}>
+                            <input
+                                ref={groupInputRef}
+                                className="cm-input"
+                                placeholder={`Message ${activeGroup.name}…`}
+                                value={groupText}
+                                onChange={e => setGroupText(e.target.value)}
+                                disabled={sendingGroup}
+                            />
+                            <button className="cm-send" type="submit" disabled={sendingGroup || !groupText.trim()}>
+                                {sendingGroup ? <Loader2 className="cm-spin" size={16} /> : <Send size={16} />}
+                            </button>
+                        </form>
+                    </>
+                ) : !active ? (
                     <div className="cm-state" style={{ height: '100%' }}>
                         <p>Select a conversation to start chatting</p>
                     </div>
