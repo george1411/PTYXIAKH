@@ -332,25 +332,25 @@ const MEAL_TYPES  = ['breakfast', 'lunch', 'dinner', 'snack'];
 const MEAL_LABELS = { breakfast: 'Breakfast', lunch: 'Lunch', dinner: 'Dinner', snack: 'Snack' };
 
 // ─── localStorage helpers for recent / saved foods ────────────
-const RECENT_KEY = 'gymlit_recent_foods';
-const SAVED_KEY  = 'gymlit_saved_foods';
+const recentKey = (uid) => `gymlit_recent_foods_${uid}`;
+const savedKey  = (uid) => `gymlit_saved_foods_${uid}`;
 
-const getRecent = () => { try { return JSON.parse(localStorage.getItem(RECENT_KEY)) || []; } catch { return []; } };
-const getSaved  = () => { try { return JSON.parse(localStorage.getItem(SAVED_KEY))  || []; } catch { return []; } };
+const getRecent = (uid) => { try { return JSON.parse(localStorage.getItem(recentKey(uid))) || []; } catch { return []; } };
+const getSaved  = (uid) => { try { return JSON.parse(localStorage.getItem(savedKey(uid)))  || []; } catch { return []; } };
 
-const pushRecent = (entry) => {
-    const list = getRecent().filter(f => f.food.toLowerCase() !== entry.food.toLowerCase());
-    localStorage.setItem(RECENT_KEY, JSON.stringify([entry, ...list].slice(0, 8)));
+const pushRecent = (uid, entry) => {
+    const list = getRecent(uid).filter(f => f.food.toLowerCase() !== entry.food.toLowerCase());
+    localStorage.setItem(recentKey(uid), JSON.stringify([entry, ...list].slice(0, 8)));
 };
 
-const toggleSavedFood = (entry) => {
-    const list = getSaved();
+const toggleSavedFood = (uid, entry) => {
+    const list = getSaved(uid);
     const exists = list.find(f => f.food.toLowerCase() === entry.food.toLowerCase());
-    if (exists) localStorage.setItem(SAVED_KEY, JSON.stringify(list.filter(f => f.food.toLowerCase() !== entry.food.toLowerCase())));
-    else         localStorage.setItem(SAVED_KEY, JSON.stringify([entry, ...list]));
+    if (exists) localStorage.setItem(savedKey(uid), JSON.stringify(list.filter(f => f.food.toLowerCase() !== entry.food.toLowerCase())));
+    else        localStorage.setItem(savedKey(uid), JSON.stringify([entry, ...list]));
 };
 
-const isSaved = (food) => getSaved().some(f => f.food.toLowerCase() === food.toLowerCase());
+const isSaved = (uid, food) => getSaved(uid).some(f => f.food.toLowerCase() === food.toLowerCase());
 
 const UNITS = [
     { value: 'qty', label: 'qty' },
@@ -362,9 +362,9 @@ const UNITS = [
     { value: 'tsp', label: 'tsp' },
 ];
 
-const EMPTY_FORM = { mealType: 'breakfast', food: '', amount: '', unit: 'g', foodName: '', calories: '', protein: '', carbs: '', fat: '' };
+const EMPTY_FORM = { mealType: 'breakfast', food: '', amount: '100', unit: 'g', foodName: '', calories: '', protein: '', carbs: '', fat: '' };
 
-const MealLogger = ({ mealsData, onUpdate, loading }) => {
+const MealLogger = ({ mealsData, onUpdate, loading, userId }) => {
     const [showModal, setShowModal]   = useState(false);
     const [form, setForm]             = useState(EMPTY_FORM);
     const [lookupState, setLookup]    = useState('idle');
@@ -374,10 +374,16 @@ const MealLogger = ({ mealsData, onUpdate, loading }) => {
     const [saved, setSaved]           = useState([]);
     const [dragOverType, setDragOverType] = useState(null);
     const foodRef = useRef(null);
+    // skipLookupRef: set true when filling from saved/recent to prevent API overwrite
+    const skipLookupRef      = useRef(false);
+    // nutritionLockedRef: set true when user manually edits a nutrition field
+    const nutritionLockedRef = useRef(false);
+    // track prev food name so we only reset the lock when food name actually changes
+    const prevFoodRef        = useRef('');
 
     const openModal = () => {
-        setRecent(getRecent());
-        setSaved(getSaved());
+        setRecent(getRecent(userId));
+        setSaved(getSaved(userId));
         setShowModal(true);
         setTimeout(() => foodRef.current?.focus(), 50);
     };
@@ -387,14 +393,20 @@ const MealLogger = ({ mealsData, onUpdate, loading }) => {
         setForm(EMPTY_FORM);
         setLookup('idle');
         setLookupMsg('');
+        skipLookupRef.current      = false;
+        nutritionLockedRef.current = false;
+        prevFoodRef.current        = '';
     };
 
-    // Fill form from a recent/saved entry
+    // Fill form from a recent/saved entry — skip the auto-lookup that would overwrite nutrition
     const fillFromFood = (entry) => {
+        skipLookupRef.current      = true;
+        nutritionLockedRef.current = false;
+        prevFoodRef.current        = entry.food;
         setForm(f => ({
             ...f,
             food:     entry.food,
-            amount:   entry.amount,
+            amount:   String(entry.amount),
             unit:     entry.unit,
             foodName: entry.foodName || entry.food,
             calories: String(entry.calories),
@@ -407,8 +419,8 @@ const MealLogger = ({ mealsData, onUpdate, loading }) => {
     };
 
     const handleToggleSave = (entry) => {
-        toggleSavedFood(entry);
-        setSaved(getSaved());
+        toggleSavedFood(userId, entry);
+        setSaved(getSaved(userId));
     };
 
     // Build the API query from food + amount + unit
@@ -422,11 +434,31 @@ const MealLogger = ({ mealsData, onUpdate, loading }) => {
 
     // Auto-lookup when food, amount, or unit changes (500 ms debounce)
     useEffect(() => {
-        if (!form.food?.trim()) { setLookup('idle'); setLookupMsg(''); return; }
+        if (!form.food?.trim()) {
+            setLookup('idle');
+            setLookupMsg('');
+            nutritionLockedRef.current = false;
+            prevFoodRef.current = '';
+            return;
+        }
+
+        // If food name changed, reset the nutrition lock so new food gets fresh data
+        if (form.food !== prevFoodRef.current) {
+            nutritionLockedRef.current = false;
+            prevFoodRef.current = form.food;
+        }
+
+        // Skip lookup when loading from saved/recent (nutrition already filled)
+        if (skipLookupRef.current) {
+            skipLookupRef.current = false;
+            return;
+        }
+
+        // Skip lookup when user has manually edited nutrition fields
+        if (nutritionLockedRef.current) return;
+
         setLookup('loading');
         const isQty = form.unit === 'qty';
-        // For qty: always look up 1 unit so we can multiply by amount ourselves
-        // For weight/volume: include amount in query (e.g. "300g chicken")
         const q = isQty ? form.food.trim() : buildQuery(form.food, form.amount, form.unit);
         const qty = isQty ? (parseFloat(form.amount) || 1) : 1;
         const timer = setTimeout(() => runLookup(q, isQty, qty), 500);
@@ -509,25 +541,41 @@ const MealLogger = ({ mealsData, onUpdate, loading }) => {
         if (!name) return;
         setSubmitting(true);
         try {
+            const cal  = parseFloat(form.calories) || 0;
+            const prot = parseFloat(form.protein)  || 0;
+            const carb = parseFloat(form.carbs)    || 0;
+            const fat  = parseFloat(form.fat)      || 0;
+
             await axios.post('/api/v1/meals', {
                 mealType: form.mealType,
                 foodName: name,
-                calories: parseFloat(form.calories) || 0,
-                protein:  parseFloat(form.protein)  || 0,
-                carbs:    parseFloat(form.carbs)     || 0,
-                fat:      parseFloat(form.fat)       || 0,
+                calories: cal,
+                protein:  prot,
+                carbs:    carb,
+                fat:      fat,
             }, { withCredentials: true });
-            // Save to recent
-            pushRecent({
+
+            // Always save to recent with the exact nutrition values used
+            const entry = {
                 food:     form.food || name,
                 foodName: name,
                 amount:   form.amount,
                 unit:     form.unit,
-                calories: parseFloat(form.calories) || 0,
-                protein:  parseFloat(form.protein)  || 0,
-                carbs:    parseFloat(form.carbs)    || 0,
-                fat:      parseFloat(form.fat)      || 0,
-            });
+                calories: cal,
+                protein:  prot,
+                carbs:    carb,
+                fat:      fat,
+            };
+            pushRecent(userId, entry);
+
+            // If this food is saved, update its stored nutrition to match what was used
+            if (isSaved(userId, entry.food)) {
+                const list = getSaved(userId).map(f =>
+                    f.food.toLowerCase() === entry.food.toLowerCase() ? { ...f, ...entry } : f
+                );
+                localStorage.setItem(savedKey(userId), JSON.stringify(list));
+            }
+
             closeModal();
             onUpdate();
         } catch (err) {
@@ -640,8 +688,8 @@ const MealLogger = ({ mealsData, onUpdate, loading }) => {
                                                 <div key={i} className="meal-quick-chip" onClick={() => fillFromFood(f)}>
                                                     <span className="meal-quick-chip-name">{f.food}</span>
                                                     <span className="meal-quick-chip-amt">{f.amount}{f.unit !== 'qty' ? f.unit : 'x'}</span>
-                                                    <button className="meal-quick-save" title={isSaved(f.food) ? 'Saved' : 'Save'} onClick={e => { e.stopPropagation(); handleToggleSave(f); setSaved(getSaved()); }}>
-                                                        {isSaved(f.food) ? <BookmarkCheck size={11} /> : <Bookmark size={11} />}
+                                                    <button className="meal-quick-save" title={isSaved(userId, f.food) ? 'Saved' : 'Save'} onClick={e => { e.stopPropagation(); handleToggleSave(f); setSaved(getSaved(userId)); }}>
+                                                        {isSaved(userId, f.food) ? <BookmarkCheck size={11} /> : <Bookmark size={11} />}
                                                     </button>
                                                 </div>
                                             ))}
@@ -705,7 +753,14 @@ const MealLogger = ({ mealsData, onUpdate, loading }) => {
                                     <select
                                         className="meal-form-select"
                                         value={form.unit}
-                                        onChange={e => setForm(f => ({ ...f, unit: e.target.value }))}
+                                        onChange={e => {
+                                            const newUnit = e.target.value;
+                                            setForm(f => ({
+                                                ...f,
+                                                unit: newUnit,
+                                                amount: !f.amount && newUnit !== 'qty' ? '100' : f.amount,
+                                            }));
+                                        }}
                                     >
                                         {UNITS.map(u => <option key={u.value} value={u.value}>{u.label}</option>)}
                                     </select>
@@ -724,22 +779,22 @@ const MealLogger = ({ mealsData, onUpdate, loading }) => {
                                 <div className="meal-form-field">
                                     <label>Calories (kcal)</label>
                                     <input type="number" className="meal-form-input" placeholder="—" min="0" step="any"
-                                        value={form.calories} onChange={e => setForm(f => ({ ...f, calories: e.target.value }))} />
+                                        value={form.calories} onChange={e => { nutritionLockedRef.current = true; setForm(f => ({ ...f, calories: e.target.value })); }} />
                                 </div>
                                 <div className="meal-form-field">
                                     <label>Protein (g)</label>
                                     <input type="number" className="meal-form-input" placeholder="—" min="0" step="any"
-                                        value={form.protein} onChange={e => setForm(f => ({ ...f, protein: e.target.value }))} />
+                                        value={form.protein} onChange={e => { nutritionLockedRef.current = true; setForm(f => ({ ...f, protein: e.target.value })); }} />
                                 </div>
                                 <div className="meal-form-field">
                                     <label>Carbs (g)</label>
                                     <input type="number" className="meal-form-input" placeholder="—" min="0" step="any"
-                                        value={form.carbs} onChange={e => setForm(f => ({ ...f, carbs: e.target.value }))} />
+                                        value={form.carbs} onChange={e => { nutritionLockedRef.current = true; setForm(f => ({ ...f, carbs: e.target.value })); }} />
                                 </div>
                                 <div className="meal-form-field">
                                     <label>Fat (g)</label>
                                     <input type="number" className="meal-form-input" placeholder="—" min="0" step="any"
-                                        value={form.fat} onChange={e => setForm(f => ({ ...f, fat: e.target.value }))} />
+                                        value={form.fat} onChange={e => { nutritionLockedRef.current = true; setForm(f => ({ ...f, fat: e.target.value })); }} />
                                 </div>
                             </div>
 
@@ -764,6 +819,13 @@ const Nutrition = () => {
     const [balanceData,  setBalanceData]  = useState(null);
     const [loadingMeals, setLoadingMeals] = useState(true);
     const [loadingBal,   setLoadingBal]   = useState(true);
+    const [userId,       setUserId]       = useState(null);
+
+    useEffect(() => {
+        axios.get('/api/v1/auth/me', { withCredentials: true })
+            .then(res => setUserId(res.data.data?.id ?? res.data.id ?? null))
+            .catch(() => {});
+    }, []);
 
     const fetchMeals = useCallback(() => {
         setLoadingMeals(true);
@@ -803,7 +865,7 @@ const Nutrition = () => {
                     balanceData={balanceData}
                     loading={loadingMeals || loadingBal}
                 />
-                <MealLogger mealsData={mealsData} onUpdate={handleMealUpdate} loading={loadingMeals} />
+                <MealLogger mealsData={mealsData} onUpdate={handleMealUpdate} loading={loadingMeals} userId={userId} />
                 {/* Row 2: water intake | history */}
                 <WaterIntakeTracker />
                 <NutritionHistoryChart />

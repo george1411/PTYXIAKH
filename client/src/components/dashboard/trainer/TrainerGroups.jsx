@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import axios from 'axios';
-import { Plus, X, Search, Send, Loader2, Users, Trash2 } from 'lucide-react';
+import { Plus, X, Search, Send, Loader2, Users } from 'lucide-react';
+import TrainerGroupPrograms from './TrainerGroupPrograms';
 import './TrainerGroups.css';
 
 // ─── Group Chat Panel ─────────────────────────────────────────
@@ -307,6 +308,18 @@ const TrainerGroups = ({ user }) => {
     const [allClients, setAllClients]       = useState([]);
     const [showCreate, setShowCreate]       = useState(false);
     const [deleting, setDeleting]           = useState(false);
+    const [groupMenuOpen, setGroupMenuOpen] = useState(false);
+    const [renaming, setRenaming]           = useState(false);
+    const [renameValue, setRenameValue]     = useState('');
+    const groupMenuRef                      = useRef(null);
+
+    useEffect(() => {
+        const handleClick = (e) => {
+            if (groupMenuRef.current && !groupMenuRef.current.contains(e.target)) setGroupMenuOpen(false);
+        };
+        document.addEventListener('mousedown', handleClick);
+        return () => document.removeEventListener('mousedown', handleClick);
+    }, []);
 
     const fetchGroups = useCallback(async () => {
         try {
@@ -349,6 +362,16 @@ const TrainerGroups = ({ user }) => {
             setGroupDetail(null);
             await fetchGroups();
         } catch { /* silent */ } finally { setDeleting(false); }
+    };
+
+    const handleRenameGroup = async () => {
+        if (!selectedGroup || !renameValue.trim()) return;
+        try {
+            await axios.put(`/api/v1/groups/${selectedGroup.id}`, { name: renameValue.trim() }, { withCredentials: true });
+            setSelectedGroup(g => ({ ...g, name: renameValue.trim() }));
+            setGroupDetail(d => d ? { ...d, name: renameValue.trim() } : d);
+            await fetchGroups();
+        } catch { /* silent */ } finally { setRenaming(false); setRenameValue(''); }
     };
 
     return (
@@ -402,25 +425,60 @@ const TrainerGroups = ({ user }) => {
                         <div className="tg-group-header">
                             <div className="tg-group-header-icon"><Users size={18} /></div>
                             <div className="tg-group-header-info">
-                                <h2>{selectedGroup.name}</h2>
+                                {renaming ? (
+                                    <div className="tg-rename-wrap">
+                                        <input
+                                            className="tg-rename-input"
+                                            value={renameValue}
+                                            onChange={e => setRenameValue(e.target.value)}
+                                            onKeyDown={e => { if (e.key === 'Enter') handleRenameGroup(); if (e.key === 'Escape') { setRenaming(false); setRenameValue(''); } }}
+                                            autoFocus
+                                        />
+                                        <button className="tg-rename-confirm" onClick={handleRenameGroup} title="Confirm">✓</button>
+                                    </div>
+                                ) : (
+                                    <h2>{selectedGroup.name}</h2>
+                                )}
                                 <span>{groupDetail?.members?.length ?? selectedGroup.memberCount} members</span>
                             </div>
-                            <button
-                                className="tg-delete-btn"
-                                onClick={handleDeleteGroup}
-                                disabled={deleting}
-                                title="Delete group"
-                            >
-                                {deleting ? <Loader2 className="tg-spin" size={14} /> : <Trash2 size={14} />}
-                            </button>
+                            <div className="tg-group-menu-wrap" ref={groupMenuRef}>
+                                <button
+                                    className="tg-dots-btn"
+                                    onClick={() => setGroupMenuOpen(v => !v)}
+                                >
+                                    {deleting ? <Loader2 className="tg-spin" size={14} /> : '···'}
+                                </button>
+                                {groupMenuOpen && (
+                                    <div className="tg-group-dropdown">
+                                        <button
+                                            className="tg-group-dropdown-item"
+                                            onClick={() => { setGroupMenuOpen(false); setRenameValue(selectedGroup.name); setRenaming(true); }}
+                                        >
+                                            Rename
+                                        </button>
+                                        <button
+                                            className="tg-group-dropdown-item tg-group-dropdown-delete"
+                                            onClick={() => { setGroupMenuOpen(false); handleDeleteGroup(); }}
+                                            disabled={deleting}
+                                        >
+                                            Delete
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
                         </div>
 
                         <div className="tg-inner-tabs">
                             <button className={`tg-tab ${activeTab === 'members' ? 'active' : ''}`} onClick={() => setActiveTab('members')}>Members</button>
                             <button className={`tg-tab ${activeTab === 'chat' ? 'active' : ''}`} onClick={() => setActiveTab('chat')}>Group Chat</button>
+                            <button className={`tg-tab ${activeTab === 'program' ? 'active' : ''}`} onClick={() => setActiveTab('program')}>Program</button>
                         </div>
 
-                        {loadingDetail ? (
+                        {activeTab === 'program' ? (
+                            <div style={{ flex: 1, minHeight: 0, display: 'flex', overflow: 'hidden' }}>
+                                <TrainerGroupPrograms groupId={selectedGroup.id} />
+                            </div>
+                        ) : loadingDetail ? (
                             <div className="tg-empty"><Loader2 className="tg-spin" size={20} /></div>
                         ) : activeTab === 'members' ? (
                             <MembersPanel

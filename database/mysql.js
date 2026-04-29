@@ -145,6 +145,39 @@ const connectToDatabase = async () => {
         // Add groupId to ScheduleEvents
         await addColumnIfNotExists('ScheduleEvents', 'groupId', 'INT NULL');
 
+        // Create GroupPrograms table
+        await sequelize.query(`
+            CREATE TABLE IF NOT EXISTS GroupPrograms (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                groupId INT NOT NULL,
+                trainerId INT NOT NULL,
+                name VARCHAR(100) NOT NULL,
+                programData TEXT NOT NULL,
+                createdAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                updatedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                FOREIGN KEY (groupId) REFERENCES \`Groups\`(id) ON DELETE CASCADE,
+                FOREIGN KEY (trainerId) REFERENCES Users(id) ON DELETE CASCADE
+            )
+        `);
+
+        // Create GroupProgramLogs table
+        await sequelize.query(`
+            CREATE TABLE IF NOT EXISTS GroupProgramLogs (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                groupProgramId INT NOT NULL,
+                userId INT NOT NULL,
+                dayLabel VARCHAR(50) NOT NULL,
+                exerciseName VARCHAR(200) NOT NULL,
+                setsCompleted INT NULL,
+                repsCompleted INT NULL,
+                weight FLOAT NULL,
+                note TEXT NULL,
+                loggedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (groupProgramId) REFERENCES GroupPrograms(id) ON DELETE CASCADE,
+                FOREIGN KEY (userId) REFERENCES Users(id) ON DELETE CASCADE
+            )
+        `);
+
     } catch (error) {
         console.error('Unable to connect to the database:', error);
         process.exit(1);

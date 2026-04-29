@@ -89,6 +89,16 @@ const CustomerMessages = ({ user, targetTrainer }) => {
     const groupPollRef                              = useRef(null);
     const groupBottomRef                            = useRef(null);
     const groupInputRef                             = useRef(null);
+    const [groupTab, setGroupTab]                   = useState('chat'); // 'chat' | 'program'
+    const [groupPrograms, setGroupPrograms]         = useState([]);
+    const [selectedGProg, setSelectedGProg]         = useState(null);
+    const [gProgData, setGProgData]                 = useState([]);
+    const [gProgDay, setGProgDay]                   = useState('Monday');
+    const [gProgLogs, setGProgLogs]                 = useState([]);
+    const [loadingGProg, setLoadingGProg]           = useState(false);
+    const [logOpen, setLogOpen]                     = useState(null); // 'day|exIdx'
+    const [logForm, setLogForm]                     = useState({ sets: '', reps: '', weight: '' });
+    const [submittingLog, setSubmittingLog]         = useState(false);
     const [showPlusMenu, setShowPlusMenu]           = useState(false);
     const [showPainModal, setShowPainModal]         = useState(false);
     const [painZones, setPainZones]                 = useState([]);
@@ -208,9 +218,56 @@ const CustomerMessages = ({ user, targetTrainer }) => {
         setActive({ id: convo.id, name: convo.name });
     };
 
+    const G_DAYS = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+
+    const fetchGPrograms = useCallback(async (groupId) => {
+        try {
+            const res = await axios.get(`/api/v1/groups/${groupId}/programs`, { withCredentials: true });
+            setGroupPrograms(res.data.data || []);
+        } catch { /* silent */ }
+    }, []);
+
+    const selectGProg = async (groupId, prog) => {
+        setSelectedGProg(prog);
+        setGProgDay('Monday');
+        setLogOpen(null);
+        setLoadingGProg(true);
+        try {
+            const [progRes, logsRes] = await Promise.all([
+                axios.get(`/api/v1/groups/${groupId}/programs/${prog.id}`, { withCredentials: true }),
+                axios.get(`/api/v1/groups/${groupId}/programs/${prog.id}/logs`, { withCredentials: true }),
+            ]);
+            setGProgData(progRes.data.data.programData || []);
+            setGProgLogs(logsRes.data.data || []);
+        } catch { /* silent */ } finally { setLoadingGProg(false); }
+    };
+
+    const handleLogExercise = async (groupId, progId, dayLabel, exerciseName) => {
+        setSubmittingLog(true);
+        try {
+            await axios.post(`/api/v1/groups/${groupId}/programs/${progId}/log`, {
+                dayLabel, exerciseName,
+                setsCompleted: logForm.sets || null,
+                repsCompleted: logForm.reps || null,
+                weight: logForm.weight || null,
+            }, { withCredentials: true });
+            const logsRes = await axios.get(`/api/v1/groups/${groupId}/programs/${progId}/logs`, { withCredentials: true });
+            setGProgLogs(logsRes.data.data || []);
+            setLogOpen(null);
+            setLogForm({ sets: '', reps: '', weight: '' });
+        } catch { /* silent */ } finally { setSubmittingLog(false); }
+    };
+
+    const getMyLastLog = (dayLabel, exerciseName) => {
+        return gProgLogs.find(l => l.dayLabel === dayLabel && l.exerciseName === exerciseName) || null;
+    };
+
     const handleSelectGroup = (g) => {
         setActive(null);
         setActiveGroup({ id: g.id, name: g.name });
+        setGroupTab('chat');
+        setSelectedGProg(null);
+        setGroupPrograms([]);
     };
 
     const handleSendGroup = async (e) => {
@@ -428,47 +485,162 @@ const CustomerMessages = ({ user, targetTrainer }) => {
                                 <h2>{activeGroup.name}</h2>
                                 <span>Group</span>
                             </div>
+                            <div className="cm-group-tabs">
+                                <button
+                                    className={`cm-group-tab ${groupTab === 'chat' ? 'active' : ''}`}
+                                    onClick={() => setGroupTab('chat')}
+                                >Chat</button>
+                                <button
+                                    className={`cm-group-tab ${groupTab === 'program' ? 'active' : ''}`}
+                                    onClick={() => {
+                                        setGroupTab('program');
+                                        if (groupPrograms.length === 0) fetchGPrograms(activeGroup.id);
+                                    }}
+                                >Program</button>
+                            </div>
                         </div>
-                        <div className="cm-messages">
-                            {loadingGroup ? (
-                                <div className="cm-state"><Loader2 className="cm-spin" size={24} /><p>Loading…</p></div>
-                            ) : groupMessages.length === 0 ? (
-                                <div className="cm-state"><p>No messages yet — say hello!</p></div>
-                            ) : (
-                                groupMessages.map((msg, i) => {
-                                    const isMe = msg.senderId === myId;
-                                    const prev = groupMessages[i - 1];
-                                    const showSep = !prev || new Date(msg.createdAt).toDateString() !== new Date(prev.createdAt).toDateString();
-                                    const showName = !isMe && (!prev || prev.senderId !== msg.senderId || showSep);
-                                    return (
-                                        <React.Fragment key={msg.id}>
-                                            {showSep && <div className="cm-date-sep"><span>{formatDateSep(msg.createdAt)}</span></div>}
-                                            <div className={`cm-msg-row ${isMe ? 'me' : 'them'}`}>
-                                                {!isMe && <div className="cm-avatar">{(msg.senderName || '?').charAt(0).toUpperCase()}</div>}
-                                                <div className="cm-bubble-wrap">
-                                                    {showName && <span className="cm-sender-name">{msg.senderName}</span>}
-                                                    <div className={`cm-bubble ${isMe ? 'me' : 'them'}`}><p>{msg.content}</p></div>
+
+                        {groupTab === 'chat' ? (
+                            <>
+                                <div className="cm-messages">
+                                    {loadingGroup ? (
+                                        <div className="cm-state"><Loader2 className="cm-spin" size={24} /><p>Loading…</p></div>
+                                    ) : groupMessages.length === 0 ? (
+                                        <div className="cm-state"><p>No messages yet — say hello!</p></div>
+                                    ) : (
+                                        groupMessages.map((msg, i) => {
+                                            const isMe = msg.senderId === myId;
+                                            const prev = groupMessages[i - 1];
+                                            const showSep = !prev || new Date(msg.createdAt).toDateString() !== new Date(prev.createdAt).toDateString();
+                                            const showName = !isMe && (!prev || prev.senderId !== msg.senderId || showSep);
+                                            return (
+                                                <React.Fragment key={msg.id}>
+                                                    {showSep && <div className="cm-date-sep"><span>{formatDateSep(msg.createdAt)}</span></div>}
+                                                    <div className={`cm-msg-row ${isMe ? 'me' : 'them'}`}>
+                                                        {!isMe && <div className="cm-avatar">{(msg.senderName || '?').charAt(0).toUpperCase()}</div>}
+                                                        <div className="cm-bubble-wrap">
+                                                            {showName && <span className="cm-sender-name">{msg.senderName}</span>}
+                                                            <div className={`cm-bubble ${isMe ? 'me' : 'them'}`}><p>{msg.content}</p></div>
+                                                        </div>
+                                                    </div>
+                                                </React.Fragment>
+                                            );
+                                        })
+                                    )}
+                                    <div ref={groupBottomRef} />
+                                </div>
+                                <form className="cm-input-row" onSubmit={handleSendGroup}>
+                                    <input
+                                        ref={groupInputRef}
+                                        className="cm-input"
+                                        placeholder={`Message ${activeGroup.name}…`}
+                                        value={groupText}
+                                        onChange={e => setGroupText(e.target.value)}
+                                        disabled={sendingGroup}
+                                    />
+                                    <button className="cm-send" type="submit" disabled={sendingGroup || !groupText.trim()}>
+                                        {sendingGroup ? <Loader2 className="cm-spin" size={16} /> : <Send size={16} />}
+                                    </button>
+                                </form>
+                            </>
+                        ) : (
+                            /* ── Program tab ── */
+                            <div className="cm-prog-panel">
+                                {!selectedGProg ? (
+                                    groupPrograms.length === 0 ? (
+                                        <div className="cm-state"><p>No programs assigned yet</p></div>
+                                    ) : (
+                                        <div className="cm-prog-list">
+                                            {groupPrograms.map(p => (
+                                                <button key={p.id} className="cm-prog-item" onClick={() => selectGProg(activeGroup.id, p)}>
+                                                    <span className="cm-prog-item-name">{p.name}</span>
+                                                    <span className="cm-prog-item-arrow">→</span>
+                                                </button>
+                                            ))}
+                                        </div>
+                                    )
+                                ) : (
+                                    <>
+                                        <div className="cm-prog-detail-header">
+                                            <button className="cm-prog-back" onClick={() => { setSelectedGProg(null); setLogOpen(null); }}>← Back</button>
+                                            <span className="cm-prog-detail-name">{selectedGProg.name}</span>
+                                        </div>
+                                        {loadingGProg ? (
+                                            <div className="cm-state"><Loader2 className="cm-spin" size={22} /></div>
+                                        ) : (
+                                            <>
+                                                <div className="cm-prog-day-tabs">
+                                                    {G_DAYS.map(d => {
+                                                        const count = gProgData.find(x => x.day === d)?.exercises?.length || 0;
+                                                        return (
+                                                            <button
+                                                                key={d}
+                                                                className={`cm-prog-day-tab ${gProgDay === d ? 'active' : ''}`}
+                                                                onClick={() => { setGProgDay(d); setLogOpen(null); }}
+                                                            >
+                                                                {d.slice(0,3)}{count > 0 && <span className="cm-prog-day-dot" />}
+                                                            </button>
+                                                        );
+                                                    })}
                                                 </div>
-                                            </div>
-                                        </React.Fragment>
-                                    );
-                                })
-                            )}
-                            <div ref={groupBottomRef} />
-                        </div>
-                        <form className="cm-input-row" onSubmit={handleSendGroup}>
-                            <input
-                                ref={groupInputRef}
-                                className="cm-input"
-                                placeholder={`Message ${activeGroup.name}…`}
-                                value={groupText}
-                                onChange={e => setGroupText(e.target.value)}
-                                disabled={sendingGroup}
-                            />
-                            <button className="cm-send" type="submit" disabled={sendingGroup || !groupText.trim()}>
-                                {sendingGroup ? <Loader2 className="cm-spin" size={16} /> : <Send size={16} />}
-                            </button>
-                        </form>
+                                                <div className="cm-prog-exercises">
+                                                    {(() => {
+                                                        const exs = gProgData.find(d => d.day === gProgDay)?.exercises || [];
+                                                        if (exs.length === 0) return <p className="cm-prog-no-ex">Rest day — no exercises</p>;
+                                                        return exs.map((ex, idx) => {
+                                                            const key = `${gProgDay}|${idx}`;
+                                                            const myLog = getMyLastLog(gProgDay, ex.name);
+                                                            const isLogging = logOpen === key;
+                                                            return (
+                                                                <div key={idx} className="cm-prog-ex-card">
+                                                                    <div className="cm-prog-ex-row">
+                                                                        <div className="cm-prog-ex-info">
+                                                                            <span className="cm-prog-ex-name">{ex.name || 'Unnamed exercise'}</span>
+                                                                            <span className="cm-prog-ex-prescription">{ex.sets} × {ex.reps}</span>
+                                                                        </div>
+                                                                        <div className="cm-prog-ex-right">
+                                                                            {myLog && (
+                                                                                <span className="cm-prog-my-log">
+                                                                                    You: {myLog.setsCompleted ?? '?'}×{myLog.repsCompleted ?? '?'}{myLog.weight ? ` @ ${myLog.weight}kg` : ''}
+                                                                                </span>
+                                                                            )}
+                                                                            <button
+                                                                                className="cm-prog-log-btn"
+                                                                                onClick={() => {
+                                                                                    setLogOpen(isLogging ? null : key);
+                                                                                    setLogForm({ sets: '', reps: '', weight: '' });
+                                                                                }}
+                                                                            >
+                                                                                {isLogging ? 'Cancel' : 'Log'}
+                                                                            </button>
+                                                                        </div>
+                                                                    </div>
+                                                                    {isLogging && (
+                                                                        <div className="cm-prog-log-form">
+                                                                            <input className="cm-prog-log-input" type="number" placeholder="Sets" value={logForm.sets} onChange={e => setLogForm(f => ({ ...f, sets: e.target.value }))} min={1} />
+                                                                            <span className="cm-prog-log-sep">×</span>
+                                                                            <input className="cm-prog-log-input" type="number" placeholder="Reps" value={logForm.reps} onChange={e => setLogForm(f => ({ ...f, reps: e.target.value }))} min={1} />
+                                                                            <input className="cm-prog-log-input cm-prog-log-weight" type="number" placeholder="kg" value={logForm.weight} onChange={e => setLogForm(f => ({ ...f, weight: e.target.value }))} min={0} step={0.5} />
+                                                                            <button
+                                                                                className="cm-prog-log-submit"
+                                                                                disabled={submittingLog}
+                                                                                onClick={() => handleLogExercise(activeGroup.id, selectedGProg.id, gProgDay, ex.name)}
+                                                                            >
+                                                                                {submittingLog ? '…' : '✓'}
+                                                                            </button>
+                                                                        </div>
+                                                                    )}
+                                                                </div>
+                                                            );
+                                                        });
+                                                    })()}
+                                                </div>
+                                            </>
+                                        )}
+                                    </>
+                                )}
+                            </div>
+                        )}
                     </>
                 ) : !active ? (
                     <div className="cm-state" style={{ height: '100%' }}>

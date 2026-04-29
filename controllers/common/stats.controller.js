@@ -181,6 +181,46 @@ export const getExercisePRs = async (req, res, next) => {
     }
 };
 
+// ─── Exercise History: list all exercises logged by user ─────
+export const getExerciseHistory = async (req, res, next) => {
+    try {
+        const userId = req.user.id;
+        const rows = await sequelize.query(
+            `SELECT e.id, e.name, e.targetMuscles AS muscles,
+                    MAX(wl.kg) AS maxWeight,
+                    COUNT(wl.id) AS totalSets,
+                    MAX(DATE(wl.loggedAt)) AS lastLogged
+             FROM WorkoutLogs wl
+             JOIN WorkoutExercises we ON wl.workoutExerciseId = we.id
+             JOIN Exercises e ON we.exerciseId = e.id
+             WHERE wl.userId = :userId AND wl.kg IS NOT NULL AND wl.kg > 0
+             GROUP BY e.id, e.name, e.targetMuscles
+             ORDER BY e.name ASC`,
+            { replacements: { userId }, type: QueryTypes.SELECT }
+        );
+        res.status(200).json({ success: true, data: rows });
+    } catch (error) { next(error); }
+};
+
+// ─── Exercise History: all sets for one exercise ─────────────
+export const getExerciseLogs = async (req, res, next) => {
+    try {
+        const userId = req.user.id;
+        const { exerciseId } = req.params;
+        const rows = await sequelize.query(
+            `SELECT DATE_FORMAT(DATE(wl.loggedAt), '%Y-%m-%d') AS date,
+                    wl.setNumber, wl.kg, wl.reps, wl.loggedAt
+             FROM WorkoutLogs wl
+             JOIN WorkoutExercises we ON wl.workoutExerciseId = we.id
+             WHERE wl.userId = :userId AND we.exerciseId = :exerciseId
+               AND wl.kg IS NOT NULL AND wl.kg > 0
+             ORDER BY wl.loggedAt ASC, wl.setNumber ASC`,
+            { replacements: { userId, exerciseId }, type: QueryTypes.SELECT }
+        );
+        res.status(200).json({ success: true, data: rows });
+    } catch (error) { next(error); }
+};
+
 // ─── Workout Consistency Calendar ────────────────────────────
 export const getWorkoutCalendar = async (req, res, next) => {
     try {

@@ -840,3 +840,219 @@
     transform: scale(1.08);
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
 }
+
+/* ─── Exercise History Widget ──────────────────────────────── */
+.eh-card {
+    overflow: hidden;
+}
+
+/* Exercise picker grid */
+.eh-exercise-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    overflow-y: auto;
+    flex: 1;
+    padding-right: 4px;
+}
+
+.eh-exercise-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+    padding: 12px 14px;
+    background: #1a1a1a;
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 12px;
+    cursor: pointer;
+    text-align: left;
+    transition: border-color 0.2s, background 0.2s;
+}
+
+.eh-exercise-btn:hover {
+    background: #1f1f1f;
+    border-color: rgba(129,140,248,0.3);
+}
+
+.eh-exercise-name {
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: #e0e0e0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    width: 100%;
+}
+
+.eh-exercise-pr {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #818CF8;
+}
+
+.eh-card-sub {
+    font-size: 0.75rem;
+    color: #555;
+}
+
+/* Graph view */
+.eh-graph-view {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+}
+
+.eh-graph-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+.eh-back-btn {
+    background: transparent;
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 8px;
+    color: #aaa;
+    font-size: 0.8rem;
+    font-weight: 600;
+    padding: 4px 10px;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: color 0.15s, border-color 0.15s;
+}
+
+.eh-back-btn:hover {
+    color: #fff;
+    border-color: rgba(255,255,255,0.25);
+}
+
+.eh-graph-title {
+    flex: 1;
+    min-width: 0;
+}
+
+.eh-graph-title h3 {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #f0f0f0;
+    margin: 0 0 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.eh-graph-muscles {
+    font-size: 0.72rem;
+    color: #555;
+}
+
+.eh-pr-badge {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #818CF8;
+    background: rgba(129,140,248,0.12);
+    border: 1px solid rgba(129,140,248,0.2);
+    border-radius: 8px;
+    padding: 3px 10px;
+    flex-shrink: 0;
+}
+
+/* Chart */
+.eh-chart-wrap {
+    width: 100%;
+}
+
+.eh-chart-legend {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 0.72rem;
+    color: #888;
+    margin-bottom: 6px;
+}
+
+.eh-legend-dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin-right: 4px;
+}
+
+/* Custom tooltip */
+.eh-tooltip {
+    background: #1a1a1a;
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 8px;
+    padding: 8px 12px;
+    font-size: 0.78rem;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.4);
+}
+
+.eh-tooltip-date {
+    font-size: 0.7rem;
+    color: #666;
+    margin-bottom: 4px;
+}
+
+.eh-tooltip-row {
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+/* History log table */
+.eh-log-table {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.eh-log-title {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #888;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 6px;
+}
+
+.eh-log-header,
+.eh-log-row {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1fr;
+    gap: 4px;
+    padding: 5px 8px;
+    font-size: 0.78rem;
+}
+
+.eh-log-header {
+    color: #555;
+    font-weight: 600;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    margin-bottom: 2px;
+}
+
+.eh-log-body {
+    overflow-y: auto;
+    max-height: 140px;
+}
+
+.eh-log-row {
+    color: #bbb;
+    border-radius: 6px;
+    transition: background 0.15s;
+}
+
+.eh-log-row:hover {
+    background: rgba(255,255,255,0.04);
+}
+
+.eh-log-kg {
+    color: #a5b4fc;
+    font-weight: 700;
+}

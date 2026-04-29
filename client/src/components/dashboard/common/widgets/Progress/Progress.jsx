@@ -1,7 +1,7 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import {
-    LineChart, Line, BarChart, Bar, XAxis, YAxis,
-    ResponsiveContainer, CartesianGrid, ReferenceLine
+    LineChart, Line, XAxis, YAxis,
+    ResponsiveContainer, CartesianGrid, Tooltip, ReferenceLine
 } from 'recharts';
 import axios from 'axios';
 import WeeklySteps from '../../../customer/widgets/WeeklySteps/WeeklySteps';
@@ -201,74 +201,156 @@ const WeightHistory = () => {
 };
 
 
-// ─── Exercise PRs Section ────────────────────────────────────
-const ExercisePRs = () => {
-    const [prs, setPrs] = useState([]);
+// ─── Exercise History ────────────────────────────────────────
+const parseMuscles = (muscles) => {
+    if (!muscles) return '';
+    try {
+        const arr = typeof muscles === 'string' ? JSON.parse(muscles) : muscles;
+        return Array.isArray(arr) ? arr.join(', ') : String(muscles);
+    } catch { return String(muscles); }
+};
+
+const ExerciseHistoryGraph = ({ exercise, onBack }) => {
+    const [logs, setLogs] = useState([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        axios.get('/api/v1/stats/exercise-prs', { withCredentials: true })
-            .then(res => setPrs(res.data.data || []))
-            .catch(err => console.error('Exercise PRs error:', err))
+        setLoading(true);
+        axios.get(`/api/v1/stats/exercise-history/${exercise.id}`, { withCredentials: true })
+            .then(res => setLogs(res.data.data || []))
+            .catch(() => {})
             .finally(() => setLoading(false));
-    }, []);
+    }, [exercise.id]);
 
-    const getRankBadge = (i) => {
-        if (i === 0) return { label: '1', class: 'gold' };
-        if (i === 1) return { label: '2', class: 'silver' };
-        if (i === 2) return { label: '3', class: 'bronze' };
-        return null;
-    };
+    const { chartData, allLogs } = useMemo(() => {
+        if (!logs.length) return { chartData: [], allLogs: [] };
+        const byDate = {};
+        logs.forEach(l => {
+            if (!byDate[l.date]) byDate[l.date] = { date: l.date, best: 0, worst: Infinity };
+            if (l.kg > byDate[l.date].best) byDate[l.date].best = l.kg;
+            if (l.kg < byDate[l.date].worst) byDate[l.date].worst = l.kg;
+        });
+        const chartData = Object.values(byDate).map(d => ({
+            date: d.date.slice(5), // MM-DD
+            fullDate: d.date,
+            best: d.best,
+            worst: d.worst === Infinity ? d.best : d.worst,
+        }));
+        return { chartData, allLogs: [...logs].reverse() };
+    }, [logs]);
 
-    const parseMuscles = (muscles) => {
-        if (!muscles) return '';
-        try {
-            const arr = typeof muscles === 'string' ? JSON.parse(muscles) : muscles;
-            return Array.isArray(arr) ? arr.join(', ') : String(muscles);
-        } catch { return String(muscles); }
+    const pr = logs.reduce((max, l) => l.kg > max ? l.kg : max, 0);
+
+    const makeDotLabel = (color) => (props) => {
+        const { cx, cy, value, active } = props;
+        if (!active) return <circle cx={cx} cy={cy} r={3} fill={color} stroke="none" />;
+        const label = `${value}kg`;
+        const w = label.length * 7 + 14;
+        return (
+            <g>
+                <circle cx={cx} cy={cy} r={5} fill={color} />
+                <rect x={cx - w / 2} y={cy - 28} width={w} height={18} rx={9} fill={color} />
+                <text x={cx} y={cy - 15} textAnchor="middle" fill="#111" fontSize={10} fontWeight={700}>{label}</text>
+            </g>
+        );
     };
 
     return (
-        <div className="progress-card">
-            <div className="progress-card-header">
-                <div className="progress-card-title">
-                    <h3>Personal Records</h3>
+        <div className="eh-graph-view">
+            <div className="eh-graph-header">
+                <button className="eh-back-btn" onClick={onBack}>← Back</button>
+                <div className="eh-graph-title">
+                    <h3>{exercise.name}</h3>
+                    {exercise.muscles && <span className="eh-graph-muscles">{parseMuscles(exercise.muscles)}</span>}
                 </div>
+                <div className="eh-pr-badge">PR: {pr} kg</div>
             </div>
 
             {loading ? (
                 <div className="progress-loading"><div className="progress-spinner" /></div>
-            ) : prs.length === 0 ? (
-                <div className="progress-empty">
-                    <p>No PRs yet — start logging weights!</p>
-                </div>
+            ) : chartData.length === 0 ? (
+                <div className="progress-empty"><p>No logged sets yet</p></div>
             ) : (
-                <div className="progress-pr-grid">
-                    {[prs.slice(0, 4), prs.slice(4, 8)].map((col, colIdx) => (
-                        <div key={colIdx} className="progress-pr-col">
-                            {col.map((pr, j) => {
-                                const i = colIdx * 4 + j;
-                                const badge = getRankBadge(i);
-                                return (
-                                    <div key={pr.exercise} className="progress-pr-item">
-                                        <div className="progress-pr-item-left">
-                                            {badge ? (
-                                                <span className={`progress-pr-badge ${badge.class}`}>{badge.label}</span>
-                                            ) : (
-                                                <span className="progress-pr-num">{i + 1}</span>
-                                            )}
-                                            <div className="progress-pr-info">
-                                                <div className="progress-pr-exercise">{pr.exercise}</div>
-                                                <div className="progress-pr-muscles">{parseMuscles(pr.muscles)}</div>
-                                            </div>
-                                        </div>
-                                        <div className="progress-pr-kg">{pr.maxWeight} kg</div>
-                                    </div>
-                                );
-                            })}
+                <>
+                    <div className="eh-chart-wrap">
+                        <div className="eh-chart-legend">
+                            <span className="eh-legend-dot" style={{ background: '#4ade80' }} /> Best Set
+                            <span className="eh-legend-dot" style={{ background: '#f87171' }} /> Worst Set
                         </div>
-                    ))}
+                        <ResponsiveContainer width="100%" height={200}>
+                            <LineChart data={chartData} margin={{ top: 30, right: 16, left: 0, bottom: 0 }}>
+                                <CartesianGrid stroke="rgba(255,255,255,0.05)" vertical={false} />
+                                <XAxis dataKey="date" tick={{ fontSize: 10, fill: '#555' }} tickLine={false} axisLine={false} interval="preserveStartEnd" />
+                                <YAxis tick={{ fontSize: 10, fill: '#555' }} tickLine={false} axisLine={false} width={36} tickFormatter={v => `${v}kg`} />
+                                <Tooltip content={() => null} cursor={false} />
+                                <Line type="monotone" dataKey="best" name="Best Set" stroke="#4ade80" strokeWidth={2} dot={{ r: 3, fill: '#4ade80', stroke: 'none' }} activeDot={makeDotLabel('#4ade80')} />
+                                <Line type="monotone" dataKey="worst" name="Worst Set" stroke="#f87171" strokeWidth={2} dot={{ r: 3, fill: '#f87171', stroke: 'none' }} activeDot={makeDotLabel('#f87171')} />
+                            </LineChart>
+                        </ResponsiveContainer>
+                    </div>
+
+                    <div className="eh-log-table">
+                        <div className="eh-log-title">History Log</div>
+                        <div className="eh-log-header">
+                            <span>Date</span><span>Set</span><span>Kg</span><span>Reps</span>
+                        </div>
+                        <div className="eh-log-body">
+                            {allLogs.map((l, i) => (
+                                <div key={i} className="eh-log-row">
+                                    <span>{l.date}</span>
+                                    <span>{l.setNumber}</span>
+                                    <span className="eh-log-kg">{l.kg}</span>
+                                    <span>{l.reps ?? '—'}</span>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </>
+            )}
+        </div>
+    );
+};
+
+const ExerciseHistory = () => {
+    const [exercises, setExercises] = useState([]);
+    const [loading, setLoading]     = useState(true);
+    const [selected, setSelected]   = useState(null);
+
+    useEffect(() => {
+        axios.get('/api/v1/stats/exercise-history', { withCredentials: true })
+            .then(res => setExercises(res.data.data || []))
+            .catch(() => {})
+            .finally(() => setLoading(false));
+    }, []);
+
+    return (
+        <div className="progress-card eh-card">
+            <div className="progress-card-header">
+                <div className="progress-card-title">
+                    <h3>Exercise History</h3>
                 </div>
+                {selected && (
+                    <span className="eh-card-sub">Select an exercise to view progress</span>
+                )}
+            </div>
+
+            {loading ? (
+                <div className="progress-loading"><div className="progress-spinner" /></div>
+            ) : !selected ? (
+                exercises.length === 0 ? (
+                    <div className="progress-empty"><p>No exercises logged yet — start tracking weights!</p></div>
+                ) : (
+                    <div className="eh-exercise-grid">
+                        {exercises.map(ex => (
+                            <button key={ex.id} className="eh-exercise-btn" onClick={() => setSelected(ex)}>
+                                <span className="eh-exercise-name">{ex.name}</span>
+                                <span className="eh-exercise-pr">{ex.maxWeight} kg</span>
+                            </button>
+                        ))}
+                    </div>
+                )
+            ) : (
+                <ExerciseHistoryGraph exercise={selected} onBack={() => setSelected(null)} />
             )}
         </div>
     );
@@ -791,9 +873,9 @@ const Progress = () => {
             </div>
 
             <div className="progress-grid">
-                {/* Row 1: Weight History | Personal Records */}
+                {/* Row 1: Weight History | Exercise History */}
                 <WeightHistory />
-                <ExercisePRs />
+                <ExerciseHistory />
                 {/* Row 2: Weekly Steps | BMI Calculator */}
                 <WeeklySteps />
                 <BMICalculator />

@@ -1,0 +1,519 @@
+/* ─── Layout ──────────────────────────────────────────────── */
+.tgp-container {
+    display: flex;
+    height: 100%;
+    min-height: 0;
+}
+
+/* ─── Left panel ──────────────────────────────────────────── */
+.tgp-left {
+    width: 220px;
+    flex-shrink: 0;
+    border-right: 1px solid rgba(255,255,255,0.06);
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 12px 8px;
+    overflow-y: auto;
+}
+
+.tgp-new-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    width: 100%;
+    padding: 8px 12px;
+    background: rgba(129,140,248,0.08);
+    border: 1px dashed rgba(129,140,248,0.3);
+    border-radius: 8px;
+    color: #818cf8;
+    font-size: 0.82rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+    margin-bottom: 4px;
+}
+.tgp-new-btn:hover { background: rgba(129,140,248,0.16); border-color: rgba(129,140,248,0.5); }
+
+.tgp-program-item {
+    width: 100%;
+    padding: 8px 12px;
+    background: none;
+    border: none;
+    border-radius: 8px;
+    color: rgba(255,255,255,0.45);
+    font-size: 0.83rem;
+    text-align: left;
+    cursor: pointer;
+    transition: all 0.15s;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.tgp-program-item:hover { background: rgba(255,255,255,0.04); color: #f0f0f0; }
+.tgp-program-item.active { background: rgba(129,140,248,0.1); color: #818cf8; font-weight: 600; }
+
+.tgp-left-loading { display: flex; justify-content: center; padding: 20px; }
+.tgp-left-empty { font-size: 0.8rem; color: rgba(255,255,255,0.2); text-align: center; padding: 16px 8px; }
+
+/* ─── Right panel ──────────────────────────────────────────── */
+.tgp-right {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    overflow: hidden;
+}
+
+.tgp-empty {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: rgba(255,255,255,0.2);
+    font-size: 0.9rem;
+}
+
+/* ─── Program header ──────────────────────────────────────── */
+.tgp-prog-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 20px 12px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    gap: 12px;
+    flex-shrink: 0;
+}
+.tgp-title-group {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.tgp-rename-trigger {
+    background: none;
+    border: none;
+    color: rgba(255,255,255,0.25);
+    cursor: pointer;
+    padding: 2px;
+    display: flex;
+    align-items: center;
+    transition: color 0.15s;
+}
+.tgp-rename-trigger:hover { color: rgba(255,255,255,0.7); }
+.tgp-rename-wrap {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.tgp-rename-input {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 6px;
+    color: #f0f0f0;
+    font-size: 1rem;
+    font-weight: 700;
+    padding: 2px 8px;
+    outline: none;
+    min-width: 0;
+}
+.tgp-rename-input:focus { border-color: rgba(129,140,248,0.5); }
+.tgp-rename-confirm {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: rgba(255,255,255,0.4);
+    font-size: 0.95rem;
+    padding: 2px 4px;
+    transition: color 0.15s;
+    flex-shrink: 0;
+}
+.tgp-rename-confirm:hover { color: #f0f0f0; }
+.tgp-prog-header-info h3 {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #f0f0f0;
+    margin: 0 0 2px;
+}
+.tgp-prog-header-info span {
+    font-size: 0.74rem;
+    color: rgba(255,255,255,0.3);
+}
+.tgp-prog-header-actions {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+}
+.tgp-tpl-btn {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 6px 11px;
+    border-radius: 8px;
+    border: 1px solid rgba(255,255,255,0.1);
+    background: rgba(255,255,255,0.04);
+    color: rgba(255,255,255,0.5);
+    font-size: 0.76rem;
+    cursor: pointer;
+    transition: all 0.15s;
+    white-space: nowrap;
+}
+.tgp-tpl-btn:hover { background: rgba(255,255,255,0.08); color: #f0f0f0; }
+.tgp-save-btn {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 6px 14px;
+    border-radius: 8px;
+    border: none;
+    background: rgba(129,140,248,0.15);
+    color: #818cf8;
+    font-size: 0.82rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+.tgp-save-btn:hover:not(:disabled) { background: rgba(129,140,248,0.25); }
+.tgp-save-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+.tgp-del-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    border: none;
+    background: rgba(239,68,68,0.08);
+    color: #f87171;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+.tgp-del-btn:hover:not(:disabled) { background: rgba(239,68,68,0.18); }
+.tgp-del-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+
+/* ─── Day tabs ────────────────────────────────────────────── */
+.tgp-day-tabs {
+    display: flex;
+    gap: 4px;
+    padding: 12px 20px 10px;
+    flex-shrink: 0;
+}
+.tgp-day-tab {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 6px 12px;
+    border-radius: 8px;
+    border: none;
+    background: rgba(255,255,255,0.04);
+    color: rgba(255,255,255,0.35);
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+.tgp-day-tab:hover { background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.7); }
+.tgp-day-tab.active { background: rgba(129,140,248,0.15); color: #818cf8; font-weight: 600; }
+.tgp-day-tab.filled { color: rgba(255,255,255,0.6); }
+.tgp-day-tab.active.filled { color: #818cf8; }
+.tgp-day-count {
+    background: #818cf8;
+    color: #0a0a0a;
+    border-radius: 99px;
+    font-size: 0.62rem;
+    font-weight: 700;
+    min-width: 16px;
+    height: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 3px;
+}
+
+/* ─── Editor body ─────────────────────────────────────────── */
+.tgp-editor-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 4px 20px 20px;
+}
+.tgp-day-label {
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: rgba(255,255,255,0.25);
+    margin-bottom: 10px;
+}
+.tgp-no-exercises {
+    font-size: 0.82rem;
+    color: rgba(255,255,255,0.2);
+    padding: 4px 0 10px;
+}
+
+/* ─── Exercise rows ───────────────────────────────────────── */
+.tgp-exercise-list { display: flex; flex-direction: column; gap: 6px; margin-bottom: 10px; }
+.tgp-exercise-card {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 10px;
+    overflow: hidden;
+}
+.tgp-exercise-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 14px;
+}
+.tgp-exercise-name-col {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex: 1;
+    min-width: 0;
+}
+.tgp-exercise-idx {
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: rgba(255,255,255,0.2);
+    min-width: 16px;
+    flex-shrink: 0;
+}
+.tgp-exercise-name {
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: #f0f0f0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.tgp-exercise-muscles {
+    font-size: 0.72rem;
+    color: rgba(255,255,255,0.35);
+    margin-top: 1px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.tgp-exercise-fields {
+    display: flex;
+    gap: 8px;
+    flex-shrink: 0;
+}
+.tgp-field {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+}
+.tgp-field label {
+    font-size: 0.62rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: rgba(255,255,255,0.3);
+}
+.tgp-field input {
+    width: 52px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 6px;
+    color: #f0f0f0;
+    font-size: 0.82rem;
+    padding: 5px 6px;
+    outline: none;
+    text-align: center;
+}
+.tgp-field input:focus { border-color: rgba(129,140,248,0.4); }
+.tgp-exercise-actions { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+.tgp-logs-toggle {
+    padding: 4px 10px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 6px;
+    color: rgba(255,255,255,0.35);
+    font-size: 0.72rem;
+    cursor: pointer;
+    transition: all 0.15s;
+    white-space: nowrap;
+}
+.tgp-logs-toggle:hover, .tgp-logs-toggle.open { background: rgba(255,255,255,0.08); color: #f0f0f0; }
+.tgp-ex-del {
+    background: none;
+    border: none;
+    color: rgba(255,255,255,0.2);
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    transition: color 0.15s;
+}
+.tgp-ex-del:hover { color: #f87171; }
+
+/* ─── Member logs ─────────────────────────────────────────── */
+.tgp-logs-panel {
+    border-top: 1px solid rgba(255,255,255,0.06);
+    padding: 10px 14px;
+    background: rgba(0,0,0,0.12);
+}
+.tgp-logs-empty { font-size: 0.78rem; color: rgba(255,255,255,0.22); margin: 0; }
+.tgp-logs-table { width: 100%; border-collapse: collapse; font-size: 0.76rem; }
+.tgp-logs-table th {
+    color: rgba(255,255,255,0.28);
+    font-weight: 600;
+    text-align: left;
+    padding: 0 10px 5px 0;
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+.tgp-logs-table td { color: rgba(255,255,255,0.6); padding: 4px 10px 4px 0; border-top: 1px solid rgba(255,255,255,0.04); }
+.tgp-logs-table tr:first-child td { border-top: none; }
+
+/* ─── Add exercise search ─────────────────────────────────── */
+.tgp-add-exercise { position: relative; margin-top: 4px; }
+.tgp-ex-input-wrap {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255,255,255,0.04);
+    border: 1px dashed rgba(255,255,255,0.12);
+    border-radius: 10px;
+    padding: 9px 14px;
+    transition: border-color 0.15s;
+}
+.tgp-ex-input-wrap:focus-within { border-color: rgba(129,140,248,0.4); }
+.tgp-ex-input-icon { color: rgba(255,255,255,0.3); flex-shrink: 0; }
+.tgp-ex-input {
+    flex: 1;
+    background: none;
+    border: none;
+    outline: none;
+    color: #f0f0f0;
+    font-size: 0.85rem;
+}
+.tgp-ex-input::placeholder { color: rgba(255,255,255,0.25); }
+.tgp-ex-dropdown {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: calc(100% + 4px);
+    background: #1a1a1a;
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 10px;
+    overflow: hidden;
+    max-height: 220px;
+    overflow-y: auto;
+    z-index: 50;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+}
+.tgp-ex-dropdown-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 9px 14px;
+    cursor: pointer;
+    font-size: 0.83rem;
+    color: rgba(255,255,255,0.7);
+    transition: background 0.1s;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+}
+.tgp-ex-dropdown-item:last-child { border-bottom: none; }
+.tgp-ex-dropdown-item:hover { background: rgba(255,255,255,0.06); color: #f0f0f0; }
+.tgp-ex-dropdown-custom { color: #818cf8; }
+.tgp-ex-dropdown-name { font-weight: 500; }
+.tgp-ex-dropdown-muscles { font-size: 0.72rem; color: rgba(255,255,255,0.3); }
+.tgp-ex-dropdown-empty { padding: 12px 14px; font-size: 0.8rem; color: rgba(255,255,255,0.25); }
+
+/* ─── Modal ───────────────────────────────────────────────── */
+.tgp-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+}
+.tgp-modal {
+    background: #1a1a1a;
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 14px;
+    padding: 24px;
+    width: 320px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+.tgp-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+.tgp-modal-header h3 { margin: 0; font-size: 1rem; color: #f0f0f0; }
+.tgp-modal-header button {
+    background: none;
+    border: none;
+    color: rgba(255,255,255,0.4);
+    cursor: pointer;
+    padding: 2px;
+}
+.tgp-modal-header button:hover { color: #f0f0f0; }
+.tgp-modal h3 { margin: 0; font-size: 1rem; color: #f0f0f0; }
+.tgp-modal-hint { margin: 0; font-size: 0.8rem; color: rgba(255,255,255,0.35); }
+.tgp-tpl-loading { display: flex; justify-content: center; padding: 16px; }
+.tgp-tpl-empty { font-size: 0.8rem; color: rgba(255,255,255,0.25); text-align: center; padding: 12px; }
+.tgp-tpl-list { display: flex; flex-direction: column; gap: 4px; max-height: 200px; overflow-y: auto; }
+.tgp-tpl-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 9px 12px;
+    background: rgba(255,255,255,0.04);
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.83rem;
+    color: rgba(255,255,255,0.7);
+    transition: background 0.15s;
+}
+.tgp-tpl-item:hover { background: rgba(255,255,255,0.08); color: #f0f0f0; }
+.tgp-tpl-date { font-size: 0.72rem; color: rgba(255,255,255,0.3); }
+.tgp-modal-input {
+    width: 100%;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 8px;
+    color: #f0f0f0;
+    font-size: 0.9rem;
+    padding: 9px 12px;
+    outline: none;
+    box-sizing: border-box;
+}
+.tgp-modal-input:focus { border-color: rgba(129,140,248,0.5); }
+.tgp-modal-actions { display: flex; gap: 8px; justify-content: flex-end; }
+.tgp-modal-cancel {
+    padding: 7px 14px;
+    background: none;
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 8px;
+    color: rgba(255,255,255,0.5);
+    font-size: 0.83rem;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+.tgp-modal-cancel:hover { border-color: rgba(255,255,255,0.25); color: #f0f0f0; }
+.tgp-modal-create {
+    padding: 7px 16px;
+    background: #818cf8;
+    border: none;
+    border-radius: 8px;
+    color: #fff;
+    font-size: 0.83rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.15s;
+}
+.tgp-modal-create:disabled { opacity: 0.5; cursor: not-allowed; }
+.tgp-modal-create:hover:not(:disabled) { opacity: 0.85; }
+
+/* ─── Spinner ─────────────────────────────────────────────── */
+@keyframes tgp-spin { to { transform: rotate(360deg); } }
+.tgp-spin { animation: tgp-spin 0.8s linear infinite; }

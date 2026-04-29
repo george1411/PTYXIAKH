@@ -203,13 +203,12 @@ export const getTrainerDashboard = async (req, res, next) => {
 
         // Today's schedule events — match by date column OR by day name
         const today = new Date().toISOString().split('T')[0];
-        const todayDayName = new Date().toLocaleDateString('en-US', { weekday: 'long' });
         const todayEvents = await sequelize.query(
             `SELECT * FROM ScheduleEvents
              WHERE userId = :userId
-               AND (date = :today OR day = :dayName)
+               AND date = :today
              ORDER BY startTime ASC`,
-            { replacements: { userId, today, dayName: todayDayName }, type: QueryTypes.SELECT }
+            { replacements: { userId, today }, type: QueryTypes.SELECT }
         );
 
         // Profile completion
