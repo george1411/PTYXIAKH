@@ -383,7 +383,7 @@ const CustomerMessages = ({ user, targetTrainer }) => {
                     note: painNote,
                 }, { withCredentials: true });
             }
-            setPainSent(true);
+            closePainModal();
         } catch (e) { console.error(e); }
         finally { setSubmittingPain(false); }
     };
@@ -589,13 +589,14 @@ const CustomerMessages = ({ user, targetTrainer }) => {
                                                         if (exs.length === 0) return <p className="cm-prog-no-ex">Rest day — no exercises</p>;
                                                         return exs.map((ex, idx) => {
                                                             const key = `${gProgDay}|${idx}`;
-                                                            const myLog = getMyLastLog(gProgDay, ex.name);
+                                                            const exName = ex.exerciseName || ex.name || 'Unnamed exercise';
+                                                            const myLog = getMyLastLog(gProgDay, exName);
                                                             const isLogging = logOpen === key;
                                                             return (
                                                                 <div key={idx} className="cm-prog-ex-card">
                                                                     <div className="cm-prog-ex-row">
                                                                         <div className="cm-prog-ex-info">
-                                                                            <span className="cm-prog-ex-name">{ex.name || 'Unnamed exercise'}</span>
+                                                                            <span className="cm-prog-ex-name">{exName}</span>
                                                                             <span className="cm-prog-ex-prescription">{ex.sets} × {ex.reps}</span>
                                                                         </div>
                                                                         <div className="cm-prog-ex-right">
@@ -624,7 +625,7 @@ const CustomerMessages = ({ user, targetTrainer }) => {
                                                                             <button
                                                                                 className="cm-prog-log-submit"
                                                                                 disabled={submittingLog}
-                                                                                onClick={() => handleLogExercise(activeGroup.id, selectedGProg.id, gProgDay, ex.name)}
+                                                                                onClick={() => handleLogExercise(activeGroup.id, selectedGProg.id, gProgDay, exName)}
                                                                             >
                                                                                 {submittingLog ? '…' : '✓'}
                                                                             </button>
@@ -750,7 +751,6 @@ const CustomerMessages = ({ user, targetTrainer }) => {
                                 {showPlusMenu && (
                                     <div className="cm-plus-menu">
                                         <button className="cm-plus-item" onClick={() => { setShowPlusMenu(false); setShowPainModal(true); }}>
-                                            <Heart size={14} className="cm-plus-item-icon pain" />
                                             Report pain
                                         </button>
                                     </div>
@@ -773,27 +773,11 @@ const CustomerMessages = ({ user, targetTrainer }) => {
                         {showPainModal && (
                             <div className="cm-pain-overlay" onClick={closePainModal}>
                                 <div className="cm-pain-modal" onClick={e => e.stopPropagation()}>
-                                    {painSent ? (
-                                        /* ── Success screen ── */
-                                        <div className="cm-pain-sent">
-                                            <div className="cm-pain-sent-icon">
-                                                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#4ade80" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-                                            </div>
-                                            <div className="cm-pain-sent-title">Trainer notified</div>
-                                            <div className="cm-pain-sent-sub">
-                                                Reported {painZones.length} zone{painZones.length > 1 ? 's' : ''}: {painZones.map(z => z.label).join(', ')}.
-                                            </div>
-                                            <button className="cm-pain-sent-done" onClick={closePainModal}>Done</button>
-                                        </div>
-                                    ) : (
-                                        <>
+                                    <>
+
                                             {/* Header */}
                                             <div className="cm-pain-top">
-                                                <div>
-                                                    <span className="cm-pain-label">REPORT PAIN</span>
-                                                    <h2 className="cm-pain-title">Where does it hurt?</h2>
-                                                    <p className="cm-pain-sub">Tap zones · your trainer will be notified</p>
-                                                </div>
+                                                <h2 className="cm-pain-title">Report Your Pain</h2>
                                                 <button className="cm-pain-close" onClick={closePainModal}><X size={14} /></button>
                                             </div>
 
@@ -824,9 +808,7 @@ const CustomerMessages = ({ user, targetTrainer }) => {
                                                 </div>
                                                 <div className="cm-pain-right">
                                                     <span className="cm-pain-section-label">SELECTED</span>
-                                                    {painZones.length === 0 ? (
-                                                        <div className="cm-pain-selected-zone placeholder">Tap a zone on the body</div>
-                                                    ) : (
+                                                    {painZones.length === 0 ? null : (
                                                         <div className="cm-pain-zone-list">
                                                             {painZones.map(z => {
                                                                 const meta = SEV_META[z.sev];
@@ -853,7 +835,7 @@ const CustomerMessages = ({ user, targetTrainer }) => {
                                                     )}
                                                     <textarea
                                                         className="cm-pain-note"
-                                                        placeholder="Add a note (optional)…"
+                                                        placeholder="Add a note"
                                                         value={painNote}
                                                         onChange={e => setPainNote(e.target.value)}
                                                         rows={2}
@@ -873,8 +855,7 @@ const CustomerMessages = ({ user, targetTrainer }) => {
                                                     {submittingPain ? <Loader2 className="cm-spin" size={14} /> : 'Notify Trainer →'}
                                                 </button>
                                             </div>
-                                        </>
-                                    )}
+                                    </>
                                 </div>
                             </div>
                         )}

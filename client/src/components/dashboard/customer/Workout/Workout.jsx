@@ -3,7 +3,173 @@ import { X, Info, ChevronDown, ChevronUp, ChevronLeft, ChevronRight, CheckCircle
 import axios from 'axios';
 import './Workout.css';
 
+const G_DAYS = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+const G_SHORT = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+
+// ─── Group Workout Tab ────────────────────────────────────────
+const GroupWorkout = () => {
+    const [groups,        setGroups]        = useState([]);
+    const [selGroup,      setSelGroup]      = useState(null);
+    const [programs,      setPrograms]      = useState([]);
+    const [selProg,       setSelProg]       = useState(null);
+    const [day,           setDay]           = useState('Monday');
+    const [logs,          setLogs]          = useState([]);
+    const [loading,       setLoading]       = useState(true);
+    const [logOpen,       setLogOpen]       = useState(null);
+    const [logForm,       setLogForm]       = useState({ sets: '', reps: '', weight: '' });
+    const [submitting,    setSubmitting]    = useState(false);
+
+    // fetch groups
+    useEffect(() => {
+        axios.get('/api/v1/groups', { withCredentials: true })
+            .then(res => {
+                const g = res.data.data || [];
+                setGroups(g);
+                if (g.length > 0) setSelGroup(g[0]);
+            })
+            .catch(() => {})
+            .finally(() => setLoading(false));
+    }, []);
+
+    // fetch programs for selected group
+    useEffect(() => {
+        if (!selGroup) return;
+        setPrograms([]); setSelProg(null);
+        axios.get(`/api/v1/groups/${selGroup.id}/programs`, { withCredentials: true })
+            .then(res => {
+                const p = res.data.data || [];
+                setPrograms(p);
+                if (p.length > 0) setSelProg(p[0]);
+            })
+            .catch(() => {});
+    }, [selGroup]);
+
+    // fetch my logs for selected program
+    useEffect(() => {
+        if (!selGroup || !selProg) return;
+        axios.get(`/api/v1/groups/${selGroup.id}/programs/${selProg.id}/logs`, { withCredentials: true })
+            .then(res => setLogs(res.data.data || []))
+            .catch(() => {});
+    }, [selGroup, selProg]);
+
+    const getMyLog = (dayLabel, exName) =>
+        logs.find(l => l.dayLabel === dayLabel && l.exerciseName === exName) || null;
+
+    const handleLog = async (exName) => {
+        setSubmitting(true);
+        try {
+            await axios.post(`/api/v1/groups/${selGroup.id}/programs/${selProg.id}/log`, {
+                dayLabel: day,
+                exerciseName: exName,
+                setsCompleted: logForm.sets || null,
+                repsCompleted: logForm.reps || null,
+                weight: logForm.weight || null,
+            }, { withCredentials: true });
+            const res = await axios.get(`/api/v1/groups/${selGroup.id}/programs/${selProg.id}/logs`, { withCredentials: true });
+            setLogs(res.data.data || []);
+            setLogOpen(null);
+            setLogForm({ sets: '', reps: '', weight: '' });
+        } catch { /* silent */ } finally { setSubmitting(false); }
+    };
+
+    if (loading) return <div className="gw-empty">Loading…</div>;
+    if (groups.length === 0) return <div className="gw-empty">You are not in any group yet.</div>;
+    if (programs.length === 0 && selGroup) return <div className="gw-empty">No program assigned to <strong>{selGroup.name}</strong> yet.</div>;
+
+    const progData = (() => {
+        if (!selProg?.programData) return [];
+        try {
+            const p = typeof selProg.programData === 'string' ? JSON.parse(selProg.programData) : selProg.programData;
+            return Array.isArray(p) ? p : [];
+        } catch { return []; }
+    })();
+    const dayData  = progData.find(d => d.day === day) || { exercises: [] };
+    const exercises = dayData.exercises || [];
+
+    return (
+        <div className="gw-container">
+            {/* Group selector (if multiple groups) */}
+            {groups.length > 1 && (
+                <div className="gw-group-tabs">
+                    {groups.map(g => (
+                        <button key={g.id} className={`gw-group-tab ${selGroup?.id === g.id ? 'active' : ''}`} onClick={() => setSelGroup(g)}>
+                            {g.name}
+                        </button>
+                    ))}
+                </div>
+            )}
+
+            {/* Program selector (if multiple programs) */}
+            {programs.length > 1 && (
+                <div className="gw-prog-tabs">
+                    {programs.map(p => (
+                        <button key={p.id} className={`gw-prog-tab ${selProg?.id === p.id ? 'active' : ''}`} onClick={() => setSelProg(p)}>
+                            {p.name}
+                        </button>
+                    ))}
+                </div>
+            )}
+
+            {/* Program name */}
+            {selProg && (
+                <div className="gw-prog-name">{selGroup?.name} · {selProg.name}</div>
+            )}
+
+            {/* Day tabs */}
+            <div className="gw-day-tabs">
+                {G_DAYS.map((d, i) => {
+                    const pd = progData.find(x => x.day === d);
+                    const hasEx = pd && pd.exercises && pd.exercises.length > 0;
+                    return (
+                        <button key={d} className={`gw-day-tab ${day === d ? 'active' : ''}`} onClick={() => setDay(d)}>
+                            {G_SHORT[i]}{hasEx && <span className="gw-day-dot" />}
+                        </button>
+                    );
+                })}
+            </div>
+
+            {/* Exercise list */}
+            <div className="gw-exercise-list">
+                {exercises.length === 0 ? (
+                    <div className="gw-empty">Rest day — no exercises</div>
+                ) : exercises.map((ex, idx) => {
+                    const exName = ex.exerciseName || ex.name || 'Exercise';
+                    const myLog  = getMyLog(day, exName);
+                    const isOpen = logOpen === idx;
+                    return (
+                        <div key={idx} className="gw-ex-card">
+                            <div className="gw-ex-row">
+                                <div className="gw-ex-info">
+                                    <span className="gw-ex-name">{exName}</span>
+                                    <span className="gw-ex-prescription">{ex.sets} × {ex.reps}{ex.weight ? ` @ ${ex.weight}kg` : ''}</span>
+                                </div>
+                                <div className="gw-ex-right">
+                                    {myLog && (
+                                        <span className="gw-my-log">{myLog.setsCompleted}×{myLog.repsCompleted} {myLog.weight ? `@ ${myLog.weight}kg` : ''}</span>
+                                    )}
+                                    <button className="gw-log-btn" onClick={() => { setLogOpen(isOpen ? null : idx); setLogForm({ sets: '', reps: '', weight: '' }); }}>
+                                        {isOpen ? '✕' : 'Log'}
+                                    </button>
+                                </div>
+                            </div>
+                            {isOpen && (
+                                <div className="gw-log-form">
+                                    <input className="gw-log-input" type="number" placeholder="Sets" value={logForm.sets} onChange={e => setLogForm(f => ({ ...f, sets: e.target.value }))} />
+                                    <input className="gw-log-input" type="number" placeholder="Reps" value={logForm.reps} onChange={e => setLogForm(f => ({ ...f, reps: e.target.value }))} />
+                                    <input className="gw-log-input" type="number" placeholder="kg" value={logForm.weight} onChange={e => setLogForm(f => ({ ...f, weight: e.target.value }))} />
+                                    <button className="gw-log-submit" disabled={submitting} onClick={() => handleLog(exName)}>{submitting ? '…' : '✓'}</button>
+                                </div>
+                            )}
+                        </div>
+                    );
+                })}
+            </div>
+        </div>
+    );
+};
+
 const Workout = () => {
+    const [activeTab, setActiveTab] = useState('my');
     const [workout, setWorkout] = useState(null);
     const [loading, setLoading] = useState(true);
     const [selectedExercise, setSelectedExercise] = useState(null);
@@ -165,9 +331,26 @@ const Workout = () => {
 
 
 
+    const tabBar = (
+        <div className="workout-tab-bar">
+            <button className={`workout-tab-btn ${activeTab === 'my' ? 'active' : ''}`} onClick={() => setActiveTab('my')}>My Program</button>
+            <button className={`workout-tab-btn ${activeTab === 'group' ? 'active' : ''}`} onClick={() => setActiveTab('group')}>Group</button>
+        </div>
+    );
+
+    if (activeTab === 'group') {
+        return (
+            <div className="workout-container max-w-4xl mx-auto w-full p-4">
+                {tabBar}
+                <GroupWorkout />
+            </div>
+        );
+    }
+
     if (loading) {
         return (
             <div className="workout-container max-w-4xl mx-auto w-full p-4">
+                {tabBar}
                 <div className="workout-day-nav">
                     <button className="workout-day-nav-btn" onClick={() => setDayOffset(prev => prev - 1)}><ChevronLeft size={18} /></button>
                     <span className="workout-day-nav-label">{viewedDayLabel}</span>
@@ -182,6 +365,7 @@ const Workout = () => {
     if (!workout) {
         return (
             <div className="workout-container max-w-4xl mx-auto w-full p-4">
+                {tabBar}
                 <div className="workout-day-nav">
                     <button className="workout-day-nav-btn" onClick={() => setDayOffset(prev => prev - 1)}><ChevronLeft size={18} /></button>
                     <span className="workout-day-nav-label">{viewedDayLabel}</span>
@@ -203,6 +387,7 @@ const Workout = () => {
 
     return (
         <div className="workout-container max-w-4xl mx-auto w-full p-4">
+            {tabBar}
 
             {/* Day Navigation */}
             <div className="workout-day-nav">
