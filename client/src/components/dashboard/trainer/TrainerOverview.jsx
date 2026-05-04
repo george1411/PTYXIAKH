@@ -101,7 +101,7 @@ const TrainerOverview = ({ user, onNavigate }) => {
         ? (weeklyData.reduce((s, d) => s + d.workouts, 0) / weeklyData.length).toFixed(1)
         : '0.0';
 
-    const chartTooltipStyle = { background: '#111111', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 8, color: '#f0f0f0', fontSize: 12 };
+    const chartTooltipStyle = { background: '#000000', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 8, color: '#f0f0f0', fontSize: 12 };
 
     const ProteinRing = ({ current, target }) => {
         const pct = Math.min(current / (target || 1), 1);
@@ -198,7 +198,7 @@ const TrainerOverview = ({ user, onNavigate }) => {
             {/* Main Grid — Today's Schedule + Recent Activity + Clients */}
             <div className="to-main-grid">
                 {/* Today's Schedule */}
-                <div style={{ background: '#111111', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 16, overflow: 'hidden' }}>
+                <div style={{ background: '#000000', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 16, overflow: 'hidden' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 18px 14px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
                         <div>
                             <div style={{ fontSize: 15, fontWeight: 800, color: '#f0f0f0' }}>Today's Schedule</div>
@@ -252,7 +252,7 @@ const TrainerOverview = ({ user, onNavigate }) => {
                 </div>
 
                 {/* Recent Messages */}
-                <div style={{ background: '#111111', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 16, overflow: 'hidden' }}>
+                <div style={{ background: '#000000', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 16, overflow: 'hidden' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 18px 14px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
                         <div>
                             <div style={{ fontSize: 15, fontWeight: 800, color: '#f0f0f0' }}>Recent Messages</div>
@@ -302,7 +302,7 @@ const TrainerOverview = ({ user, onNavigate }) => {
                         <button className="to-card-link" onClick={() => onNavigate('clients')}>View All →</button>
                     </div>
                     {clientStats.length > 0 ? (
-                        <div className="to-ct-wrap" style={{ background: '#111111', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 14, overflow: 'hidden', padding: 0 }}>
+                        <div className="to-ct-wrap" style={{ background: '#000000', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 14, overflow: 'hidden', padding: 0 }}>
                             <table className="to-ct-table">
                                 <thead>
                                     <tr>

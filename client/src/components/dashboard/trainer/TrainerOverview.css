@@ -2,6 +2,8 @@
 .to-container {
     max-width: 1100px;
     margin: 0 auto;
+    border-radius: 16px;
+    padding: 32px;
 
     --to-dark:     var(--bg);
     --to-accent:   var(--accent);
@@ -9,7 +11,7 @@
     --to-amber:    var(--accent);
     --to-cream:    var(--bg-dark-alt);
     --to-border:   var(--border);
-    --to-card-bg:  var(--bg-card);
+    --to-card-bg:  #000000;
     --to-text:     var(--text);
     --to-muted:    var(--text-secondary);
     --to-light-bg: rgba(255,255,255,0.03);

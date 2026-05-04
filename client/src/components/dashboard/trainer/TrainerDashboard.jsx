@@ -132,7 +132,7 @@ const TrainerDashboard = ({ user, onLogout, onUserUpdate }) => {
     };
 
     return (
-        <div className="flex min-h-screen font-sans overflow-hidden" style={{ background: '#000000', color: '#f0f0f0' }}>
+        <div className="flex min-h-screen font-sans overflow-hidden" style={{ background: 'radial-gradient(ellipse at center, #0f0f14 0%, #000000 100%)', color: '#f0f0f0' }}>
             {/* Sidebar */}
             <div className="hidden lg:flex flex-col p-2 h-screen sticky top-0 shrink-0">
                 <TrainerSidebar
@@ -144,9 +144,9 @@ const TrainerDashboard = ({ user, onLogout, onUserUpdate }) => {
             </div>
 
             {/* Main Content */}
-            <div className="flex-1 flex flex-col h-screen overflow-hidden" style={{ background: '#000000' }}>
+            <div className="flex-1 flex flex-col h-screen overflow-hidden" style={{ background: 'transparent' }}>
                 {/* Header */}
-                <header className="shrink-0" style={{ background: '#000000', borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
+                <header className="shrink-0" style={{ background: 'transparent', borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
                     <div className="h-16 flex justify-between items-center px-8">
                         <div className="flex items-center gap-1.5 text-sm">
                             <span style={{ color: '#818cf8', fontWeight: 500 }}>Dashboard</span>
@@ -173,7 +173,7 @@ const TrainerDashboard = ({ user, onLogout, onUserUpdate }) => {
                 </header>
 
                 {/* Page content */}
-                <main className="flex-1 overflow-y-auto p-6 lg:p-8 custom-scrollbar relative" style={{ background: '#000000' }}>
+                <main className="flex-1 overflow-y-auto p-6 lg:p-8 custom-scrollbar relative" style={{ background: 'transparent' }}>
                     <div className="max-w-7xl mx-auto relative z-10 h-full">
                         {activeTab === 'schedule' ? (
                             <Schedule onNavigate={setActiveTab} fullPage={true} isTrainer={true} />
