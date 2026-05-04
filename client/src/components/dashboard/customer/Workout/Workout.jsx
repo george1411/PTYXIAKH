@@ -8,43 +8,63 @@ const G_SHORT = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 
 // ─── Group Workout Tab ────────────────────────────────────────
 const GroupWorkout = () => {
-    const [groups,        setGroups]        = useState([]);
-    const [selGroup,      setSelGroup]      = useState(null);
-    const [programs,      setPrograms]      = useState([]);
-    const [selProg,       setSelProg]       = useState(null);
-    const [day,           setDay]           = useState('Monday');
-    const [logs,          setLogs]          = useState([]);
-    const [loading,       setLoading]       = useState(true);
-    const [logOpen,       setLogOpen]       = useState(null);
-    const [logForm,       setLogForm]       = useState({ sets: '', reps: '', weight: '' });
-    const [submitting,    setSubmitting]    = useState(false);
+    const todayIdx = new Date().getDay() === 0 ? 6 : new Date().getDay() - 1;
+    const [groups,       setGroups]       = useState([]);
+    const [selGroup,     setSelGroup]     = useState(null);
+    const [programs,     setPrograms]     = useState([]);
+    const [selProg,      setSelProg]      = useState(null);
+    const [dayIdx,       setDayIdx]       = useState(todayIdx);
+    const [logs,         setLogs]         = useState([]);
+    const [loading,      setLoading]      = useState(true);
+    const [selectedEx,   setSelectedEx]   = useState(null);
+    const [timerSeconds, setTimerSeconds] = useState(0);
+    const [timerRunning, setTimerRunning] = useState(false);
+    const [submitting,   setSubmitting]   = useState(false);
+    const timerRef = useRef(null);
 
-    // fetch groups
+    const day = G_DAYS[dayIdx];
+
+    useEffect(() => {
+        if (timerRunning) {
+            timerRef.current = setInterval(() => setTimerSeconds(s => s + 1), 1000);
+        } else {
+            clearInterval(timerRef.current);
+        }
+        return () => clearInterval(timerRef.current);
+    }, [timerRunning]);
+
+    const toggleTimer = () => setTimerRunning(p => !p);
+    const resetTimer  = () => { setTimerRunning(false); setTimerSeconds(0); };
+    const formatTime  = (s) => `${Math.floor(s / 60).toString().padStart(2, '0')}:${(s % 60).toString().padStart(2, '0')}`;
+
     useEffect(() => {
         axios.get('/api/v1/groups', { withCredentials: true })
-            .then(res => {
-                const g = res.data.data || [];
-                setGroups(g);
-                if (g.length > 0) setSelGroup(g[0]);
-            })
+            .then(res => { const g = res.data.data || []; setGroups(g); if (g.length > 0) setSelGroup(g[0]); })
             .catch(() => {})
             .finally(() => setLoading(false));
     }, []);
 
-    // fetch programs for selected group
     useEffect(() => {
         if (!selGroup) return;
         setPrograms([]); setSelProg(null);
         axios.get(`/api/v1/groups/${selGroup.id}/programs`, { withCredentials: true })
-            .then(res => {
+            .then(async res => {
                 const p = res.data.data || [];
                 setPrograms(p);
-                if (p.length > 0) setSelProg(p[0]);
-            })
-            .catch(() => {});
+                if (p.length > 0) {
+                    const full = await axios.get(`/api/v1/groups/${selGroup.id}/programs/${p[0].id}`, { withCredentials: true });
+                    setSelProg(full.data.data);
+                }
+            }).catch(() => {});
     }, [selGroup]);
 
-    // fetch my logs for selected program
+    const selectProgram = async (prog) => {
+        try {
+            const full = await axios.get(`/api/v1/groups/${selGroup.id}/programs/${prog.id}`, { withCredentials: true });
+            setSelProg(full.data.data);
+        } catch { /* silent */ }
+    };
+
     useEffect(() => {
         if (!selGroup || !selProg) return;
         axios.get(`/api/v1/groups/${selGroup.id}/programs/${selProg.id}/logs`, { withCredentials: true })
@@ -52,24 +72,41 @@ const GroupWorkout = () => {
             .catch(() => {});
     }, [selGroup, selProg]);
 
-    const getMyLog = (dayLabel, exName) =>
-        logs.find(l => l.dayLabel === dayLabel && l.exerciseName === exName) || null;
+    const getMyLog = (exName) => logs.find(l => l.dayLabel === day && l.exerciseName === exName) || null;
 
-    const handleLog = async (exName) => {
+    const openModal = (ex) => {
+        const numSets = parseInt(ex.sets) || 3;
+        const setsArr = Array.from({ length: numSets }, (_, i) => ({
+            id: i + 1,
+            kg: '',
+            reps: '',
+            targetKg: ex.weight || null,
+            targetReps: ex.reps || null,
+        }));
+        setSelectedEx({ exName: ex.exerciseName || ex.name || 'Exercise', sets: setsArr });
+        resetTimer();
+    };
+
+    const closeModal = () => { setSelectedEx(null); resetTimer(); };
+
+    const handleSetChange = (setId, field, value) => {
+        setSelectedEx(prev => ({ ...prev, sets: prev.sets.map(s => s.id === setId ? { ...s, [field]: value } : s) }));
+    };
+
+    const saveExercise = async () => {
+        if (!selGroup || !selProg || !selectedEx) return;
         setSubmitting(true);
         try {
             await axios.post(`/api/v1/groups/${selGroup.id}/programs/${selProg.id}/log`, {
                 dayLabel: day,
-                exerciseName: exName,
-                setsCompleted: logForm.sets || null,
-                repsCompleted: logForm.reps || null,
-                weight: logForm.weight || null,
+                exerciseName: selectedEx.exName,
+                setsCompleted: selectedEx.sets.length,
+                repsCompleted: selectedEx.sets[0]?.reps || null,
+                weight: selectedEx.sets[0]?.kg || null,
             }, { withCredentials: true });
             const res = await axios.get(`/api/v1/groups/${selGroup.id}/programs/${selProg.id}/logs`, { withCredentials: true });
             setLogs(res.data.data || []);
-            setLogOpen(null);
-            setLogForm({ sets: '', reps: '', weight: '' });
-        } catch { /* silent */ } finally { setSubmitting(false); }
+        } catch { /* silent */ } finally { setSubmitting(false); closeModal(); }
     };
 
     if (loading) return <div className="gw-empty">Loading…</div>;
@@ -83,87 +120,123 @@ const GroupWorkout = () => {
             return Array.isArray(p) ? p : [];
         } catch { return []; }
     })();
-    const dayData  = progData.find(d => d.day === day) || { exercises: [] };
-    const exercises = dayData.exercises || [];
+    const exercises = progData.find(d => d.day === day)?.exercises || [];
 
     return (
         <div className="gw-container">
-            {/* Group selector (if multiple groups) */}
             {groups.length > 1 && (
                 <div className="gw-group-tabs">
                     {groups.map(g => (
-                        <button key={g.id} className={`gw-group-tab ${selGroup?.id === g.id ? 'active' : ''}`} onClick={() => setSelGroup(g)}>
-                            {g.name}
-                        </button>
+                        <button key={g.id} className={`gw-group-tab ${selGroup?.id === g.id ? 'active' : ''}`} onClick={() => setSelGroup(g)}>{g.name}</button>
                     ))}
                 </div>
             )}
-
-            {/* Program selector (if multiple programs) */}
             {programs.length > 1 && (
                 <div className="gw-prog-tabs">
                     {programs.map(p => (
-                        <button key={p.id} className={`gw-prog-tab ${selProg?.id === p.id ? 'active' : ''}`} onClick={() => setSelProg(p)}>
-                            {p.name}
-                        </button>
+                        <button key={p.id} className={`gw-prog-tab ${selProg?.id === p.id ? 'active' : ''}`} onClick={() => selectProgram(p)}>{p.name}</button>
                     ))}
                 </div>
             )}
+            {selProg && <div className="gw-prog-name">{selGroup?.name} · {selProg.name}</div>}
 
-            {/* Program name */}
-            {selProg && (
-                <div className="gw-prog-name">{selGroup?.name} · {selProg.name}</div>
-            )}
-
-            {/* Day tabs */}
-            <div className="gw-day-tabs">
-                {G_DAYS.map((d, i) => {
-                    const pd = progData.find(x => x.day === d);
-                    const hasEx = pd && pd.exercises && pd.exercises.length > 0;
-                    return (
-                        <button key={d} className={`gw-day-tab ${day === d ? 'active' : ''}`} onClick={() => setDay(d)}>
-                            {G_SHORT[i]}{hasEx && <span className="gw-day-dot" />}
-                        </button>
-                    );
-                })}
+            {/* Day navigation — same as My Program */}
+            <div className="workout-day-nav">
+                <button className="workout-day-nav-btn" onClick={() => setDayIdx(i => (i + 6) % 7)}><ChevronLeft size={18} /></button>
+                <span className="workout-day-nav-label">{day}</span>
+                <button className="workout-day-nav-btn" onClick={() => setDayIdx(i => (i + 1) % 7)}><ChevronRight size={18} /></button>
             </div>
 
-            {/* Exercise list */}
-            <div className="gw-exercise-list">
+            {/* Header */}
+            <div className="workout-header-row">
+                <div className="workout-header-title"><span>Exercise List</span></div>
+                <div className="workout-header-info">{exercises.length} Exercises <span className="mx-2">|</span> {selProg?.name}</div>
+            </div>
+
+            {/* Exercise rows — same style as My Program */}
+            <div className="exercise-list custom-scrollbar">
                 {exercises.length === 0 ? (
                     <div className="gw-empty">Rest day — no exercises</div>
                 ) : exercises.map((ex, idx) => {
                     const exName = ex.exerciseName || ex.name || 'Exercise';
-                    const myLog  = getMyLog(day, exName);
-                    const isOpen = logOpen === idx;
+                    const myLog  = getMyLog(exName);
                     return (
-                        <div key={idx} className="gw-ex-card">
-                            <div className="gw-ex-row">
-                                <div className="gw-ex-info">
-                                    <span className="gw-ex-name">{exName}</span>
-                                    <span className="gw-ex-prescription">{ex.sets} × {ex.reps}{ex.weight ? ` @ ${ex.weight}kg` : ''}</span>
-                                </div>
-                                <div className="gw-ex-right">
-                                    {myLog && (
-                                        <span className="gw-my-log">{myLog.setsCompleted}×{myLog.repsCompleted} {myLog.weight ? `@ ${myLog.weight}kg` : ''}</span>
-                                    )}
-                                    <button className="gw-log-btn" onClick={() => { setLogOpen(isOpen ? null : idx); setLogForm({ sets: '', reps: '', weight: '' }); }}>
-                                        {isOpen ? '✕' : 'Log'}
-                                    </button>
-                                </div>
+                        <div key={idx} className="exercise-row" onClick={() => openModal(ex)}>
+                            <div className="exercise-details">
+                                <h3 className="exercise-name">{exName}</h3>
+                                <span className="exercise-meta">{ex.sets} Sets</span>
                             </div>
-                            {isOpen && (
-                                <div className="gw-log-form">
-                                    <input className="gw-log-input" type="number" placeholder="Sets" value={logForm.sets} onChange={e => setLogForm(f => ({ ...f, sets: e.target.value }))} />
-                                    <input className="gw-log-input" type="number" placeholder="Reps" value={logForm.reps} onChange={e => setLogForm(f => ({ ...f, reps: e.target.value }))} />
-                                    <input className="gw-log-input" type="number" placeholder="kg" value={logForm.weight} onChange={e => setLogForm(f => ({ ...f, weight: e.target.value }))} />
-                                    <button className="gw-log-submit" disabled={submitting} onClick={() => handleLog(exName)}>{submitting ? '…' : '✓'}</button>
-                                </div>
-                            )}
+                            <div className="sets-preview">
+                                {myLog ? (
+                                    <div className="set-pill-preview completed">
+                                        <span>Logged</span>
+                                        <span>{myLog.setsCompleted}×{myLog.repsCompleted}{myLog.weight ? ` @ ${myLog.weight}kg` : ''}</span>
+                                    </div>
+                                ) : (
+                                    <button className="btn-log-exercise" onClick={e => { e.stopPropagation(); openModal(ex); }}>Log</button>
+                                )}
+                            </div>
                         </div>
                     );
                 })}
             </div>
+
+            {/* Modal — same as My Program */}
+            {selectedEx && (
+                <div className="modal-overlay" onClick={closeModal}>
+                    <div className="modal-content" onClick={e => e.stopPropagation()}>
+                        <div className="modal-header">
+                            <div className="modal-title-group">
+                                <h2>{selectedEx.exName}</h2>
+                                <span className="modal-subtitle">{selProg?.name}</span>
+                            </div>
+                            <X className="modal-close-btn w-6 h-6" onClick={closeModal} />
+                        </div>
+                        <div className="modal-body custom-scrollbar">
+                            {(selectedEx.sets[0]?.targetReps || selectedEx.sets[0]?.targetKg) && (
+                                <div className="workout-trainer-target">
+                                    <span className="workout-trainer-target-label">Trainer target:</span>
+                                    <span className="workout-trainer-target-value">
+                                        {selectedEx.sets.length} sets
+                                        {selectedEx.sets[0]?.targetReps ? ` × ${selectedEx.sets[0].targetReps} reps` : ''}
+                                        {selectedEx.sets[0]?.targetKg ? ` @ ${selectedEx.sets[0].targetKg} kg` : ''}
+                                    </span>
+                                </div>
+                            )}
+                            <div className="sets-header"><span>#</span><span>KG</span><span>REPS</span></div>
+                            {selectedEx.sets.map(set => (
+                                <div key={set.id} className="set-row">
+                                    <div className="set-number">{set.id}</div>
+                                    <input type="number" className="workout-input" value={set.kg}
+                                        onChange={e => handleSetChange(set.id, 'kg', e.target.value)}
+                                        placeholder={set.targetKg ? String(set.targetKg) : '-'} />
+                                    <input type="number" className="workout-input" value={set.reps}
+                                        onChange={e => handleSetChange(set.id, 'reps', e.target.value)}
+                                        placeholder={set.targetReps ? String(set.targetReps) : '-'} />
+                                </div>
+                            ))}
+                            <div className="rest-timer-section">
+                                <div className="rest-timer-label"><Timer className="w-4 h-4" /><span>REST TIMER</span></div>
+                                <div className="rest-timer-display">
+                                    <span className={`rest-timer-time ${timerRunning ? 'active' : ''}`}>{formatTime(timerSeconds)}</span>
+                                    <div className="rest-timer-controls">
+                                        <button className="rest-timer-btn" onClick={toggleTimer}>
+                                            {timerRunning ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5" />}
+                                        </button>
+                                        <button className="rest-timer-btn reset" onClick={resetTimer}><RotateCcw className="w-4 h-4" /></button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="modal-footer">
+                            <button className="btn-save-primary" disabled={submitting} onClick={saveExercise}>
+                                <CheckCircle className="w-5 h-5" />
+                                {submitting ? 'Saving…' : 'Save & Close'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

@@ -27,6 +27,7 @@ import nutritionRouter from './routes/common/nutrition.routes.js';
 import inviteRouter from './routes/common/invite.routes.js';
 import fitbitRouter from './routes/fitbit.routes.js';
 import groupsRouter from './routes/common/groups.routes.js';
+import { startWeeklyReset } from './jobs/weeklyReset.js';
 
 const app = express();
 
@@ -86,6 +87,8 @@ const startServer = async () => {
         app.listen(PORT, () => {
             console.log(`Server running on http://localhost:${PORT}`);
         });
+
+        startWeeklyReset();
     } catch (error) {
         console.error("Failed to start the server:", error);
         process.exit(1);

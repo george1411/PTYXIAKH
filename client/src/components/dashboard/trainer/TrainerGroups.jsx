@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import axios from 'axios';
-import { Plus, X, Search, Send, Loader2, Users } from 'lucide-react';
+import { Plus, X, Search, Send, Loader2, Users, ExternalLink } from 'lucide-react';
 import TrainerGroupPrograms from './TrainerGroupPrograms';
 import './TrainerGroups.css';
 
@@ -124,7 +124,7 @@ const GroupChatPanel = ({ group, currentUserId }) => {
 };
 
 // ─── Members Panel ────────────────────────────────────────────
-const MembersPanel = ({ group, allClients, onGroupUpdated }) => {
+const MembersPanel = ({ group, allClients, onGroupUpdated, onNavigateToClient }) => {
     const [members, setMembers]     = useState(group.members || []);
     const [search, setSearch]       = useState('');
     const [saving, setSaving]       = useState(false);
@@ -161,6 +161,13 @@ const MembersPanel = ({ group, allClients, onGroupUpdated }) => {
                             <div key={m.id} className="tg-member-row">
                                 <div className="tg-member-avatar">{m.name.charAt(0).toUpperCase()}</div>
                                 <span className="tg-member-name">{m.name}</span>
+                                <button
+                                    className="tg-member-goto"
+                                    onClick={() => onNavigateToClient && onNavigateToClient(m.id)}
+                                    title="Open in Clients tab"
+                                >
+                                    <ExternalLink size={13} />
+                                </button>
                                 <button className="tg-member-remove" onClick={() => removeMember(m.id)} title="Remove">
                                     <X size={13} />
                                 </button>
@@ -298,7 +305,7 @@ const CreateGroupModal = ({ allClients, onCreated, onClose }) => {
 };
 
 // ─── Main TrainerGroups Component ─────────────────────────────
-const TrainerGroups = ({ user }) => {
+const TrainerGroups = ({ user, onNavigate, onNavigateToClient }) => {
     const [groups, setGroups]               = useState([]);
     const [loading, setLoading]             = useState(true);
     const [selectedGroup, setSelectedGroup] = useState(null);
@@ -324,8 +331,10 @@ const TrainerGroups = ({ user }) => {
     const fetchGroups = useCallback(async () => {
         try {
             const res = await axios.get('/api/v1/groups', { withCredentials: true });
-            setGroups(res.data.data || []);
-        } catch { /* silent */ }
+            const list = res.data.data || [];
+            setGroups(list);
+            return list;
+        } catch { return []; }
     }, []);
 
     useEffect(() => {
@@ -333,7 +342,9 @@ const TrainerGroups = ({ user }) => {
         Promise.all([
             fetchGroups(),
             axios.get('/api/v1/trainer/clients', { withCredentials: true }).then(r => setAllClients(r.data.data || [])),
-        ]).finally(() => setLoading(false));
+        ]).then(([list]) => {
+            if (list?.length > 0 && !selectedGroup) selectGroup(list[0]);
+        }).finally(() => setLoading(false));
     }, [fetchGroups]);
 
     const selectGroup = async (g) => {
@@ -488,6 +499,7 @@ const TrainerGroups = ({ user }) => {
                                     fetchGroups();
                                     selectGroup(selectedGroup);
                                 }}
+                                onNavigateToClient={(id) => onNavigateToClient && onNavigateToClient(id)}
                             />
                         ) : (
                             <GroupChatPanel group={selectedGroup} currentUserId={user?.id} />

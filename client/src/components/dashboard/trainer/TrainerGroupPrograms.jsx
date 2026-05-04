@@ -56,14 +56,35 @@ const TrainerGroupPrograms = ({ groupId }) => {
     const fetchPrograms = useCallback(async () => {
         try {
             const res = await axios.get(`/api/v1/groups/${groupId}/programs`, { withCredentials: true });
-            setPrograms(res.data.data || []);
+            const list = res.data.data || [];
+            setPrograms(list);
+            return list;
+        } catch { return []; }
+    }, [groupId]);
+
+    const fetchLogs = useCallback(async (progId) => {
+        try {
+            const res = await axios.get(`/api/v1/groups/${groupId}/programs/${progId}/logs`, { withCredentials: true });
+            setLogs(res.data.data || []);
         } catch { /* silent */ }
     }, [groupId]);
 
     useEffect(() => {
         setLoading(true);
-        fetchPrograms().finally(() => setLoading(false));
+        setSelectedProg(null);
+        fetchPrograms().then(list => {
+            if (list?.length > 0) selectProgram(list[0]);
+        }).finally(() => setLoading(false));
     }, [fetchPrograms]);
+
+    // Poll logs every 8 seconds while a program is open
+    const logsPolRef = useRef(null);
+    useEffect(() => {
+        clearInterval(logsPolRef.current);
+        if (!selectedProg) return;
+        logsPolRef.current = setInterval(() => fetchLogs(selectedProg.id), 8000);
+        return () => clearInterval(logsPolRef.current);
+    }, [selectedProg?.id, fetchLogs]);
 
     const selectProgram = async (p) => {
         setSelectedProg(p);
@@ -259,30 +280,50 @@ const TrainerGroupPrograms = ({ groupId }) => {
 
     return (
         <div className="tgp-container">
-            {/* ── Left ── */}
-            <div className="tgp-left">
-                <button className="tgp-new-btn" onClick={() => setShowNew(true)}>
-                    <Plus size={14} /> New Program
-                </button>
-                {loading ? (
-                    <div className="tgp-left-loading"><Loader2 className="tgp-spin" size={18} /></div>
-                ) : programs.length === 0 ? (
-                    <p className="tgp-left-empty">No programs yet</p>
-                ) : programs.map(p => (
-                    <button
-                        key={p.id}
-                        className={`tgp-program-item ${selectedProg?.id === p.id ? 'active' : ''}`}
-                        onClick={() => selectProgram(p)}
-                    >
-                        {p.name}
-                    </button>
-                ))}
-            </div>
-
-            {/* ── Right ── */}
+            {/* ── Full width ── */}
             <div className="tgp-right">
                 {!selectedProg ? (
-                    <div className="tgp-empty"><p>Select a program or create a new one</p></div>
+                    <>
+                        {/* Empty / create-new state */}
+                        <div className="tgp-prog-header">
+                            <div className="tgp-prog-header-info">
+                                <div className="tgp-rename-wrap">
+                                    <input
+                                        className="tgp-rename-input"
+                                        placeholder="Enter program name…"
+                                        value={newName}
+                                        onChange={e => setNewName(e.target.value)}
+                                        onKeyDown={e => { if (e.key === 'Enter') handleCreate(); }}
+                                        autoFocus
+                                    />
+                                    <button
+                                        className="tgp-rename-confirm"
+                                        onClick={handleCreate}
+                                        disabled={!newName.trim() || creating}
+                                        title="Create program"
+                                    >
+                                        {creating ? <Loader2 className="tgp-spin" size={12} /> : '✓'}
+                                    </button>
+                                </div>
+                                <span style={{ color: 'rgba(255,255,255,0.3)', fontSize: '0.78rem' }}>Type a name and press Enter to create</span>
+                            </div>
+                        </div>
+                        <div className="tgp-day-tabs" style={{ pointerEvents: 'none', opacity: 0.3 }}>
+                            {DAY_ABBR.map(d => (
+                                <button key={d} className="tgp-day-tab">{d}</button>
+                            ))}
+                        </div>
+                        <div className="tgp-editor-body" style={{ pointerEvents: 'none', opacity: 0.3 }}>
+                            <div className="tgp-day-label">Monday</div>
+                            <p className="tgp-no-exercises">No exercises — add one below</p>
+                            <div className="tgp-add-exercise-wrap">
+                                <div className="tgp-ex-search-wrap">
+                                    <Plus size={14} style={{ color: 'rgba(255,255,255,0.3)' }} />
+                                    <input className="tgp-ex-search" placeholder="Type exercise name…" disabled />
+                                </div>
+                            </div>
+                        </div>
+                    </>
                 ) : (
                     <>
                         {/* Header */}
@@ -327,7 +368,7 @@ const TrainerGroupPrograms = ({ groupId }) => {
                                     {saving ? 'Saving…' : 'Save'}
                                 </button>
                                 <button className="tgp-del-btn" onClick={handleDelete} disabled={deleting}>
-                                    {deleting ? <Loader2 className="tgp-spin" size={13} /> : <Trash2 size={13} />}
+                                    {deleting ? <Loader2 className="tgp-spin" size={13} /> : <Trash2 size={16} />}
                                 </button>
                             </div>
                         </div>
@@ -387,13 +428,6 @@ const TrainerGroupPrograms = ({ groupId }) => {
                                                     </div>
                                                 </div>
                                                 <div className="tgp-exercise-actions">
-                                                    <button
-                                                        className={`tgp-logs-toggle ${expanded ? 'open' : ''}`}
-                                                        onClick={() => setExpandedEx(expanded ? null : exKey)}
-                                                        title="Member logs"
-                                                    >
-                                                        {exLogs.length} logs
-                                                    </button>
                                                     <button className="tgp-ex-del" onClick={() => removeExercise(idx)}>
                                                         <X size={13} />
                                                     </button>
@@ -543,28 +577,6 @@ const TrainerGroupPrograms = ({ groupId }) => {
                 </div>
             )}
 
-            {/* ── New program modal ── */}
-            {showNew && (
-                <div className="tgp-overlay" onClick={() => setShowNew(false)}>
-                    <div className="tgp-modal" onClick={e => e.stopPropagation()}>
-                        <h3>New Group Program</h3>
-                        <input
-                            className="tgp-modal-input"
-                            placeholder="Program name…"
-                            value={newName}
-                            onChange={e => setNewName(e.target.value)}
-                            autoFocus
-                            onKeyDown={e => { if (e.key === 'Enter') handleCreate(); if (e.key === 'Escape') setShowNew(false); }}
-                        />
-                        <div className="tgp-modal-actions">
-                            <button className="tgp-modal-cancel" onClick={() => setShowNew(false)}>Cancel</button>
-                            <button className="tgp-modal-create" onClick={handleCreate} disabled={!newName.trim() || creating}>
-                                {creating ? 'Creating…' : 'Create'}
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
         </div>
     );
 };

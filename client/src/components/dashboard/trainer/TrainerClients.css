@@ -11,7 +11,7 @@
     border: 1px solid var(--border);
     border-radius: 16px;
     overflow: hidden;
-    background: var(--bg-card);
+    background: #000;
 }
 
 /* ─── Left panel ─────────────────────────────────────────────── */
@@ -20,7 +20,7 @@
     display: flex;
     flex-direction: column;
     overflow: hidden;
-    background: var(--bg-dark);
+    background: #000;
 }
 
 .tc-search-wrap {

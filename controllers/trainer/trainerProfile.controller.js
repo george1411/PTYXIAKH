@@ -201,13 +201,15 @@ export const getTrainerDashboard = async (req, res, next) => {
             { replacements: { userId }, type: QueryTypes.SELECT }
         );
 
-        // Today's schedule events — match by date column OR by day name
+        // Today's schedule events
         const today = new Date().toISOString().split('T')[0];
         const todayEvents = await sequelize.query(
-            `SELECT * FROM ScheduleEvents
-             WHERE userId = :userId
-               AND date = :today
-             ORDER BY startTime ASC`,
+            `SELECT se.*, u.name AS clientName, g.name AS groupName
+             FROM ScheduleEvents se
+             LEFT JOIN Users u ON u.id = se.clientId
+             LEFT JOIN \`Groups\` g ON g.id = se.groupId
+             WHERE se.userId = :userId AND se.date = :today
+             ORDER BY se.startTime ASC`,
             { replacements: { userId, today }, type: QueryTypes.SELECT }
         );
 
@@ -268,17 +270,27 @@ export const getTrainerDashboard = async (req, res, next) => {
             weekStart.setDate(weekStart.getDate() - weekStart.getDay() + (weekStart.getDay() === 0 ? -6 : 1));
             const weekStartStr = weekStart.toISOString().split('T')[0];
 
-            // Workouts done this week per client (distinct days with logs)
+            // Workouts done this week per client (distinct days across WorkoutLogs + GroupProgramLogs)
             const workoutStats = await sequelize.query(
                 `SELECT
                     u.id,
                     u.name,
                     u.profileImage,
-                    COUNT(DISTINCT DATE(wl.loggedAt)) AS workoutsThisWeek,
-                    MAX(wl.loggedAt) AS lastActive
+                    COUNT(DISTINCT allLogs.logDay) AS workoutsThisWeek,
+                    GREATEST(
+                        COALESCE(MAX(wl2.loggedAt), '1970-01-01'),
+                        COALESCE((SELECT MAX(createdAt) FROM Messages WHERE senderId = u.id), '1970-01-01'),
+                        COALESCE((SELECT MAX(date) FROM DailyLogs WHERE userId = u.id), '1970-01-01'),
+                        COALESCE((SELECT MAX(date) FROM WeeklyMeasurements WHERE userId = u.id), '1970-01-01'),
+                        COALESCE((SELECT MAX(loggedAt) FROM GroupProgramLogs WHERE userId = u.id), '1970-01-01')
+                    ) AS lastActive
                  FROM Users u
-                 LEFT JOIN WorkoutLogs wl ON wl.userId = u.id
-                     AND DATE(wl.loggedAt) >= :weekStart
+                 LEFT JOIN (
+                     SELECT userId, DATE(loggedAt) AS logDay FROM WorkoutLogs WHERE DATE(loggedAt) >= :weekStart
+                     UNION
+                     SELECT userId, DATE(loggedAt) AS logDay FROM GroupProgramLogs WHERE DATE(loggedAt) >= :weekStart
+                 ) allLogs ON allLogs.userId = u.id
+                 LEFT JOIN WorkoutLogs wl2 ON wl2.userId = u.id
                  WHERE u.id IN (:ids)
                  GROUP BY u.id, u.name, u.profileImage`,
                 { replacements: { ids: clientIds, weekStart: weekStartStr }, type: QueryTypes.SELECT }
@@ -306,23 +318,27 @@ export const getTrainerDashboard = async (req, res, next) => {
             const weightMap = {};
             weightStats.forEach(w => { weightMap[w.userId] = w; });
 
-            // Today's protein consumed per client
+            // Today's protein consumed per client (sum from Meals table) + latest protein goal
             const todayStr = new Date().toISOString().split('T')[0];
             const todayNutrition = await sequelize.query(
-                `SELECT dl.userId, dl.proteinConsumed,
-                        COALESCE(dg.protein, 150) AS proteinTarget
-                 FROM DailyLogs dl
-                 LEFT JOIN DailyGoals dg ON dg.userId = dl.userId AND dg.date = dl.date
-                 WHERE dl.userId IN (:ids) AND dl.date = :today`,
+                `SELECT
+                    u.id AS userId,
+                    COALESCE((SELECT ROUND(SUM(m.protein)) FROM Meals m WHERE m.userId = u.id AND m.date = :today), 0) AS proteinConsumed,
+                    COALESCE((SELECT dg.protein FROM DailyGoals dg WHERE dg.userId = u.id ORDER BY dg.date DESC LIMIT 1), 150) AS proteinTarget
+                 FROM Users u
+                 WHERE u.id IN (:ids)`,
                 { replacements: { ids: clientIds, today: todayStr }, type: QueryTypes.SELECT }
             );
             const nutritionMap = {};
             todayNutrition.forEach(n => { nutritionMap[n.userId] = n; });
 
-            // Did each client log a workout today?
+            // Did each client log a workout today? (personal or group)
             const todayWorkouts = await sequelize.query(
-                `SELECT DISTINCT userId FROM WorkoutLogs
-                 WHERE userId IN (:ids) AND DATE(loggedAt) = :today`,
+                `SELECT DISTINCT userId FROM (
+                     SELECT userId FROM WorkoutLogs WHERE DATE(loggedAt) = :today AND userId IN (:ids)
+                     UNION
+                     SELECT userId FROM GroupProgramLogs WHERE DATE(loggedAt) = :today AND userId IN (:ids)
+                 ) combined`,
                 { replacements: { ids: clientIds, today: todayStr }, type: QueryTypes.SELECT }
             );
             const todayWorkoutSet = new Set(todayWorkouts.map(w => w.userId));
@@ -332,7 +348,7 @@ export const getTrainerDashboard = async (req, res, next) => {
                 name: r.name,
                 profileImage: r.profileImage || null,
                 workoutsThisWeek: parseInt(r.workoutsThisWeek) || 0,
-                lastActive: r.lastActive || null,
+                lastActive: (r.lastActive && new Date(r.lastActive).getFullYear() > 1970) ? r.lastActive : null,
                 weightStart: weightMap[r.id]?.weightStart || null,
                 weightCurrent: weightMap[r.id]?.weightCurrent || null,
                 proteinConsumed: nutritionMap[r.id]?.proteinConsumed || 0,

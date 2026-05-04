@@ -12,10 +12,10 @@
 .cm-sidebar {
     width: 280px;
     flex-shrink: 0;
-    border-right: 1px solid rgba(255,255,255,0.06);
+    border-right: 1px solid rgba(255,255,255,0.08);
     display: flex;
     flex-direction: column;
-    background: #0f0f0f;
+    background: #121212;
     overflow-y: auto;
 }
 
@@ -48,7 +48,7 @@
     padding: 7px 10px 7px 28px;
     background: #1a1a1a;
     border: 1px solid rgba(255,255,255,0.08);
-    border-radius: 8px;
+    border-radius: 999px;
     color: #e0e0e0;
     font-size: 0.8rem;
     outline: none;
@@ -70,12 +70,12 @@
 }
 
 .cm-sidebar-section-label {
-    padding: 10px 18px 4px;
+    padding: 12px 18px 4px;
     font-size: 0.62rem;
-    font-weight: 800;
+    font-weight: 700;
     letter-spacing: 0.1em;
     text-transform: uppercase;
-    color: rgba(255,255,255,0.2);
+    color: #555555;
     flex-shrink: 0;
 }
 
@@ -113,8 +113,9 @@
     width: 40px;
     height: 40px;
     border-radius: 50%;
-    background: linear-gradient(135deg, #2a2a2a, #444);
-    color: #e0e0e0;
+    background: rgba(129,140,248,0.10);
+    border: 1px solid rgba(129,140,248,0.25);
+    color: #c4b5fd;
     font-weight: 700;
     font-size: 1rem;
     display: flex;
@@ -128,7 +129,7 @@
     width: 10px;
     height: 10px;
     border-radius: 50%;
-    border: 2px solid #0f0f0f;
+    border: 2px solid #121212;
 }
 .cm-convo-status-dot.online  { background: #22c55e; }
 .cm-convo-status-dot.offline { background: #444; }
@@ -172,8 +173,8 @@
 .cm-convo-badge {
     min-width: 18px;
     height: 18px;
-    background: #e0e0e0;
-    color: #111;
+    background: #818CF8;
+    color: #fff;
     font-size: 0.65rem;
     font-weight: 700;
     border-radius: 999px;
@@ -190,7 +191,8 @@
     display: flex;
     flex-direction: column;
     overflow: hidden;
-    background: #000000;
+    background: #0a0a0a;
+    border-left: 1px solid rgba(255,255,255,0.08);
 }
 
 /* ─── Header ───────────────────────────────────────────────────── */
@@ -199,8 +201,8 @@
     align-items: center;
     gap: 14px;
     padding: 18px 24px;
-    border-bottom: 1px solid rgba(255,255,255,0.06);
-    background: #0f0f0f;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+    background: #111111;
     flex-shrink: 0;
 }
 
@@ -208,8 +210,9 @@
     width: 46px;
     height: 46px;
     border-radius: 50%;
-    background: linear-gradient(135deg, #2a2a2a, #444);
-    color: #e0e0e0;
+    background: rgba(129,140,248,0.10);
+    border: 1px solid rgba(129,140,248,0.25);
+    color: #c4b5fd;
     font-weight: 700;
     font-size: 1.2rem;
     display: flex;
@@ -228,6 +231,17 @@
 .cm-header-info span {
     font-size: 0.75rem;
     color: #666;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.cm-header-online-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #22c55e;
+    flex-shrink: 0;
 }
 
 /* ─── Messages area ────────────────────────────────────────────── */
@@ -238,7 +252,7 @@
     display: flex;
     flex-direction: column;
     gap: 4px;
-    background: #000000;
+    background: #0a0a0a;
 }
 
 .cm-state {
@@ -257,14 +271,22 @@
 .cm-date-sep {
     display: flex;
     align-items: center;
-    justify-content: center;
-    margin: 12px 0 8px;
+    gap: 10px;
+    margin: 14px 0 6px;
+}
+.cm-date-sep::before,
+.cm-date-sep::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: rgba(255,255,255,0.06);
 }
 .cm-date-sep span {
-    font-size: 0.72rem;
-    color: rgba(255,255,255,0.3);
+    font-size: 0.7rem;
+    color: #555555;
     font-weight: 500;
-    letter-spacing: 0.3px;
+    flex-shrink: 0;
+    letter-spacing: 0.2px;
 }
 
 /* ─── Message rows ─────────────────────────────────────────────── */
@@ -342,9 +364,10 @@
 }
 
 .cm-bubble.them {
-    background: #1a1a1a;
+    background: #161616;
     color: #f0f0f0;
     border-bottom-left-radius: 5px;
+    border: 1px solid rgba(255,255,255,0.08);
 }
 
 .cm-time {
@@ -362,9 +385,9 @@
     display: flex;
     gap: 10px;
     padding: 16px 24px;
-    border-top: 1px solid rgba(255,255,255,0.06);
+    border-top: 1px solid rgba(255,255,255,0.08);
     flex-shrink: 0;
-    background: #0f0f0f;
+    background: #111111;
 }
 
 .cm-input {
@@ -380,7 +403,7 @@
 }
 
 .cm-input::placeholder { color: rgba(255,255,255,0.25); }
-.cm-input:focus { border-color: rgba(255,255,255,0.2); }
+.cm-input:focus { border-color: #818cf8; box-shadow: 0 0 0 3px rgba(129,140,248,0.12); }
 .cm-input:disabled { background: #161616; color: #444; }
 
 .cm-send {

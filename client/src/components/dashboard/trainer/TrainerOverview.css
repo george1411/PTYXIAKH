@@ -81,6 +81,33 @@
     margin: 0 0 16px;
 }
 
+.to-period-toggle {
+    display: flex;
+    gap: 2px;
+    background: rgba(255,255,255,0.05);
+    border-radius: 8px;
+    padding: 3px;
+}
+
+.to-period-btn {
+    background: none;
+    border: none;
+    color: rgba(255,255,255,0.35);
+    font-size: 0.72rem;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+.to-period-btn:hover { color: rgba(255,255,255,0.6); }
+
+.to-period-btn.active {
+    background: #818cf8;
+    color: #fff;
+}
+
 .to-empty-small {
     color: var(--to-muted);
     font-size: 0.83rem;

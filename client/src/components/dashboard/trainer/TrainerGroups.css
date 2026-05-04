@@ -5,7 +5,7 @@
     border: 1px solid rgba(255,255,255,0.08);
     border-radius: 16px;
     overflow: hidden;
-    background: #111;
+    background: #000;
 }
 
 .tg-left {
@@ -14,7 +14,7 @@
     border-right: 1px solid rgba(255,255,255,0.06);
     display: flex;
     flex-direction: column;
-    background: #0f0f0f;
+    background: #000;
     overflow-y: auto;
 }
 
@@ -335,6 +335,21 @@
     color: #e0e0e0;
 }
 
+.tg-member-goto {
+    background: none;
+    border: none;
+    color: rgba(129,140,248,0.4);
+    cursor: pointer;
+    padding: 2px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    transition: color 0.12s, background 0.12s;
+    margin-right: 2px;
+}
+.tg-member-goto:hover { color: #818cf8; background: rgba(129,140,248,0.1); }
+
 .tg-member-remove {
     background: none;
     border: none;
@@ -350,18 +365,18 @@
 .tg-member-remove:hover { color: #f87171; background: rgba(239,68,68,0.1); }
 
 .tg-member-add {
-    background: rgba(129,140,248,0.1);
-    border: 1px solid rgba(129,140,248,0.2);
-    color: #818cf8;
+    background: none;
+    border: none;
+    color: rgba(255,255,255,0.6);
     cursor: pointer;
-    padding: 3px 6px;
-    border-radius: 6px;
+    padding: 2px;
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: all 0.12s;
+    border-radius: 4px;
+    transition: color 0.12s;
 }
-.tg-member-add:hover { background: rgba(129,140,248,0.2); }
+.tg-member-add:hover { color: #ffffff; }
 .tg-member-add:disabled { opacity: 0.4; cursor: not-allowed; }
 
 .tg-member-search-wrap {

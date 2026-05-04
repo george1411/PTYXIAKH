@@ -48,13 +48,13 @@ const TrainerSidebar = ({ activeTab = 'overview', onNavigate, onLogout, user }) 
     }, []);
 
     return (
-        <div style={{ width: 200, display: 'flex', flexDirection: 'column', flexShrink: 0, height: '100vh', position: 'sticky', top: 0, background: '#0f0f0f', borderRight: '1px solid rgba(255,255,255,0.06)' }}>
+        <div style={{ width: 200, display: 'flex', flexDirection: 'column', flexShrink: 0, height: '100%', background: '#0f0f0f', borderRadius: 12 }}>
             {/* Logo */}
-            <div style={{ padding: '28px 20px 20px' }}>
-                <span style={{ fontWeight: 900, fontSize: '1.2rem', letterSpacing: '-0.02em', color: '#fff' }}>
+            <div style={{ padding: '28px 20px 24px', display: 'flex', flexDirection: 'column', gap: 6 }}>
+                <span style={{ fontWeight: 900, fontSize: '1.2rem', letterSpacing: '-0.02em', color: '#fff', lineHeight: 1 }}>
                     Gym<span style={{ color: '#818cf8' }}>Lit</span>
                 </span>
-                <div style={{ fontSize: '0.68rem', textTransform: 'uppercase', letterSpacing: '0.1em', color: 'rgba(255,255,255,0.25)', marginTop: 4 }}>Trainer Panel</div>
+                <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: '.18em', color: 'rgba(255,255,255,0.40)', textTransform: 'uppercase', lineHeight: 1 }}>Trainer</span>
             </div>
 
             {/* Navigation */}
@@ -70,7 +70,7 @@ const TrainerSidebar = ({ activeTab = 'overview', onNavigate, onLogout, user }) 
             </nav>
 
             {/* My Account */}
-            <div style={{ padding: '12px 8px', marginTop: 'auto', borderTop: '1px solid rgba(255,255,255,0.06)' }} ref={menuRef}>
+            <div style={{ padding: '12px 8px', marginTop: 'auto' }} ref={menuRef}>
                 <div style={{ position: 'relative' }}>
                     <button
                         onClick={() => setMenuOpen(v => !v)}

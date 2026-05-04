@@ -123,12 +123,18 @@ const NotificationBell = ({ onNavigateToMessages }) => {
 };
 
 const TrainerDashboard = ({ user, onLogout, onUserUpdate }) => {
-    const [activeTab, setActiveTab] = useState('overview');
+    const [activeTab, setActiveTab]         = useState('overview');
+    const [targetClientId, setTargetClientId] = useState(null);
+
+    const navigateToClient = (clientId) => {
+        setTargetClientId(clientId);
+        setActiveTab('clients');
+    };
 
     return (
-        <div className="flex min-h-screen font-sans overflow-hidden" style={{ background: '#0a0a0a', color: '#f0f0f0' }}>
+        <div className="flex min-h-screen font-sans overflow-hidden" style={{ background: '#000000', color: '#f0f0f0' }}>
             {/* Sidebar */}
-            <div className="hidden lg:block h-screen sticky top-0">
+            <div className="hidden lg:flex flex-col p-2 h-screen sticky top-0 shrink-0">
                 <TrainerSidebar
                     activeTab={activeTab}
                     onNavigate={setActiveTab}
@@ -138,31 +144,36 @@ const TrainerDashboard = ({ user, onLogout, onUserUpdate }) => {
             </div>
 
             {/* Main Content */}
-            <div className="flex-1 flex flex-col h-screen overflow-hidden">
+            <div className="flex-1 flex flex-col h-screen overflow-hidden" style={{ background: '#000000' }}>
                 {/* Header */}
-                <header className="h-20 flex justify-between items-center px-8 shrink-0" style={{ background: '#0a0a0a', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
-                    <div className="flex items-center text-sm" style={{ color: 'rgba(255,255,255,0.4)' }}>
-                        <span>Trainer</span>
-                        <span className="mx-2">›</span>
-                        <span className="font-bold capitalize" style={{ color: '#f0f0f0' }}>{activeTab}</span>
-                    </div>
-
-                    <div className="flex items-center gap-6">
-                        <div className="relative hidden md:block">
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: 'rgba(255,255,255,0.3)' }} />
-                            <input
-                                type="text"
-                                placeholder="Search..."
-                                className="rounded-full py-2 pl-10 pr-4 text-sm focus:outline-none transition-colors w-64"
-                                style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', color: '#f0f0f0' }}
-                            />
+                <header className="shrink-0" style={{ background: '#000000', borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
+                    <div className="h-16 flex justify-between items-center px-8">
+                        <div className="flex items-center gap-1.5 text-sm">
+                            <span style={{ color: '#818cf8', fontWeight: 500 }}>Dashboard</span>
+                            <span style={{ color: 'rgba(129,140,248,0.4)', fontWeight: 400 }}>›</span>
+                            <span className="font-semibold capitalize" style={{ color: '#a5b4fc' }}>{activeTab}</span>
                         </div>
-                        <NotificationBell onNavigateToMessages={() => setActiveTab('clients')} />
+
+                        <div className="flex items-center gap-5">
+                            <span className="hidden md:block text-sm font-semibold" style={{ whiteSpace: 'nowrap', color: '#a5b4fc' }}>
+                                {new Date().toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })}
+                            </span>
+                            <div className="relative hidden md:block">
+                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: 'rgba(255,255,255,0.3)' }} />
+                                <input
+                                    type="text"
+                                    placeholder="Search..."
+                                    className="rounded-full py-1.5 pl-10 pr-4 text-sm focus:outline-none transition-colors w-56"
+                                    style={{ background: '#1a1a1a', border: '1px solid rgba(255,255,255,0.08)', color: '#f0f0f0' }}
+                                />
+                            </div>
+                            <NotificationBell onNavigateToMessages={() => setActiveTab('clients')} />
+                        </div>
                     </div>
                 </header>
 
                 {/* Page content */}
-                <main className="flex-1 overflow-y-auto p-6 lg:p-8 custom-scrollbar relative" style={{ background: '#0a0a0a' }}>
+                <main className="flex-1 overflow-y-auto p-6 lg:p-8 custom-scrollbar relative" style={{ background: '#000000' }}>
                     <div className="max-w-7xl mx-auto relative z-10 h-full">
                         {activeTab === 'schedule' ? (
                             <Schedule onNavigate={setActiveTab} fullPage={true} isTrainer={true} />
@@ -171,9 +182,9 @@ const TrainerDashboard = ({ user, onLogout, onUserUpdate }) => {
                         ) : activeTab === 'overview' ? (
                             <TrainerOverview user={user} onNavigate={setActiveTab} />
                         ) : activeTab === 'clients' ? (
-                            <TrainerClients />
+                            <TrainerClients initialClientId={targetClientId} />
                         ) : activeTab === 'groups' ? (
-                            <TrainerGroups user={user} />
+                            <TrainerGroups user={user} onNavigate={setActiveTab} onNavigateToClient={navigateToClient} />
                         ) : activeTab === 'programs' ? (
                             <TrainerPrograms />
                         ) : activeTab === 'profile' ? (

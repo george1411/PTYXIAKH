@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import axios from 'axios';
 import {
     Search, ChevronRight, Trash2, Plus, Save, X, Loader2, Send,
-    BookMarked, Copy, CheckCircle, Dumbbell, Pencil
+    BookMarked, Copy, CheckCircle, Dumbbell, Pencil, RefreshCw
 } from 'lucide-react';
 import {
     LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer,
@@ -313,8 +313,8 @@ const OverviewPanel = ({ detail, clientId }) => {
                             <LineChart data={weightData}>
                                 <XAxis dataKey="date" tick={{ fontSize: 11 }} />
                                 <YAxis domain={['auto', 'auto']} tick={{ fontSize: 11 }} />
-                                <Tooltip />
-                                <Line type="monotone" dataKey="weight" stroke="#818cf8" strokeWidth={2} dot={{ r: 3 }} />
+                                <Tooltip content={() => null} cursor={false} />
+                                <Line type="monotone" dataKey="weight" stroke="#818cf8" strokeWidth={2} dot={{ r: 3 }} activeDot={false} isAnimationActive={false} />
                             </LineChart>
                         </ResponsiveContainer>
                     ) : (
@@ -826,11 +826,19 @@ const ChatPanel = ({ clientId, clientName, trainerId }) => {
     const [loadingPicker, setLoadingPicker]         = useState(false);
     const bottomRef                       = useRef(null);
     const pollRef                         = useRef(null);
+    const lastMsgCountRef                 = useRef(0);
+    const isInitialLoadRef                = useRef(true);
 
     const fetchMessages = async () => {
         try {
             const res = await axios.get(`/api/v1/chat?partnerId=${clientId}`, { withCredentials: true });
-            setMessages(res.data.data || []);
+            const fetched = res.data.data || [];
+            const isNew = fetched.length > lastMsgCountRef.current;
+            lastMsgCountRef.current = fetched.length;
+            if (isInitialLoadRef.current || isNew) {
+                setMessages(fetched);
+                if (isInitialLoadRef.current) isInitialLoadRef.current = false;
+            }
         } catch (e) {
             console.error(e);
         } finally {
@@ -841,13 +849,17 @@ const ChatPanel = ({ clientId, clientName, trainerId }) => {
     useEffect(() => {
         setLoading(true);
         setMessages([]);
+        lastMsgCountRef.current = 0;
+        isInitialLoadRef.current = true;
         fetchMessages();
         pollRef.current = setInterval(fetchMessages, 4000);
         return () => clearInterval(pollRef.current);
     }, [clientId]);
 
     useEffect(() => {
-        bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+        if (messages.length > 0) {
+            bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+        }
     }, [messages]);
 
     const handleSend = async (e) => {
@@ -891,10 +903,11 @@ const ChatPanel = ({ clientId, clientName, trainerId }) => {
     };
 
     const openWorkoutPicker = async () => {
+        if (showWorkoutPicker) { setShowWorkoutPicker(false); return; }
         setShowWorkoutPicker(true);
         setLoadingPicker(true);
         try {
-            const res = await axios.get('/api/v1/trainer/templates?type=day', { withCredentials: true });
+            const res = await axios.get('/api/v1/trainer/templates', { withCredentials: true });
             setPickerTemplates(res.data.data || []);
         } catch (e) { console.error(e); }
         finally { setLoadingPicker(false); }
@@ -902,12 +915,19 @@ const ChatPanel = ({ clientId, clientName, trainerId }) => {
 
     const sendWorkout = async (tpl) => {
         try {
-            let exs = tpl.programData?.exercises;
-            if (!exs) {
+            let programData = tpl.programData;
+            if (!programData) {
                 const res = await axios.get(`/api/v1/trainer/templates/${tpl.id}`, { withCredentials: true });
-                exs = res.data.data?.programData?.exercises || [];
+                programData = res.data.data?.programData;
             }
-            const content = `__WORKOUT__${JSON.stringify({ name: tpl.name, exercises: exs })}`;
+            let content;
+            if (tpl.type === 'week' || Array.isArray(programData)) {
+                const days = Array.isArray(programData) ? programData : [];
+                content = `__WORKOUT__${JSON.stringify({ name: tpl.name, type: 'week', days })}`;
+            } else {
+                const exs = programData?.exercises || [];
+                content = `__WORKOUT__${JSON.stringify({ name: tpl.name, type: 'day', exercises: exs })}`;
+            }
             await axios.post('/api/v1/chat', { content, receiverId: clientId }, { withCredentials: true });
             await fetchMessages();
         } catch (e) { console.error(e); }
@@ -944,15 +964,33 @@ const ChatPanel = ({ clientId, clientName, trainerId }) => {
                                 {workout ? (
                                     <div className={`tc-msg-bubble tc-workout-card ${isMe ? 'me' : 'them'}`}>
                                         <div className="tc-workout-title">{workout.name}</div>
-                                        {(expandedWorkouts.has(msg.id) ? workout.exercises : workout.exercises.slice(0, 4)).map((ex, j) => (
-                                            <div key={j} className="tc-workout-ex">
-                                                {ex.exerciseName}{ex.sets ? ` · ${ex.sets}×${ex.reps || '?'}` : ''}
-                                            </div>
-                                        ))}
-                                        {workout.exercises.length > 4 && (
-                                            <button className="tc-workout-more" onClick={() => toggleWorkout(msg.id)}>
-                                                {expandedWorkouts.has(msg.id) ? 'Show less' : `+${workout.exercises.length - 4} more`}
-                                            </button>
+                                        {workout.type === 'week' ? (
+                                            (workout.days || []).map((day, j) => (
+                                                <div key={j} style={{ marginTop: j === 0 ? 4 : 8 }}>
+                                                    <div style={{ fontSize: 11, fontWeight: 700, color: '#c4b5fd', marginBottom: 3 }}>{day.name || day.day}</div>
+                                                    {(day.exercises || []).slice(0, 4).map((ex, k) => (
+                                                        <div key={k} className="tc-workout-ex">
+                                                            {ex.exerciseName}{ex.sets ? ` · ${ex.sets}×${ex.reps || '?'}` : ''}
+                                                        </div>
+                                                    ))}
+                                                    {(day.exercises || []).length > 4 && (
+                                                        <div className="tc-workout-ex" style={{ color: '#818cf8' }}>+{day.exercises.length - 4} more</div>
+                                                    )}
+                                                </div>
+                                            ))
+                                        ) : (
+                                            <>
+                                                {(expandedWorkouts.has(msg.id) ? workout.exercises : (workout.exercises || []).slice(0, 4)).map((ex, j) => (
+                                                    <div key={j} className="tc-workout-ex">
+                                                        {ex.exerciseName}{ex.sets ? ` · ${ex.sets}×${ex.reps || '?'}` : ''}
+                                                    </div>
+                                                ))}
+                                                {(workout.exercises || []).length > 4 && (
+                                                    <button className="tc-workout-more" onClick={() => toggleWorkout(msg.id)}>
+                                                        {expandedWorkouts.has(msg.id) ? 'Show less' : `+${workout.exercises.length - 4} more`}
+                                                    </button>
+                                                )}
+                                            </>
                                         )}
                                     </div>
                                 ) : (
@@ -967,27 +1005,32 @@ const ChatPanel = ({ clientId, clientName, trainerId }) => {
                 <div ref={bottomRef} />
             </div>
 
+            <div style={{ position: 'relative' }}>
             {showWorkoutPicker && (
-                <div className="tc-workout-picker">
-                    <div className="tc-workout-picker-header">
-                        <span>Send Workout</span>
-                        <button onClick={() => setShowWorkoutPicker(false)}><X size={14} /></button>
+                <div style={{ position: 'absolute', bottom: '60px', left: '0', width: 280, background: '#1a1a1a', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 12, overflow: 'hidden', boxShadow: '0 8px 32px rgba(0,0,0,0.5)', zIndex: 50 }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 14px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+                        <span style={{ fontSize: 13, fontWeight: 700, color: '#f0f0f0' }}>Send Workout</span>
+                        <button onClick={() => setShowWorkoutPicker(false)} style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.4)', cursor: 'pointer', padding: 2 }}><X size={14} /></button>
                     </div>
                     {loadingPicker ? (
-                        <div className="tc-workout-picker-empty"><Loader2 className="tc-spin" size={16} /></div>
+                        <div style={{ padding: '14px', textAlign: 'center' }}><Loader2 className="tc-spin" size={16} /></div>
                     ) : pickerTemplates.length === 0 ? (
-                        <div className="tc-workout-picker-empty">No day programs saved yet.</div>
+                        <div style={{ padding: '14px', fontSize: 12, color: 'rgba(255,255,255,0.3)', textAlign: 'center' }}>No programs saved yet.</div>
                     ) : (
                         pickerTemplates.map(tpl => (
-                            <button key={tpl.id} className="tc-workout-picker-item" onClick={() => sendWorkout(tpl)}>
-                                <span>{tpl.name}</span>
-                                <span className="tc-workout-picker-count">{(tpl.programData?.exercises || []).length} ex</span>
+                            <button key={tpl.id} onClick={() => sendWorkout(tpl)}
+                                style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 14px', background: 'none', border: 'none', borderBottom: '1px solid rgba(255,255,255,0.04)', cursor: 'pointer', textAlign: 'left', transition: 'background 0.15s' }}
+                                onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.04)'}
+                                onMouseLeave={e => e.currentTarget.style.background = 'none'}>
+                                <span style={{ fontSize: 13, fontWeight: 600, color: '#f0f0f0' }}>{tpl.name}</span>
+                                <span style={{ fontSize: 11, color: '#555', fontWeight: 500, whiteSpace: 'nowrap', marginLeft: 8 }}>
+                                    {tpl.type === 'day' ? '1-Day' : 'Weekly'}
+                                </span>
                             </button>
                         ))
                     )}
                 </div>
             )}
-
             <form className="tc-chat-input-row" onSubmit={handleSend}>
                 <button type="button" className="tc-workout-btn" onClick={openWorkoutPicker} title="Send workout">
                     <Dumbbell size={16} />
@@ -1003,81 +1046,75 @@ const ChatPanel = ({ clientId, clientName, trainerId }) => {
                     {sending ? <Loader2 className="tc-spin" size={16} /> : <Send size={16} />}
                 </button>
             </form>
+            </div>
         </div>
     );
 };
 
-// ─── Invite Codes Panel ───────────────────────────────────────
+// ─── Invite Code Panel ────────────────────────────────────────
 const InvitePanel = () => {
-    const [codes, setCodes]               = useState([]);
-    const [generating, setGenerating]     = useState(false);
-    const [copiedId, setCopiedId]         = useState(null);
-    const [open, setOpen]                 = useState(false);
+    const [invite, setInvite]         = useState(null);
+    const [regenerating, setRegen]    = useState(false);
+    const [copied, setCopied]         = useState(false);
+    const [open, setOpen]             = useState(false);
 
-    const fetchCodes = useCallback(async () => {
+    const fetchCode = useCallback(async () => {
         try {
             const { data } = await axios.get('/api/v1/invite', { withCredentials: true });
-            setCodes(data.data || []);
+            setInvite(data.data || null);
         } catch {}
     }, []);
 
-    useEffect(() => { fetchCodes(); }, [fetchCodes]);
+    useEffect(() => { fetchCode(); }, [fetchCode]);
 
-    const handleGenerate = async () => {
-        setGenerating(true);
-        try { await axios.post('/api/v1/invite', {}, { withCredentials: true }); fetchCodes(); }
-        catch {} finally { setGenerating(false); }
+    const handleRegenerate = async () => {
+        setRegen(true);
+        try {
+            const { data } = await axios.post('/api/v1/invite/regenerate', {}, { withCredentials: true });
+            setInvite(data.data);
+        } catch {} finally { setRegen(false); }
     };
 
-    const handleDelete = async (id) => {
-        try { await axios.delete(`/api/v1/invite/${id}`, { withCredentials: true }); setCodes(prev => prev.filter(c => c.id !== id)); }
-        catch {}
-    };
-
-    const handleCopy = (id, code) => {
-        navigator.clipboard.writeText(code).catch(() => {});
-        setCopiedId(id);
-        setTimeout(() => setCopiedId(null), 2000);
+    const handleCopy = () => {
+        if (!invite?.code) return;
+        navigator.clipboard.writeText(invite.code).catch(() => {});
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
     };
 
     return (
         <div className="tc-invite-panel">
             <button className="tc-invite-toggle" onClick={() => setOpen(o => !o)}>
-                <span>Invite Codes</span>
+                <span>Invite Code</span>
                 <div className="tc-invite-toggle-right">
-                    {codes.length > 0 && (
-                        <span className="tc-invite-count">{codes.length}</span>
+                    {invite?.usedCount > 0 && (
+                        <span className="tc-invite-count">{invite.usedCount}</span>
                     )}
                     <span className="tc-invite-chevron">{open ? '▲' : '▼'}</span>
                 </div>
             </button>
             {open && (
                 <div className="tc-invite-body">
-                    {codes.length === 0 ? (
-                        <p className="tc-invite-empty">No codes yet.</p>
-                    ) : (
-                        <div className="tc-invite-list">
-                            {codes.map(ic => (
-                                <div key={ic.id} className="tc-invite-row">
-                                    <span className="tc-invite-code">{ic.code}</span>
-                                    {ic.usedCount > 0 && (
-                                        <span className="tc-invite-label">{ic.usedCount} client{ic.usedCount !== 1 ? 's' : ''}</span>
-                                    )}
-                                    <div className="tc-invite-actions">
-                                        <button className="tc-invite-btn" onClick={() => handleCopy(ic.id, ic.code)} title="Copy">
-                                            {copiedId === ic.id ? <CheckCircle size={12} /> : <Copy size={12} />}
-                                        </button>
-                                        <button className="tc-invite-btn del" onClick={() => handleDelete(ic.id)} title="Delete">
-                                            <Trash2 size={12} />
-                                        </button>
-                                    </div>
+                    {invite ? (
+                        <>
+                            <div className="tc-invite-row">
+                                <span className="tc-invite-code">{invite.code}</span>
+                                {invite.usedCount > 0 && (
+                                    <span className="tc-invite-label">{invite.usedCount} client{invite.usedCount !== 1 ? 's' : ''}</span>
+                                )}
+                                <div className="tc-invite-actions">
+                                    <button className="tc-invite-btn" onClick={handleCopy} title="Copy">
+                                        {copied ? <CheckCircle size={12} /> : <Copy size={12} />}
+                                    </button>
                                 </div>
-                            ))}
-                        </div>
+                            </div>
+                            <button className="tc-invite-generate" onClick={handleRegenerate} disabled={regenerating}>
+                                <RefreshCw size={13} /> {regenerating ? 'Regenerating…' : 'Regenerate'}
+                            </button>
+                        </>
+                    ) : (
+                        <p className="tc-invite-empty">Loading…</p>
                     )}
-                    <button className="tc-invite-generate" onClick={handleGenerate} disabled={generating}>
-                        <Plus size={13} /> {generating ? 'Generating…' : 'New Code'}
-                    </button>
                 </div>
             )}
         </div>
@@ -1085,7 +1122,7 @@ const InvitePanel = () => {
 };
 
 // ─── Main Component ───────────────────────────────────────────
-const TrainerClients = () => {
+const TrainerClients = ({ initialClientId }) => {
     const [clients, setClients]           = useState([]);
     const [loading, setLoading]           = useState(true);
     const [search, setSearch]             = useState('');
@@ -1096,9 +1133,17 @@ const TrainerClients = () => {
 
     useEffect(() => {
         axios.get('/api/v1/trainer/clients', { withCredentials: true })
-            .then(r => { setClients(r.data.data || []); setLoading(false); })
+            .then(r => {
+                const list = r.data.data || [];
+                setClients(list);
+                setLoading(false);
+                if (initialClientId) {
+                    const target = list.find(c => c.id === initialClientId);
+                    if (target) selectClient(target);
+                }
+            })
             .catch(() => setLoading(false));
-    }, []);
+    }, [initialClientId]);
 
     const selectClient = async (client) => {
         setSelectedId(client.id);
@@ -1157,7 +1202,9 @@ const TrainerClients = () => {
                                         onClick={() => selectClient(c)}
                                     >
                                         <div className="tc-client-avatar">
-                                            {c.name.charAt(0).toUpperCase()}
+                                            {c.profileImage
+                                                ? <img src={c.profileImage} alt={c.name} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} />
+                                                : c.name.charAt(0).toUpperCase()}
                                         </div>
                                         <div className="tc-client-info">
                                             <div className="tc-client-name-row">
@@ -1187,7 +1234,9 @@ const TrainerClients = () => {
                             {/* Client header */}
                             <div className="tc-client-header">
                                 <div className="tc-client-header-avatar">
-                                    {selectedClient.name.charAt(0).toUpperCase()}
+                                    {selectedClient.profileImage
+                                        ? <img src={selectedClient.profileImage} alt={selectedClient.name} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} />
+                                        : selectedClient.name.charAt(0).toUpperCase()}
                                 </div>
                                 <div className="tc-client-header-info">
                                     <h2>{selectedClient.name}</h2>

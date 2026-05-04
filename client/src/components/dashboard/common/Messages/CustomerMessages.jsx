@@ -31,19 +31,119 @@ const PainBodySVG = ({ selectedZones, onToggleZone, hoveredZone, onHoverZone }) 
         const z = selectedZones.find(z => z.id === id);
         return z ? SEV_META[z.sev]?.color : null;
     };
+    const F = '#20202a';
+    const S = 'rgba(255,255,255,0.13)';
+    const sw = 1.5;
     return (
-        <svg viewBox="0 0 300 480" width="110" height="176" style={{ display: 'block' }}>
-            <ellipse cx="150" cy="44" rx="28" ry="34" fill="#1e1e1e" stroke="rgba(255,255,255,0.07)" strokeWidth="1.5"/>
-            <rect x="138" y="75" width="24" height="18" rx="6" fill="#1e1e1e" stroke="rgba(255,255,255,0.07)" strokeWidth="1.5"/>
-            <path d="M105 92 Q90 100 85 160 Q83 200 88 240 L212 240 Q217 200 215 160 Q210 100 195 92 Z" fill="#1e1e1e" stroke="rgba(255,255,255,0.07)" strokeWidth="1.5"/>
-            <path d="M105 95 Q78 110 72 145 Q68 175 74 210 Q80 230 90 230 Q95 205 95 175 Q96 140 108 115 Z" fill="#1e1e1e" stroke="rgba(255,255,255,0.07)" strokeWidth="1.5"/>
-            <path d="M195 95 Q222 110 228 145 Q232 175 226 210 Q220 230 210 230 Q205 205 205 175 Q204 140 192 115 Z" fill="#1e1e1e" stroke="rgba(255,255,255,0.07)" strokeWidth="1.5"/>
-            <path d="M74 210 Q68 240 70 265 Q72 280 80 282 Q88 284 92 270 Q94 255 90 230 Z" fill="#1e1e1e" stroke="rgba(255,255,255,0.07)" strokeWidth="1.5"/>
-            <path d="M226 210 Q232 240 230 265 Q228 280 220 282 Q212 284 208 270 Q206 255 210 230 Z" fill="#1e1e1e" stroke="rgba(255,255,255,0.07)" strokeWidth="1.5"/>
-            <path d="M112 240 Q102 270 100 310 Q98 350 102 390 Q106 415 116 416 Q126 417 128 390 Q130 355 130 310 Q130 275 138 240 Z" fill="#1e1e1e" stroke="rgba(255,255,255,0.07)" strokeWidth="1.5"/>
-            <path d="M188 240 Q198 270 200 310 Q202 350 198 390 Q194 415 184 416 Q174 417 172 390 Q170 355 170 310 Q170 275 162 240 Z" fill="#1e1e1e" stroke="rgba(255,255,255,0.07)" strokeWidth="1.5"/>
-            <path d="M102 390 Q100 420 102 448 Q104 462 114 463 Q122 464 124 448 Q126 425 128 390 Z" fill="#1e1e1e" stroke="rgba(255,255,255,0.07)" strokeWidth="1.5"/>
-            <path d="M198 390 Q200 420 198 448 Q196 462 186 463 Q178 464 176 448 Q174 425 172 390 Z" fill="#1e1e1e" stroke="rgba(255,255,255,0.07)" strokeWidth="1.5"/>
+        <svg viewBox="0 0 300 480" width="130" height="208" style={{ display: 'block' }}>
+            <defs>
+                <linearGradient id="bodyGrad" x1="0" y1="0" x2="1" y2="0">
+                    <stop offset="0%" stopColor="rgba(255,255,255,0.03)"/>
+                    <stop offset="50%" stopColor="rgba(255,255,255,0.07)"/>
+                    <stop offset="100%" stopColor="rgba(255,255,255,0.03)"/>
+                </linearGradient>
+            </defs>
+
+            {/* Head */}
+            <path d="M150 10 C128 10 124 28 124 42 C124 60 135 74 150 76 C165 74 176 60 176 42 C176 28 172 10 150 10 Z"
+                fill={F} stroke={S} strokeWidth={sw}/>
+            {/* Ears */}
+            <ellipse cx="123" cy="46" rx="5" ry="7" fill={F} stroke={S} strokeWidth="1.2"/>
+            <ellipse cx="177" cy="46" rx="5" ry="7" fill={F} stroke={S} strokeWidth="1.2"/>
+
+            {/* Neck */}
+            <path d="M142 73 C140 78 140 86 141 92 Q150 96 159 92 C160 86 160 78 158 73 Q150 70 142 73 Z"
+                fill={F} stroke={S} strokeWidth={sw}/>
+
+            {/* Torso — shoulders taper to waist then flare at hips */}
+            <path d="
+                M141 92 Q118 94 96 100
+                C88 108 86 128 88 154
+                C90 174 104 186 108 202
+                C112 218 108 232 108 246
+                L192 246
+                C192 232 188 218 192 202
+                C196 186 210 174 212 154
+                C214 128 212 108 204 100
+                Q182 94 159 92 Z"
+                fill={F} stroke={S} strokeWidth={sw}/>
+
+            {/* Left upper arm */}
+            <path d="
+                M96 102
+                C84 110 74 132 72 158
+                C70 170 72 180 78 182
+                C84 184 88 176 90 164
+                C92 144 96 120 103 106 Z"
+                fill={F} stroke={S} strokeWidth={sw}/>
+            {/* Left forearm */}
+            <path d="
+                M78 179
+                C70 196 68 218 70 238
+                C71 247 76 252 83 250
+                C90 248 92 240 92 230
+                C92 212 90 194 90 181 Z"
+                fill={F} stroke={S} strokeWidth={sw}/>
+
+            {/* Right upper arm */}
+            <path d="
+                M204 102
+                C216 110 226 132 228 158
+                C230 170 228 180 222 182
+                C216 184 212 176 210 164
+                C208 144 204 120 197 106 Z"
+                fill={F} stroke={S} strokeWidth={sw}/>
+            {/* Right forearm */}
+            <path d="
+                M222 179
+                C230 196 232 218 230 238
+                C229 247 224 252 217 250
+                C210 248 208 240 208 230
+                C208 212 210 194 210 181 Z"
+                fill={F} stroke={S} strokeWidth={sw}/>
+
+            {/* Left thigh */}
+            <path d="
+                M108 246
+                C100 262 97 286 99 314
+                C100 326 106 338 114 339
+                C122 340 128 330 128 318
+                C128 290 126 264 124 248 Z"
+                fill={F} stroke={S} strokeWidth={sw}/>
+            {/* Left calf */}
+            <path d="
+                M114 336
+                C107 354 105 382 107 410
+                C108 424 111 438 114 448
+                C116 456 122 460 128 456
+                C132 452 132 442 130 430
+                C126 410 122 384 122 358
+                C122 346 118 338 116 334 Z"
+                fill={F} stroke={S} strokeWidth={sw}/>
+
+            {/* Right thigh */}
+            <path d="
+                M192 246
+                C200 262 203 286 201 314
+                C200 326 194 338 186 339
+                C178 340 172 330 172 318
+                C172 290 174 264 176 248 Z"
+                fill={F} stroke={S} strokeWidth={sw}/>
+            {/* Right calf */}
+            <path d="
+                M186 336
+                C193 354 195 382 193 410
+                C192 424 189 438 186 448
+                C184 456 178 460 172 456
+                C168 452 168 442 170 430
+                C174 410 178 384 178 358
+                C178 346 182 338 184 334 Z"
+                fill={F} stroke={S} strokeWidth={sw}/>
+
+            {/* Subtle center-line highlight on torso */}
+            <line x1="150" y1="96" x2="150" y2="240" stroke="rgba(255,255,255,0.04)" strokeWidth="1"/>
+
+            {/* Pain zone dots */}
             {PAIN_ZONES.map(z => {
                 const color = getColor(z.id);
                 const isHov = hoveredZone === z.id;
@@ -52,14 +152,15 @@ const PainBodySVG = ({ selectedZones, onToggleZone, hoveredZone, onHoverZone }) 
                         onClick={() => onToggleZone(z)}
                         onMouseEnter={() => onHoverZone(z.id)}
                         onMouseLeave={() => onHoverZone(null)}>
-                        <circle cx={z.x} cy={z.y} r={14} fill="transparent"/>
+                        <circle cx={z.x} cy={z.y} r={15} fill="transparent"/>
                         {color && <>
-                            <circle cx={z.x} cy={z.y} r={11} fill={color} opacity="0.15"/>
-                            <circle cx={z.x} cy={z.y} r={11} fill="none" stroke={color} strokeWidth="1.5" opacity="0.5"/>
+                            <circle cx={z.x} cy={z.y} r={12} fill={color} opacity="0.13"/>
+                            <circle cx={z.x} cy={z.y} r={12} fill="none" stroke={color} strokeWidth="1.5" opacity="0.45"/>
                         </>}
                         <circle cx={z.x} cy={z.y} r={isHov ? 7 : 5}
-                            fill={color || (isHov ? 'rgba(255,255,255,0.3)' : 'rgba(255,255,255,0.12)')}
-                            stroke={color || 'rgba(255,255,255,0.2)'} strokeWidth="1"/>
+                            fill={color || (isHov ? 'rgba(255,255,255,0.35)' : 'rgba(255,255,255,0.15)')}
+                            stroke={color || (isHov ? 'rgba(255,255,255,0.5)' : 'rgba(255,255,255,0.25)')}
+                            strokeWidth="1"/>
                     </g>
                 );
             })}
@@ -505,9 +606,7 @@ const CustomerMessages = ({ user, targetTrainer }) => {
                                 <div className="cm-messages">
                                     {loadingGroup ? (
                                         <div className="cm-state"><Loader2 className="cm-spin" size={24} /><p>Loading…</p></div>
-                                    ) : groupMessages.length === 0 ? (
-                                        <div className="cm-state"><p>No messages yet — say hello!</p></div>
-                                    ) : (
+                                    ) : groupMessages.length === 0 ? null : (
                                         groupMessages.map((msg, i) => {
                                             const isMe = msg.senderId === myId;
                                             const prev = groupMessages[i - 1];
@@ -588,10 +687,7 @@ const CustomerMessages = ({ user, targetTrainer }) => {
                                                         const exs = gProgData.find(d => d.day === gProgDay)?.exercises || [];
                                                         if (exs.length === 0) return <p className="cm-prog-no-ex">Rest day — no exercises</p>;
                                                         return exs.map((ex, idx) => {
-                                                            const key = `${gProgDay}|${idx}`;
                                                             const exName = ex.exerciseName || ex.name || 'Unnamed exercise';
-                                                            const myLog = getMyLastLog(gProgDay, exName);
-                                                            const isLogging = logOpen === key;
                                                             return (
                                                                 <div key={idx} className="cm-prog-ex-card">
                                                                     <div className="cm-prog-ex-row">
@@ -599,38 +695,7 @@ const CustomerMessages = ({ user, targetTrainer }) => {
                                                                             <span className="cm-prog-ex-name">{exName}</span>
                                                                             <span className="cm-prog-ex-prescription">{ex.sets} × {ex.reps}</span>
                                                                         </div>
-                                                                        <div className="cm-prog-ex-right">
-                                                                            {myLog && (
-                                                                                <span className="cm-prog-my-log">
-                                                                                    You: {myLog.setsCompleted ?? '?'}×{myLog.repsCompleted ?? '?'}{myLog.weight ? ` @ ${myLog.weight}kg` : ''}
-                                                                                </span>
-                                                                            )}
-                                                                            <button
-                                                                                className="cm-prog-log-btn"
-                                                                                onClick={() => {
-                                                                                    setLogOpen(isLogging ? null : key);
-                                                                                    setLogForm({ sets: '', reps: '', weight: '' });
-                                                                                }}
-                                                                            >
-                                                                                {isLogging ? 'Cancel' : 'Log'}
-                                                                            </button>
-                                                                        </div>
                                                                     </div>
-                                                                    {isLogging && (
-                                                                        <div className="cm-prog-log-form">
-                                                                            <input className="cm-prog-log-input" type="number" placeholder="Sets" value={logForm.sets} onChange={e => setLogForm(f => ({ ...f, sets: e.target.value }))} min={1} />
-                                                                            <span className="cm-prog-log-sep">×</span>
-                                                                            <input className="cm-prog-log-input" type="number" placeholder="Reps" value={logForm.reps} onChange={e => setLogForm(f => ({ ...f, reps: e.target.value }))} min={1} />
-                                                                            <input className="cm-prog-log-input cm-prog-log-weight" type="number" placeholder="kg" value={logForm.weight} onChange={e => setLogForm(f => ({ ...f, weight: e.target.value }))} min={0} step={0.5} />
-                                                                            <button
-                                                                                className="cm-prog-log-submit"
-                                                                                disabled={submittingLog}
-                                                                                onClick={() => handleLogExercise(activeGroup.id, selectedGProg.id, gProgDay, exName)}
-                                                                            >
-                                                                                {submittingLog ? '…' : '✓'}
-                                                                            </button>
-                                                                        </div>
-                                                                    )}
                                                                 </div>
                                                             );
                                                         });
@@ -654,7 +719,7 @@ const CustomerMessages = ({ user, targetTrainer }) => {
                             <div className="cm-header-avatar">{active.name?.charAt(0).toUpperCase()}</div>
                             <div className="cm-header-info">
                                 <h2>{active.name}</h2>
-                                <span>Personal Trainer</span>
+                                <span><span className="cm-header-online-dot" />Online · Personal Trainer</span>
                             </div>
                         </div>
 
@@ -665,11 +730,7 @@ const CustomerMessages = ({ user, targetTrainer }) => {
                                     <Loader2 className="cm-spin" size={24} />
                                     <p>Loading…</p>
                                 </div>
-                            ) : messages.length === 0 ? (
-                                <div className="cm-state">
-                                    <p>No messages yet — say hello!</p>
-                                </div>
-                            ) : (
+                            ) : messages.length === 0 ? null : (
                                 messages.map((msg, i) => {
                                     const isMe = msg.senderId === myId;
                                     const prev = messages[i - 1];
