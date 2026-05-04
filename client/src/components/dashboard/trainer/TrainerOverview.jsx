@@ -246,7 +246,6 @@ const TrainerOverview = ({ user, onNavigate }) => {
                     ) : (
                         <div className="to-empty">
                             <p>No sessions scheduled for today</p>
-                            <button className="to-empty-btn" onClick={() => onNavigate('schedule')}>Add a session</button>
                         </div>
                     )}
                 </div>

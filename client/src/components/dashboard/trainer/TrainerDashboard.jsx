@@ -8,7 +8,16 @@ import TrainerPrograms from './TrainerPrograms';
 import TrainerGroups from './TrainerGroups';
 import Schedule from '../common/widgets/Schedule/Schedule';
 import Settings from '../common/Settings/Settings';
-import { Search, Bell } from 'lucide-react';
+import { Search, Bell, User } from 'lucide-react';
+
+const NAV_TABS = [
+    { id: 'overview',  label: 'Overview'  },
+    { id: 'clients',   label: 'Clients'   },
+    { id: 'groups',    label: 'Groups'    },
+    { id: 'programs',  label: 'Programs'  },
+    { id: 'schedule',  label: 'Schedule'  },
+    { id: 'profile',   label: 'Profile'   },
+];
 
 // ─── Notification Bell ────────────────────────────────────────
 const NotificationBell = ({ onNavigateToMessages }) => {
@@ -132,9 +141,9 @@ const TrainerDashboard = ({ user, onLogout, onUserUpdate }) => {
     };
 
     return (
-        <div className="flex min-h-screen font-sans overflow-hidden" style={{ background: 'radial-gradient(ellipse at center, #0f0f14 0%, #000000 100%)', color: '#f0f0f0' }}>
-            {/* Sidebar */}
-            <div className="hidden lg:flex flex-col p-2 h-screen sticky top-0 shrink-0">
+        <div className="flex flex-col min-h-screen font-sans overflow-hidden" style={{ background: 'radial-gradient(ellipse at center, #0f0f14 0%, #000000 100%)', color: '#f0f0f0' }}>
+            {/* Sidebar — hidden, kept for easy restoration */}
+            <div style={{ display: 'none' }}>
                 <TrainerSidebar
                     activeTab={activeTab}
                     onNavigate={setActiveTab}
@@ -143,34 +152,78 @@ const TrainerDashboard = ({ user, onLogout, onUserUpdate }) => {
                 />
             </div>
 
-            {/* Main Content */}
-            <div className="flex-1 flex flex-col h-screen overflow-hidden" style={{ background: 'transparent' }}>
-                {/* Header */}
-                <header className="shrink-0" style={{ background: 'transparent', borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
-                    <div className="h-16 flex justify-between items-center px-8">
-                        <div className="flex items-center gap-1.5 text-sm">
-                            <span style={{ color: '#818cf8', fontWeight: 500 }}>Dashboard</span>
-                            <span style={{ color: 'rgba(129,140,248,0.4)', fontWeight: 400 }}>›</span>
-                            <span className="font-semibold capitalize" style={{ color: '#a5b4fc' }}>{activeTab}</span>
-                        </div>
-
-                        <div className="flex items-center gap-5">
-                            <span className="hidden md:block text-sm font-semibold" style={{ whiteSpace: 'nowrap', color: '#a5b4fc' }}>
-                                {new Date().toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })}
-                            </span>
-                            <div className="relative hidden md:block">
-                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: 'rgba(255,255,255,0.3)' }} />
-                                <input
-                                    type="text"
-                                    placeholder="Search..."
-                                    className="rounded-full py-1.5 pl-10 pr-4 text-sm focus:outline-none transition-colors w-56"
-                                    style={{ background: '#1a1a1a', border: '1px solid rgba(255,255,255,0.08)', color: '#f0f0f0' }}
-                                />
-                            </div>
-                            <NotificationBell onNavigateToMessages={() => setActiveTab('clients')} />
-                        </div>
+            {/* Header */}
+            <header className="shrink-0 sticky top-0 z-40" style={{ backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                <div className="flex items-center justify-between px-8" style={{ height: 60, position: 'relative' }}>
+                    {/* Logo */}
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 2, flexShrink: 0 }}>
+                        <span style={{ fontWeight: 900, fontSize: '1.1rem', letterSpacing: '-0.02em', color: '#fff', lineHeight: 1 }}>
+                            Gym<span style={{ color: '#818cf8' }}>Lit</span>
+                        </span>
+                        <span style={{ fontSize: 9, fontWeight: 700, letterSpacing: '.18em', color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase', lineHeight: 1, marginLeft: 22 }}>Trainer</span>
                     </div>
-                </header>
+
+                    {/* Nav tabs — centered absolutely */}
+                    <nav style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', display: 'flex', alignItems: 'center', gap: 4 }}>
+                            {NAV_TABS.map(tab => (
+                                <button
+                                    key={tab.id}
+                                    onClick={() => setActiveTab(tab.id)}
+                                    style={{
+                                        padding: '5px 14px 8px',
+                                        border: 'none',
+                                        background: 'transparent',
+                                        color: activeTab === tab.id ? '#ffffff' : 'rgba(255,255,255,0.4)',
+                                        fontSize: '0.85rem',
+                                        fontWeight: activeTab === tab.id ? 600 : 400,
+                                        cursor: 'pointer',
+                                        transition: 'color 0.2s',
+                                        position: 'relative',
+                                    }}
+                                    onMouseEnter={e => { if (activeTab !== tab.id) e.currentTarget.style.color = 'rgba(255,255,255,0.75)'; }}
+                                    onMouseLeave={e => { if (activeTab !== tab.id) e.currentTarget.style.color = 'rgba(255,255,255,0.4)'; }}
+                                >
+                                    {tab.label}
+                                    <span style={{
+                                        position: 'absolute',
+                                        bottom: 0,
+                                        left: '50%',
+                                        transform: 'translateX(-50%)',
+                                        height: 2,
+                                        width: activeTab === tab.id ? '100%' : '0%',
+                                        background: 'rgba(255,255,255,0.9)',
+                                        transition: activeTab === tab.id ? 'width 0.35s ease' : 'none',
+                                        borderRadius: 1,
+                                    }} />
+                                </button>
+                            ))}
+                    </nav>
+
+                    {/* Right side */}
+                    <div className="flex items-center gap-5">
+                        <span className="hidden md:block text-sm font-semibold" style={{ whiteSpace: 'nowrap', color: 'rgba(255,255,255,0.35)' }}>
+                            {new Date().toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })}
+                        </span>
+                        <div className="relative hidden md:block">
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: 'rgba(255,255,255,0.3)' }} />
+                            <input
+                                type="text"
+                                placeholder="Search..."
+                                className="rounded-full py-1.5 pl-10 pr-4 text-sm focus:outline-none transition-colors w-44"
+                                style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', color: '#f0f0f0' }}
+                            />
+                        </div>
+                        <NotificationBell onNavigateToMessages={() => setActiveTab('clients')} />
+                        <button
+                            onClick={() => setActiveTab('profile')}
+                            title="Profile"
+                            style={{ width: 32, height: 32, borderRadius: '50%', background: 'rgba(129,140,248,0.15)', border: '1px solid rgba(129,140,248,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#a5b4fc', flexShrink: 0 }}
+                        >
+                            <User size={15} />
+                        </button>
+                    </div>
+                </div>
+            </header>
 
                 {/* Page content */}
                 <main className="flex-1 overflow-y-auto p-6 lg:p-8 custom-scrollbar relative" style={{ background: 'transparent' }}>
@@ -192,7 +245,6 @@ const TrainerDashboard = ({ user, onLogout, onUserUpdate }) => {
                         ) : null}
                     </div>
                 </main>
-            </div>
         </div>
     );
 };

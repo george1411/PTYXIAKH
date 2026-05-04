@@ -48,7 +48,7 @@ const TrainerSidebar = ({ activeTab = 'overview', onNavigate, onLogout, user }) 
     }, []);
 
     return (
-        <div style={{ width: 200, display: 'flex', flexDirection: 'column', flexShrink: 0, height: '100%', borderRadius: 12 }}>
+        <div style={{ width: 200, display: 'flex', flexDirection: 'column', flexShrink: 0, height: '100%', borderRadius: 12, backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', border: '1px solid rgba(255,255,255,0.05)' }}>
             {/* Logo */}
             <div style={{ padding: '28px 20px 24px', display: 'flex', flexDirection: 'column', gap: 6 }}>
                 <span style={{ fontWeight: 900, fontSize: '1.2rem', letterSpacing: '-0.02em', color: '#fff', lineHeight: 1 }}>
