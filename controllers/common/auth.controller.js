@@ -302,8 +302,10 @@ export const updateProfile = async (req, res, next) => {
             replacements.age = age;
         }
         if (gender !== undefined) {
+            const genderMap = { 'Male': 'M', 'Female': 'F', 'M': 'M', 'F': 'F' };
+            const mappedGender = genderMap[gender] || null;
             fields.push('gender = :gender');
-            replacements.gender = gender;
+            replacements.gender = mappedGender;
         }
         if (height !== undefined) {
             fields.push('height = :height');

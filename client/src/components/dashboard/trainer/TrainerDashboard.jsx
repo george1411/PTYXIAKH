@@ -201,7 +201,7 @@ const TrainerDashboard = ({ user, onLogout, onUserUpdate }) => {
 
                     {/* Right side */}
                     <div className="flex items-center gap-5">
-                        <span className="hidden md:block text-sm font-semibold" style={{ whiteSpace: 'nowrap', color: 'rgba(255,255,255,0.35)' }}>
+                        <span className="hidden md:block text-sm font-semibold" style={{ whiteSpace: 'nowrap', color: '#ffffff' }}>
                             {new Date().toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })}
                         </span>
                         <div className="relative hidden md:block">
@@ -214,13 +214,6 @@ const TrainerDashboard = ({ user, onLogout, onUserUpdate }) => {
                             />
                         </div>
                         <NotificationBell onNavigateToMessages={() => setActiveTab('clients')} />
-                        <button
-                            onClick={() => setActiveTab('profile')}
-                            title="Profile"
-                            style={{ width: 32, height: 32, borderRadius: '50%', background: 'rgba(129,140,248,0.15)', border: '1px solid rgba(129,140,248,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#a5b4fc', flexShrink: 0 }}
-                        >
-                            <User size={15} />
-                        </button>
                     </div>
                 </div>
             </header>
@@ -241,7 +234,7 @@ const TrainerDashboard = ({ user, onLogout, onUserUpdate }) => {
                         ) : activeTab === 'programs' ? (
                             <TrainerPrograms />
                         ) : activeTab === 'profile' ? (
-                            <TrainerProfile user={user} />
+                            <TrainerProfile user={user} onLogout={onLogout} />
                         ) : null}
                     </div>
                 </main>

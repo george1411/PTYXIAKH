@@ -1,0 +1,437 @@
+.cp-container {
+    max-width: 900px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+/* Header */
+.cp-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    background: #000;
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 16px;
+    padding: 28px 32px;
+}
+
+.cp-header-left {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.cp-avatar-wrap {
+    position: relative;
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: rgba(255,255,255,0.3);
+    overflow: hidden;
+}
+
+.cp-avatar-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+}
+
+.cp-avatar-placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+}
+
+.cp-avatar-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0.55);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: #fff;
+    font-size: 0.7rem;
+    border-radius: 50%;
+    transition: opacity 0.15s;
+}
+
+.cp-header-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.cp-name {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #f0f0f0;
+    margin: 0;
+    line-height: 1.2;
+}
+
+.cp-email {
+    font-size: 0.85rem;
+    color: rgba(255,255,255,0.4);
+    margin: 0;
+}
+
+.cp-badges {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 6px;
+    flex-wrap: wrap;
+}
+
+.cp-badge {
+    font-size: 0.72rem;
+    font-weight: 600;
+    padding: 3px 10px;
+    border-radius: 20px;
+    letter-spacing: 0.02em;
+}
+
+.cp-badge-role {
+    background: rgba(129,140,248,0.15);
+    color: #a5b4fc;
+    border: 1px solid rgba(129,140,248,0.25);
+}
+
+.cp-badge-detail {
+    background: rgba(255,255,255,0.05);
+    color: rgba(255,255,255,0.45);
+    border: 1px solid rgba(255,255,255,0.08);
+}
+
+/* Header actions */
+.cp-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+}
+
+.cp-btn-signout {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: rgba(255,255,255,0.35);
+    background: none;
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 8px;
+    padding: 6px 14px;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+.cp-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 16px;
+    border-radius: 8px;
+    font-size: 0.83rem;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    transition: all 0.15s;
+}
+
+.cp-btn-edit {
+    background: rgba(255,255,255,0.07);
+    color: #f0f0f0;
+    border: 1px solid rgba(255,255,255,0.1);
+}
+.cp-btn-edit:hover { background: rgba(255,255,255,0.12); }
+
+.cp-btn-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.cp-btn-cancel {
+    background: rgba(255,255,255,0.05);
+    color: rgba(255,255,255,0.5);
+    border: 1px solid rgba(255,255,255,0.08);
+}
+.cp-btn-cancel:hover { background: rgba(255,255,255,0.1); color: #f0f0f0; }
+
+.cp-btn-save {
+    background: #fff;
+    color: #000;
+}
+.cp-btn-save:hover { background: #e0e0e0; }
+.cp-btn-save:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.cp-saved-msg {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 0.8rem;
+    color: #6ee7b7;
+    font-weight: 500;
+}
+
+.cp-error-msg {
+    font-size: 0.8rem;
+    color: #f87171;
+}
+
+/* Grid */
+.cp-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+/* Cards */
+.cp-card {
+    background: #000;
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 16px;
+    padding: 24px 28px;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+.cp-card-header h2 {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: rgba(255,255,255,0.55);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin: 0;
+}
+
+/* Fields */
+.cp-fields {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.cp-field {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.cp-field label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: rgba(255,255,255,0.35);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.cp-field span {
+    font-size: 0.9rem;
+    color: #f0f0f0;
+}
+
+.cp-input {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 8px;
+    padding: 8px 12px;
+    color: #f0f0f0;
+    font-size: 0.88rem;
+    outline: none;
+    transition: border-color 0.15s;
+    width: 100%;
+    box-sizing: border-box;
+}
+.cp-input:focus { border-color: rgba(255,255,255,0.3); }
+.cp-input option { background: #111; }
+
+.cp-input-small { max-width: 120px; }
+
+/* Goals */
+.cp-goals-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.cp-goal-chip {
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    color: rgba(255,255,255,0.4);
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+.cp-goal-chip.active {
+    background: rgba(129,140,248,0.15);
+    border-color: rgba(129,140,248,0.35);
+    color: #a5b4fc;
+}
+
+.cp-goal-chip.readonly {
+    cursor: default;
+}
+
+.cp-goal-chip:not(.readonly):hover {
+    border-color: rgba(255,255,255,0.2);
+    color: rgba(255,255,255,0.7);
+}
+
+.cp-placeholder {
+    font-size: 0.83rem;
+    color: rgba(255,255,255,0.25);
+    margin: 0;
+}
+
+/* Trainer card */
+.cp-trainer-loading {
+    display: flex;
+    justify-content: center;
+    padding: 24px 0;
+}
+
+.cp-spinner {
+    width: 22px;
+    height: 22px;
+    border: 2px solid rgba(255,255,255,0.08);
+    border-top-color: rgba(255,255,255,0.4);
+    border-radius: 50%;
+    animation: cp-spin 0.7s linear infinite;
+}
+
+@keyframes cp-spin { to { transform: rotate(360deg); } }
+
+.cp-trainer {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.cp-trainer-top {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+}
+
+.cp-trainer-avatar {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: rgba(255,255,255,0.3);
+    flex-shrink: 0;
+    overflow: hidden;
+}
+
+.cp-trainer-avatar-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+}
+
+.cp-trainer-info {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    min-width: 0;
+}
+
+.cp-trainer-name {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #f0f0f0;
+}
+
+.cp-trainer-email {
+    font-size: 0.78rem;
+    color: rgba(255,255,255,0.4);
+}
+
+.cp-trainer-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 4px;
+}
+
+.cp-trainer-chip {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: rgba(255,255,255,0.45);
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.08);
+    padding: 2px 8px;
+    border-radius: 20px;
+}
+
+.cp-trainer-bio {
+    font-size: 0.82rem;
+    color: rgba(255,255,255,0.45);
+    line-height: 1.55;
+    margin: 0;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.cp-trainer-details {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.cp-trainer-detail {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 0.8rem;
+    color: rgba(255,255,255,0.45);
+}
+
+.cp-trainer-specs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.cp-trainer-spec {
+    font-size: 0.72rem;
+    font-weight: 500;
+    padding: 3px 10px;
+    border-radius: 20px;
+    background: rgba(129,140,248,0.1);
+    border: 1px solid rgba(129,140,248,0.2);
+    color: #a5b4fc;
+}
+
+.cp-trainer-spec-more {
+    background: rgba(255,255,255,0.04);
+    border-color: rgba(255,255,255,0.08);
+    color: rgba(255,255,255,0.3);
+}

@@ -162,6 +162,37 @@ export const getWeeklyNutrition = async (req, res, next) => {
 };
 
 // Calorie balance — today's consumed vs target
+export const updateNutritionGoals = async (req, res, next) => {
+    try {
+        const userId = req.user.id;
+        const { calories, protein, carbs, fat } = req.body;
+        if (!calories || !protein) {
+            return res.status(400).json({ success: false, message: 'calories and protein are required' });
+        }
+        const today = new Date().toISOString().split('T')[0];
+        const carbsVal = carbs || Math.round(calories * 0.45 / 4);
+        const fatVal   = fat   || Math.round(calories * 0.25 / 9);
+        const existing = await sequelize.query(
+            `SELECT id FROM DailyGoals WHERE userId = :userId ORDER BY date DESC LIMIT 1`,
+            { replacements: { userId }, type: QueryTypes.SELECT }
+        );
+        if (existing.length > 0) {
+            await sequelize.query(
+                `UPDATE DailyGoals SET calories = :calories, protein = :protein, carbs = :carbs, fat = :fat, date = :today, updatedAt = NOW() WHERE id = :id`,
+                { replacements: { calories, protein, carbs: carbsVal, fat: fatVal, today, id: existing[0].id }, type: QueryTypes.UPDATE }
+            );
+        } else {
+            await sequelize.query(
+                `INSERT INTO DailyGoals (userId, calories, protein, carbs, fat, date, createdAt, updatedAt) VALUES (:userId, :calories, :protein, :carbs, :fat, :today, NOW(), NOW())`,
+                { replacements: { userId, calories, protein, carbs: carbsVal, fat: fatVal, today }, type: QueryTypes.INSERT }
+            );
+        }
+        res.json({ success: true, data: { calories, protein, carbs: carbsVal, fat: fatVal } });
+    } catch (error) {
+        next(error);
+    }
+};
+
 export const getCalorieBalance = async (req, res, next) => {
     try {
         const userId = req.user.id;
@@ -178,7 +209,7 @@ export const getCalorieBalance = async (req, res, next) => {
 
         // Target from DailyGoals
         const [goal] = await sequelize.query(
-            `SELECT calories, protein FROM DailyGoals
+            `SELECT calories, protein, carbs, fat FROM DailyGoals
              WHERE userId = :userId
              ORDER BY date DESC LIMIT 1`,
             { replacements: { userId }, type: QueryTypes.SELECT }
@@ -186,6 +217,8 @@ export const getCalorieBalance = async (req, res, next) => {
 
         const target = goal?.calories || 2500;
         const proteinTarget = goal?.protein || 150;
+        const carbsTarget = goal?.carbs || Math.round(target * 0.45 / 4);
+        const fatTarget = goal?.fat || Math.round(target * 0.25 / 9);
         const totalConsumed = consumed?.totalCalories || 0;
         const balance = totalConsumed - target;
 
@@ -198,6 +231,8 @@ export const getCalorieBalance = async (req, res, next) => {
                 status: balance > 0 ? 'surplus' : balance < 0 ? 'deficit' : 'on_target',
                 proteinConsumed: consumed?.totalProtein || 0,
                 proteinTarget,
+                carbsTarget,
+                fatTarget,
             }
         });
     } catch (error) {

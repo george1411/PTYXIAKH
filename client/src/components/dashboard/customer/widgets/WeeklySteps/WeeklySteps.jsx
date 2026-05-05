@@ -27,9 +27,14 @@ const WeeklySteps = () => {
                     axios.post('/api/v1/fitbit/sync', {}, { withCredentials: true })
                         .then(() => fetchData())
                         .catch(err => {
-                            const msg = err.response?.data?.message || 'Auto-sync failed';
-                            setSyncMsg(msg);
-                            setTimeout(() => setSyncMsg(''), 5000);
+                            const status = err.response?.status;
+                            if (status === 401) {
+                                setFitbitConnected(false);
+                                setSyncMsg('Fitbit session expired. Please reconnect.');
+                            } else {
+                                setSyncMsg(err.response?.data?.message || 'Auto-sync failed');
+                            }
+                            setTimeout(() => setSyncMsg(''), 6000);
                         });
                 }
             })
@@ -72,10 +77,16 @@ const WeeklySteps = () => {
             setSyncMsg('Synced!');
             fetchData();
         } catch (err) {
-            setSyncMsg('Sync failed.');
+            const status = err.response?.status;
+            if (status === 401) {
+                setFitbitConnected(false);
+                setSyncMsg('Fitbit session expired. Please reconnect.');
+            } else {
+                setSyncMsg('Sync failed.');
+            }
         } finally {
             setSyncing(false);
-            setTimeout(() => setSyncMsg(''), 3000);
+            setTimeout(() => setSyncMsg(''), 4000);
         }
     };
 

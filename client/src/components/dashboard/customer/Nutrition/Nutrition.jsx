@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { Plus, X, Search, AlertCircle, CheckCircle, Bookmark, BookmarkCheck } from 'lucide-react';
+import { Plus, X, Search, AlertCircle, CheckCircle, Bookmark, BookmarkCheck, Pencil } from 'lucide-react';
 import {
     BarChart, Bar, XAxis, YAxis, LabelList, Tooltip,
     ResponsiveContainer, CartesianGrid, Legend
@@ -64,20 +64,102 @@ const MacroRing = ({ label, value, target, gradFrom, gradTo, labelColor, unit })
 };
 
 // ─── Daily Macro Tracker ──────────────────────────────────────
-const DailyMacroTracker = ({ mealsData, balanceData, loading }) => {
+const MACRO_FIELDS = [
+    { key: 'cal',  label: 'Calories', unit: 'kcal', min: 500,  max: 6000 },
+    { key: 'prot', label: 'Protein',  unit: 'g',    min: 10,   max: 500  },
+    { key: 'carbs',label: 'Carbs',    unit: 'g',    min: 10,   max: 1000 },
+    { key: 'fat',  label: 'Fat',      unit: 'g',    min: 5,    max: 300  },
+];
+
+const DailyMacroTracker = ({ mealsData, balanceData, loading, onGoalsUpdated }) => {
     const totals = mealsData?.totals || { calories: 0, protein: 0, carbs: 0, fat: 0 };
-    const calTarget = balanceData?.target || 2500;
-    const proteinTarget = balanceData?.proteinTarget || 150;
-    const carbsTarget = Math.round(calTarget * 0.45 / 4);
-    const fatTarget = Math.round(calTarget * 0.25 / 9);
+    const [calTarget,     setCalTarget]     = useState(2500);
+    const [proteinTarget, setProteinTarget] = useState(150);
+    const [carbsTarget,   setCarbsTarget]   = useState(281);
+    const [fatTarget,     setFatTarget]     = useState(69);
+    const [editOpen, setEditOpen] = useState(false);
+    const [draft, setDraft] = useState({ cal: '', prot: '', carbs: '', fat: '' });
+    const [saving, setSaving] = useState(false);
+
+    useEffect(() => {
+        if (balanceData) {
+            setCalTarget(balanceData.target || 2500);
+            setProteinTarget(balanceData.proteinTarget || 150);
+            setCarbsTarget(balanceData.carbsTarget || Math.round((balanceData.target || 2500) * 0.45 / 4));
+            setFatTarget(balanceData.fatTarget || Math.round((balanceData.target || 2500) * 0.25 / 9));
+        }
+    }, [balanceData]);
+
+    const openEdit = () => {
+        setDraft({ cal: calTarget, prot: proteinTarget, carbs: carbsTarget, fat: fatTarget });
+        setEditOpen(true);
+    };
+
+    const handleSave = async () => {
+        const cal   = parseInt(draft.cal);
+        const prot  = parseInt(draft.prot);
+        const carbs = parseInt(draft.carbs);
+        const fat   = parseInt(draft.fat);
+        if (!cal || !prot || cal < 500 || prot < 10) return;
+        setSaving(true);
+        try {
+            await axios.put('/api/v1/nutrition/goals', { calories: cal, protein: prot, carbs, fat }, { withCredentials: true });
+            setCalTarget(cal);
+            setProteinTarget(prot);
+            setCarbsTarget(carbs);
+            setFatTarget(fat);
+            setEditOpen(false);
+            if (onGoalsUpdated) onGoalsUpdated();
+        } catch { /* silent */ }
+        setSaving(false);
+    };
 
     return (
-        <div className="nutrition-card">
+        <div className="nutrition-card" style={{ position: 'relative' }}>
             <div className="nutrition-card-header">
-                <div className="nutrition-card-title">
+                <div className="nutrition-card-title" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                     <h3>Daily Macro Tracker</h3>
+                    <button
+                        onClick={openEdit}
+                        title="Edit nutrition goals"
+                        style={{ background: 'none', border: 'none', padding: 3, cursor: 'pointer', color: 'rgba(255,255,255,0.3)', display: 'flex', alignItems: 'center', borderRadius: 4, transition: 'color 0.15s' }}
+                        onMouseEnter={e => e.currentTarget.style.color = '#f0f0f0'}
+                        onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.3)'}
+                    >
+                        <Pencil size={13} />
+                    </button>
                 </div>
             </div>
+
+            {editOpen && (
+                <div style={{ position: 'absolute', top: 56, left: 16, zIndex: 50, background: '#111', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 12, padding: '18px 20px', width: 260, boxShadow: '0 8px 32px rgba(0,0,0,0.6)' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
+                        <span style={{ fontSize: '0.82rem', fontWeight: 700, color: '#f0f0f0' }}>Edit Goals</span>
+                        <button onClick={() => setEditOpen(false)} style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.4)', cursor: 'pointer', padding: 0 }}><X size={15} /></button>
+                    </div>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                        {MACRO_FIELDS.map(f => (
+                            <div key={f.key}>
+                                <label style={{ fontSize: '0.7rem', fontWeight: 600, color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', marginBottom: 5 }}>{f.label} ({f.unit})</label>
+                                <input
+                                    type="number" min={f.min} max={f.max}
+                                    value={draft[f.key]}
+                                    onChange={e => setDraft(prev => ({ ...prev, [f.key]: e.target.value }))}
+                                    style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 7, padding: '7px 10px', color: '#f0f0f0', fontSize: '0.85rem', outline: 'none', boxSizing: 'border-box' }}
+                                />
+                            </div>
+                        ))}
+                    </div>
+                    <button
+                        onClick={handleSave}
+                        disabled={saving}
+                        style={{ marginTop: 14, width: '100%', background: '#fff', color: '#000', border: 'none', borderRadius: 8, padding: '8px 0', fontWeight: 700, fontSize: '0.82rem', cursor: saving ? 'not-allowed' : 'pointer', opacity: saving ? 0.6 : 1 }}
+                    >
+                        {saving ? 'Saving…' : 'Save Goals'}
+                    </button>
+                </div>
+            )}
+
             {loading ? (
                 <div className="nutrition-loading"><div className="nutrition-spinner" /></div>
             ) : (
@@ -864,6 +946,7 @@ const Nutrition = () => {
                     mealsData={mealsData}
                     balanceData={balanceData}
                     loading={loadingMeals || loadingBal}
+                    onGoalsUpdated={fetchBalance}
                 />
                 <MealLogger mealsData={mealsData} onUpdate={handleMealUpdate} loading={loadingMeals} userId={userId} />
                 {/* Row 2: water intake | history */}

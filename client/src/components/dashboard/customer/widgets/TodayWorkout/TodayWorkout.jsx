@@ -23,11 +23,8 @@ const TodayWorkout = ({ onNavigate }) => {
                 const todayW = workouts.find(w => w.day === today);
                 if (todayW) {
                     setWorkout(todayW);
-                    const logRes = await axios.get(
-                        `/api/v1/workout/${todayW.id}/logs?date=${todayDate}`,
-                        { withCredentials: true }
-                    );
-                    if ((logRes.data.data || []).length > 0) setLogged(true);
+                    const hasLogs = (todayW.exercises || []).some(ex => ex.logs && ex.logs.length > 0);
+                    if (hasLogs) setLogged(true);
                 }
             } catch { /* silent */ }
             setLoading(false);

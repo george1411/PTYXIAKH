@@ -209,6 +209,8 @@ const CustomerMessages = ({ user, targetTrainer }) => {
     const [painHovered, setPainHovered]             = useState(null);
     const [submittingPain, setSubmittingPain]       = useState(false);
     const bottomRef                   = useRef(null);
+    const messagesContainerRef        = useRef(null);
+    const groupMessagesContainerRef   = useRef(null);
     const pollRef                     = useRef(null);
     const inputRef                    = useRef(null);
     const plusMenuRef                 = useRef(null);
@@ -285,7 +287,12 @@ const CustomerMessages = ({ user, targetTrainer }) => {
     }, [active?.id]);
 
     useEffect(() => {
-        bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+        const el = messagesContainerRef.current;
+        if (!el) return;
+        const isNearBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 120;
+        if (isNearBottom) {
+            bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+        }
     }, [messages]);
 
     // ── When active group changes, load its messages ─────────────
@@ -300,7 +307,12 @@ const CustomerMessages = ({ user, targetTrainer }) => {
     }, [activeGroup?.id, fetchGroupMessages]);
 
     useEffect(() => {
-        groupBottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+        const el = groupMessagesContainerRef.current;
+        if (!el) return;
+        const isNearBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 120;
+        if (isNearBottom) {
+            groupBottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+        }
     }, [groupMessages]);
 
     useEffect(() => {
@@ -603,7 +615,7 @@ const CustomerMessages = ({ user, targetTrainer }) => {
 
                         {groupTab === 'chat' ? (
                             <>
-                                <div className="cm-messages">
+                                <div className="cm-messages" ref={groupMessagesContainerRef}>
                                     {loadingGroup ? (
                                         <div className="cm-state"><Loader2 className="cm-spin" size={24} /><p>Loading…</p></div>
                                     ) : groupMessages.length === 0 ? null : (
@@ -724,7 +736,7 @@ const CustomerMessages = ({ user, targetTrainer }) => {
                         </div>
 
                         {/* Messages */}
-                        <div className="cm-messages">
+                        <div className="cm-messages" ref={messagesContainerRef}>
                             {loadingMsgs ? (
                                 <div className="cm-state">
                                     <Loader2 className="cm-spin" size={24} />
@@ -753,12 +765,12 @@ const CustomerMessages = ({ user, targetTrainer }) => {
                                                 {workout ? (
                                                     <div className={`cm-bubble cm-workout-card ${isMe ? 'me' : 'them'}`}>
                                                         <div className="cm-workout-title">{workout.name}</div>
-                                                        {(expandedWorkouts.has(msg.id) ? workout.exercises : workout.exercises.slice(0, 4)).map((ex, j) => (
+                                                        {(expandedWorkouts.has(msg.id) ? (workout.exercises || []) : (workout.exercises || []).slice(0, 4)).map((ex, j) => (
                                                             <div key={j} className="cm-workout-ex">
                                                                 {ex.exerciseName}{ex.sets ? ` · ${ex.sets}×${ex.reps || '?'}` : ''}
                                                             </div>
                                                         ))}
-                                                        {workout.exercises.length > 4 && (
+                                                        {(workout.exercises || []).length > 4 && (
                                                             <button className="cm-workout-more" onClick={() => toggleWorkout(msg.id)}>
                                                                 {expandedWorkouts.has(msg.id) ? 'Show less' : `+${workout.exercises.length - 4} more`}
                                                             </button>

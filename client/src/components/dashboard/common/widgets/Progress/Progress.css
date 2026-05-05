@@ -41,7 +41,7 @@
 
 /* ─── Card ─────────────────────────────────────────────────── */
 .progress-card {
-    background: #111111;
+    background: #000000;
     border: 1px solid rgba(255,255,255,0.08);
     border-radius: 16px;
     padding: 24px;
@@ -111,7 +111,7 @@
     display: flex;
     align-items: center;
     gap: 6px;
-    background: #1a1a1a;
+    background: #0a0a0a;
     border: 1px solid rgba(255,255,255,0.12);
     border-radius: 10px;
     padding: 6px 10px;
@@ -156,7 +156,7 @@
 .progress-range-toggle {
     display: flex;
     gap: 4px;
-    background: #1a1a1a;
+    background: #0a0a0a;
     border-radius: 8px;
     padding: 3px;
 }
@@ -262,7 +262,7 @@
     justify-content: space-between;
     gap: 10px;
     padding: 10px 12px;
-    background: #1a1a1a;
+    background: #0a0a0a;
     border: 1px solid rgba(255,255,255,0.06);
     border-radius: 12px;
     transition: border-color 0.2s;
@@ -424,7 +424,7 @@
 }
 
 .progress-heatmap-cell.future {
-    background: #1a1a1a;
+    background: #0a0a0a;
     opacity: 0.6;
 }
 
@@ -495,7 +495,7 @@
 /* ─── AI Weight Prediction Widget ─────────────────────────── */
 .progress-card-prediction {
     border: 1px solid rgba(255,255,255,0.08);
-    background: #111111;
+    background: #000000;
 }
 
 .prediction-form {
@@ -533,7 +533,7 @@
     border-radius: 8px;
     font-size: 0.85rem;
     color: #e0e0e0;
-    background: #1a1a1a;
+    background: #0a0a0a;
     outline: none;
     width: 100%;
     transition: border-color 0.2s;
@@ -550,7 +550,7 @@
     font-size: 0.85rem;
     font-weight: 700;
     text-align: center;
-    background: #1a1a1a;
+    background: #0a0a0a;
     color: #888;
     height: 100%;
     display: flex;
@@ -592,7 +592,7 @@
     border-radius: 8px;
     font-size: 0.85rem;
     color: #e0e0e0;
-    background: #1a1a1a;
+    background: #0a0a0a;
     outline: none;
     cursor: pointer;
     transition: border-color 0.2s;
@@ -644,7 +644,7 @@
 .prediction-result {
     margin-top: 16px;
     padding: 16px;
-    background: #1a1a1a;
+    background: #0a0a0a;
     border-radius: 12px;
     border: 1px solid rgba(255,255,255,0.08);
 }
@@ -726,7 +726,7 @@
 /* ─── BMI Calculator Widget ──────────────────────────────────── */
 .bmi-card {
     border: 1px solid rgba(255,255,255,0.08);
-    background: #111111;
+    background: #000000;
     overflow: visible;
     height: auto;
 }
@@ -806,7 +806,7 @@
     align-items: flex-start;
     gap: 10px;
     padding: 10px 14px;
-    background: #1a1a1a;
+    background: #0a0a0a;
     border-radius: 10px;
     border-left: 3px solid #555;
     font-size: 0.8rem;
@@ -862,7 +862,7 @@
     align-items: flex-start;
     gap: 4px;
     padding: 12px 14px;
-    background: #1a1a1a;
+    background: #0a0a0a;
     border: 1px solid rgba(255,255,255,0.07);
     border-radius: 12px;
     cursor: pointer;
@@ -985,7 +985,7 @@
 
 /* Custom tooltip */
 .eh-tooltip {
-    background: #1a1a1a;
+    background: #0a0a0a;
     border: 1px solid rgba(255,255,255,0.12);
     border-radius: 8px;
     padding: 8px 12px;

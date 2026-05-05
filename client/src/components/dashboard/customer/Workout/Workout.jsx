@@ -138,23 +138,27 @@ const GroupWorkout = () => {
                     ))}
                 </div>
             )}
-            {selProg && <div className="gw-prog-name">{selGroup?.name} · {selProg.name}</div>}
-
             {/* Day navigation — same as My Program */}
             <div className="workout-day-nav">
                 <button className="workout-day-nav-btn" onClick={() => setDayIdx(i => (i + 6) % 7)}><ChevronLeft size={18} /></button>
-                <span className="workout-day-nav-label">{day}</span>
+                <span className="workout-day-nav-label">{(() => {
+                    const d = new Date();
+                    const todayDayIdx = d.getDay() === 0 ? 6 : d.getDay() - 1;
+                    const diff = dayIdx - todayDayIdx;
+                    d.setDate(d.getDate() + diff);
+                    return d.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' });
+                })()}</span>
                 <button className="workout-day-nav-btn" onClick={() => setDayIdx(i => (i + 1) % 7)}><ChevronRight size={18} /></button>
             </div>
 
-            {/* Header */}
+            {/* Header + Exercise rows merged */}
+            <div style={{ borderRadius: 12, overflow: 'hidden', border: '1px solid rgba(255,255,255,0.06)' }}>
             <div className="workout-header-row">
                 <div className="workout-header-title"><span>Exercise List</span></div>
                 <div className="workout-header-info">{exercises.length} Exercises <span className="mx-2">|</span> {selProg?.name}</div>
             </div>
 
-            {/* Exercise rows — same style as My Program */}
-            <div className="exercise-list custom-scrollbar">
+            <div className="exercise-list custom-scrollbar" style={{ borderRadius: 0 }}>
                 {exercises.length === 0 ? (
                     <div className="gw-empty">Rest day — no exercises</div>
                 ) : exercises.map((ex, idx) => {
@@ -179,6 +183,7 @@ const GroupWorkout = () => {
                         </div>
                     );
                 })}
+            </div>
             </div>
 
             {/* Modal — same as My Program */}

@@ -67,14 +67,14 @@
     height: 32px;
     border: 1px solid rgba(255,255,255,0.08);
     border-radius: 8px;
-    background: #1a1a1a;
+    background: #0a0a0a;
     color: #aaa;
     cursor: pointer;
     transition: background 0.15s, border-color 0.15s, transform 0.1s;
 }
 
 .cd-schedule-nav-btn:hover {
-    background: #272727;
+    background: #0a0a0a;
     border-color: rgba(255,255,255,0.15);
     color: #fff;
     transform: scale(1.05);
@@ -114,7 +114,7 @@
     overflow-x: auto;
     border-radius: 12px;
     border: 1px solid rgba(255,255,255,0.08);
-    background: #111111;
+    background: #000000;
     box-shadow: 0 2px 12px rgba(0, 0, 0, 0.4);
 }
 
@@ -270,7 +270,7 @@
 }
 
 .sched-modal {
-    background: #111111;
+    background: #000000;
     border: 1px solid rgba(255,255,255,0.08);
     border-radius: 16px;
     width: 90%;
@@ -337,12 +337,12 @@
     color: #e0e0e0;
     transition: border-color 0.2s;
     outline: none;
-    background: #1a1a1a;
+    background: #0a0a0a;
 }
 
 .sched-input:focus {
     border-color: rgba(255,255,255,0.25);
-    background: #1e1e1e;
+    background: #0a0a0a;
 }
 
 .sched-time-row {
@@ -387,7 +387,7 @@
     gap: 0.6rem;
     padding: 1rem 1.4rem;
     border-top: 1px solid rgba(255,255,255,0.08);
-    background: #0f0f0f;
+    background: #000000;
 }
 
 .sched-btn {
@@ -493,7 +493,7 @@
     border: 1px solid rgba(255,255,255,0.08);
     border-radius: 12px;
     overflow: hidden;
-    background: #111111;
+    background: #000000;
 }
 
 .cal-month-headers {
@@ -666,7 +666,7 @@
     border-radius: 20px;
     flex: 1;
     min-width: 0;
-    background: #111111;
+    background: #000000;
     border: 1px solid rgba(255,255,255,0.07);
     transition: border-color 0.2s, box-shadow 0.2s;
     box-shadow: 0 8px 24px rgba(0,0,0,0.4);
@@ -677,7 +677,7 @@
 }
 
 .schedule-card.is-today {
-    background: #161616;
+    background: #000000;
     border-color: rgba(255,255,255,0.1);
 }
 
@@ -745,13 +745,13 @@
     justify-content: space-between;
     gap: 8px;
     padding: 7px 12px;
-    background: #1a1a1a;
+    background: #0a0a0a;
     border-radius: 10px;
     border: 1px solid rgba(255,255,255,0.04);
 }
 
 .schedule-card.is-today .card-exercise-row {
-    background: #1e1e28;
+    background: #0a0a14;
     border-color: rgba(129,140,248,0.08);
 }
 
@@ -809,7 +809,7 @@
 }
 
 .workout-log-popup {
-    background: #111111;
+    background: #000000;
     border: 1px solid rgba(255,255,255,0.08);
     border-radius: 16px;
     width: 420px;

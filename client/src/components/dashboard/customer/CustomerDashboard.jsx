@@ -7,6 +7,7 @@ import Progress from '../common/widgets/Progress/Progress';
 import Nutrition from './Nutrition/Nutrition';
 import Settings from '../common/Settings/Settings';
 import CustomerMessages from '../common/Messages/CustomerMessages';
+import CustomerProfile from './CustomerProfile';
 import ProgressSnapshot from '../common/widgets/ProgressSnapshot';
 import StreaksStats from './widgets/StreaksStats/StreaksStats';
 import WeeklyMeasurements from './widgets/WeeklyMeasurements/WeeklyMeasurements';
@@ -24,6 +25,7 @@ const NAV_TABS = [
     { id: 'schedule',  label: 'Schedule'  },
     { id: 'progress',  label: 'Progress'  },
     { id: 'messages',  label: 'Messages'  },
+    { id: 'profile',   label: 'Profile'   },
 ];
 
 // ─── Notification Bell ────────────────────────────────────────
@@ -199,7 +201,7 @@ const CustomerDashboard = ({ user, onLogout, onUserUpdate }) => {
 
                     {/* Right side */}
                     <div className="flex items-center gap-5">
-                        <span className="hidden md:block text-sm font-semibold" style={{ whiteSpace: 'nowrap', color: 'rgba(255,255,255,0.35)' }}>
+                        <span className="hidden md:block text-sm font-semibold" style={{ whiteSpace: 'nowrap', color: '#ffffff' }}>
                             {new Date().toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })}
                         </span>
                         <div className="relative hidden md:block">
@@ -212,13 +214,6 @@ const CustomerDashboard = ({ user, onLogout, onUserUpdate }) => {
                             />
                         </div>
                         <NotificationBell onNavigateToMessages={() => navigateTo('messages')} />
-                        <button
-                            onClick={() => navigateTo('settings')}
-                            title="Settings"
-                            style={{ width: 32, height: 32, borderRadius: '50%', background: 'rgba(129,140,248,0.15)', border: '1px solid rgba(129,140,248,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#a5b4fc', flexShrink: 0 }}
-                        >
-                            <User size={15} />
-                        </button>
                     </div>
                 </div>
             </header>
@@ -240,6 +235,8 @@ const CustomerDashboard = ({ user, onLogout, onUserUpdate }) => {
                             <Settings user={user} onLogout={onLogout} onUserUpdate={onUserUpdate} />
                         ) : activeTab === 'messages' ? (
                             <CustomerMessages user={user} targetTrainer={messageTarget} />
+                        ) : activeTab === 'profile' ? (
+                            <CustomerProfile user={user} onLogout={onLogout} onUserUpdate={onUserUpdate} />
                         ) : (
                             /* Overview Grid */
                             <div className="grid grid-cols-4 gap-4">

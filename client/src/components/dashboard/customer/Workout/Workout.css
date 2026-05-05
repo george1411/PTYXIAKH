@@ -8,7 +8,7 @@
 .workout-tab-bar {
     display: flex;
     gap: 4px;
-    background: #1a1a1a;
+    background: #000000;
     border-radius: 10px;
     padding: 4px;
     margin-bottom: 16px;
@@ -28,12 +28,12 @@
 }
 
 .workout-tab-btn.active {
-    background: #818cf8;
-    color: #fff;
+    background: #ffffff;
+    color: #000000;
 }
 
 .workout-tab-btn:hover:not(.active) {
-    color: #ccc;
+    color: #fff;
 }
 
 /* ─── Group Workout ──────────────────────────────────────────── */
@@ -126,7 +126,7 @@
 }
 
 .gw-ex-card {
-    background: #111;
+    background: #000000;
     border: 1px solid rgba(255,255,255,0.07);
     border-radius: 12px;
     padding: 14px 16px;
@@ -208,7 +208,7 @@
 .gw-log-input {
     flex: 1;
     padding: 6px 10px;
-    background: #1a1a1a;
+    background: #000000;
     border: 1px solid rgba(255,255,255,0.1);
     border-radius: 8px;
     color: #e0e0e0;
@@ -249,11 +249,8 @@
     justify-content: space-between;
     align-items: center;
     padding: 1rem 1.5rem;
-    background-color: #f3f4f6;
-    /* gray-100/lighter for header? or maintain black style */
+    background-color: #000000;
     border-radius: 12px 12px 0 0;
-    /* adapting to "Black/White" - maybe dark header */
-    background-color: var(--bg-dark);
     color: white;
 }
 
@@ -280,7 +277,7 @@
     display: flex;
     flex-direction: column;
     gap: 1px;
-    background-color: var(--bg-dark-alt);
+    background-color: #0a0a0a;
     border-radius: 0 0 12px 12px;
     overflow-y: auto;
 }
@@ -289,7 +286,7 @@
     display: grid;
     grid-template-columns: 2fr 3fr;
     /* Name vs Sets */
-    background-color: var(--bg-dark);
+    background-color: #000000;
     /* zinc-900 */
     padding: 1rem 1.5rem;
     align-items: center;
@@ -299,7 +296,7 @@
 }
 
 .exercise-row:hover {
-    background-color: var(--bg-dark-alt);
+    background-color: #0a0a0a;
     /* zinc-800 */
 }
 
@@ -308,7 +305,7 @@
 }
 
 .exercise-row.read-only:hover {
-    background-color: var(--bg-dark);
+    background-color: #000000;
 }
 
 .exercise-details {
@@ -392,7 +389,7 @@
 }
 
 .modal-content {
-    background-color: var(--bg-dark);
+    background-color: #000000;
     /* zinc-950 */
     border: 1px solid rgba(255,255,255,0.08);
     width: 100%;
@@ -446,7 +443,7 @@
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    background: #1a1a1a;
+    background: #000000;
     border: 1px solid rgba(255,255,255,0.08);
     border-radius: 8px;
     padding: 0.5rem 0.75rem;
@@ -487,7 +484,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background-color: var(--bg-dark-alt);
+    background-color: #0a0a0a;
     color: #a1a1aa;
     height: 3rem;
     border-radius: 8px;
@@ -496,7 +493,7 @@
 }
 
 .workout-input {
-    background-color: var(--bg-dark);
+    background-color: #000000;
     border: 1px solid rgba(255,255,255,0.08);
     color: white;
     height: 3rem;
@@ -556,7 +553,7 @@
 
 .notes-area {
     width: 100%;
-    background-color: var(--bg-dark);
+    background-color: #000000;
     border: 1px solid rgba(255,255,255,0.08);
     border-radius: 8px;
     padding: 0.75rem;
@@ -569,7 +566,7 @@
 .modal-footer {
     padding: 1.5rem;
     border-top: 1px solid #27272a;
-    background-color: var(--bg-dark);
+    background-color: #000000;
 }
 
 .btn-save-primary {
@@ -608,7 +605,7 @@
 /* Rest Timer */
 .rest-timer-section {
     margin-top: 1.5rem;
-    background-color: var(--bg-dark);
+    background-color: #000000;
     border: 1px solid rgba(255,255,255,0.08);
     border-radius: 10px;
     padding: 1rem 1.25rem;
@@ -693,7 +690,7 @@
 .rest-timer-btn.reset:hover {
     color: white;
     border-color: #3f3f46;
-    background-color: var(--bg-dark-alt);
+    background-color: #0a0a0a;
 }
 
 /* ─── Day Navigation ──────────────────────────────────────── */
@@ -706,7 +703,7 @@
 }
 
 .workout-day-nav-btn {
-    background: #18181b;
+    background: #000000;
     border: 1px solid rgba(255,255,255,0.08);
     border-radius: 8px;
     color: #aaa;
@@ -718,7 +715,7 @@
 }
 
 .workout-day-nav-btn:hover {
-    background: #27272a;
+    background: #0a0a0a;
     color: #fff;
 }
 
@@ -751,7 +748,7 @@
     display: flex;
     align-items: center;
     gap: 8px;
-    background: #1a1a1a;
+    background: #000000;
     border: 1px solid rgba(255,255,255,0.08);
     color: #aaa;
     padding: 10px 16px;

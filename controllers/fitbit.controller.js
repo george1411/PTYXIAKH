@@ -149,13 +149,45 @@ export const syncFitbitSteps = async (req, res) => {
         let { accessToken, refreshToken, expiresAt } = tokens[0];
 
         if (new Date(expiresAt) <= new Date()) {
-            accessToken = await refreshAccessToken(userId, refreshToken);
+            try {
+                accessToken = await refreshAccessToken(userId, refreshToken);
+            } catch (refreshErr) {
+                console.error('Fitbit token refresh failed:', refreshErr.response?.data || refreshErr.message);
+                await sequelize.query(
+                    `DELETE FROM FitbitTokens WHERE userId = :userId`,
+                    { replacements: { userId }, type: QueryTypes.DELETE }
+                );
+                return res.status(401).json({ status: 'fail', message: 'Fitbit token expired. Please reconnect.' });
+            }
         }
 
-        const stepsRes = await axios.get(
-            'https://api.fitbit.com/1/user/-/activities/steps/date/today/7d.json',
-            { headers: { Authorization: `Bearer ${accessToken}` } }
-        );
+        let stepsRes;
+        try {
+            stepsRes = await axios.get(
+                'https://api.fitbit.com/1/user/-/activities/steps/date/today/7d.json',
+                { headers: { Authorization: `Bearer ${accessToken}` } }
+            );
+        } catch (apiErr) {
+            const status = apiErr.response?.status;
+            if (status === 401) {
+                // Token invalid — try one refresh then retry, else clear
+                try {
+                    accessToken = await refreshAccessToken(userId, refreshToken);
+                    stepsRes = await axios.get(
+                        'https://api.fitbit.com/1/user/-/activities/steps/date/today/7d.json',
+                        { headers: { Authorization: `Bearer ${accessToken}` } }
+                    );
+                } catch {
+                    await sequelize.query(
+                        `DELETE FROM FitbitTokens WHERE userId = :userId`,
+                        { replacements: { userId }, type: QueryTypes.DELETE }
+                    );
+                    return res.status(401).json({ status: 'fail', message: 'Fitbit token expired. Please reconnect.' });
+                }
+            } else {
+                throw apiErr;
+            }
+        }
 
         const stepsData = stepsRes.data['activities-steps'];
 

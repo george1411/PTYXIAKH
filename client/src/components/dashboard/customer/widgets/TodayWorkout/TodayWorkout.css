@@ -1,6 +1,6 @@
 /* ─── TodayWorkout card ────────────────────────────────────── */
 .tw-container {
-    background: #111111;
+    background: #000000;
     border-radius: 1rem;
     padding: 1.5rem;
     display: flex;
@@ -50,7 +50,7 @@
     font-size: 0.72rem;
     font-weight: 600;
     color: #6b7280;
-    background: #1f1f1f;
+    background: #0a0a0a;
     border: 1px solid #2a2a2a;
     border-radius: 6px;
     padding: 4px 9px;
@@ -83,7 +83,7 @@
 /* ─── Divider ───────────────────────────────────────────────── */
 .tw-divider {
     height: 1px;
-    background: #222222;
+    background: #0a0a0a;
     margin-bottom: 1rem;
 }
 
@@ -101,7 +101,7 @@
     justify-content: space-between;
     gap: 12px;
     padding: 8px 12px;
-    background: #1a1a1a;
+    background: #0a0a0a;
     border-radius: 10px;
 }
 

@@ -59,19 +59,19 @@ const WeeklyMeasurements = () => {
     const diffText  = weightDiff > 0 ? `+${weightDiff.toFixed(1)}` : weightDiff < 0 ? weightDiff.toFixed(1) : '0';
 
     if (loading) return (
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', background: '#111111', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '1rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', background: '#000000', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '1rem' }}>
             <div style={{ width: 32, height: 32, borderRadius: '50%', border: '3px solid rgba(255,255,255,0.1)', borderTopColor: '#818CF8', animation: 'spin 0.7s linear infinite' }} />
         </div>
     );
 
     if (error) return (
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', background: '#111111', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '1rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', background: '#000000', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '1rem' }}>
             <p style={{ color: '#f87171', fontSize: '0.85rem' }}>{error}</p>
         </div>
     );
 
     return (
-        <div style={{ display: 'flex', flexDirection: 'column', height: '100%', background: '#111111', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '1rem', padding: '1rem' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', height: '100%', background: '#000000', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '1rem', padding: '1rem' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
                 <h3 style={{ color: '#f0f0f0', fontWeight: 700, fontSize: '0.95rem', margin: 0 }}>Weight Progress</h3>
             </div>
@@ -79,9 +79,6 @@ const WeeklyMeasurements = () => {
             <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.5rem', marginBottom: '0.75rem' }}>
                 <span style={{ color: '#f0f0f0', fontSize: '1.8rem', fontWeight: 700 }}>{currentWeight}</span>
                 <span style={{ color: '#555', fontSize: '0.8rem', fontWeight: 700, textTransform: 'uppercase' }}>kg</span>
-                {weightDiff !== 0 && (
-                    <span style={{ color: diffClass, fontSize: '0.8rem', fontWeight: 600, background: 'rgba(255,255,255,0.06)', padding: '2px 8px', borderRadius: 999 }}>{diffText} kg</span>
-                )}
             </div>
 
             <div style={{ flex: 1, width: '100%', minHeight: 0 }}>

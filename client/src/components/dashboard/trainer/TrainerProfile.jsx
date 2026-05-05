@@ -10,7 +10,7 @@ const SPECIALIZATION_OPTIONS = [
     'Endurance Training', 'Strength & Conditioning', 'Pre/Post Natal'
 ];
 
-const TrainerProfile = ({ user }) => {
+const TrainerProfile = ({ user, onLogout }) => {
     const [profile, setProfile] = useState({
         bio: '',
         specializations: [],
@@ -163,6 +163,16 @@ const TrainerProfile = ({ user }) => {
                     </div>
                 </div>
                 <div className="tp-header-actions">
+                    {!editing && onLogout && (
+                        <button
+                            onClick={onLogout}
+                            style={{ fontSize: '0.78rem', fontWeight: 600, color: 'rgba(255,255,255,0.35)', background: 'none', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, padding: '6px 14px', cursor: 'pointer', transition: 'all 0.15s' }}
+                            onMouseEnter={e => { e.currentTarget.style.color = 'rgba(255,255,255,0.7)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.25)'; }}
+                            onMouseLeave={e => { e.currentTarget.style.color = 'rgba(255,255,255,0.35)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'; }}
+                        >
+                            Sign out
+                        </button>
+                    )}
                     {!editing ? (
                         <button className="tp-btn tp-btn-edit" onClick={() => setEditing(true)}>
                             <Edit3 size={16} /> Edit Profile
@@ -174,11 +184,6 @@ const TrainerProfile = ({ user }) => {
                                 {saving ? 'Saving...' : <><Save size={16} /> Save</>}
                             </button>
                         </div>
-                    )}
-                    {saved && (
-                        <span className="tp-saved-msg">
-                            <CheckCircle size={14} /> Profile saved!
-                        </span>
                     )}
                 </div>
             </div>
