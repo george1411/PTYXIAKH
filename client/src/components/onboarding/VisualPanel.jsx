@@ -3,27 +3,25 @@ export default function VisualPanel() {
         <div style={{ background: '#0a0a0a', display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%', height: '100%', overflow: 'hidden' }}>
             <div className="animate-fade-in" style={{ position: 'relative', width: '500px', height: '520px', transform: 'scale(1.1)', transformOrigin: 'left center' }}>
 
-                {/* Main deep indigo/purple base glow */}
+                {/* Main purple base glow */}
                 <div style={{
                     position: 'absolute', top: '50%', left: '50%',
                     transform: 'translate(-50%, -50%)',
-                    width: '380px', height: '380px',
-                    background: 'radial-gradient(circle, rgba(99,102,241,0.4) 0%, rgba(147,51,234,0.4) 100%)',
-                    filter: 'blur(90px)',
+                    width: '420px', height: '420px',
+                    background: 'radial-gradient(circle, rgba(129,140,248,0.55) 0%, rgba(109,106,255,0.35) 50%, transparent 100%)',
+                    filter: 'blur(80px)',
                     borderRadius: '50%',
                     pointerEvents: 'none',
-                    mixBlendMode: 'screen',
                 }} />
-                {/* Bright blue accent glow — offset top-right */}
+                {/* Accent glow — offset top-right */}
                 <div style={{
-                    position: 'absolute', top: '25%', left: '65%',
+                    position: 'absolute', top: '20%', left: '68%',
                     transform: 'translate(-50%, -50%)',
-                    width: '240px', height: '240px',
-                    background: 'rgba(129,140,248,0.3)',
-                    filter: 'blur(70px)',
+                    width: '220px', height: '220px',
+                    background: 'radial-gradient(circle, rgba(196,181,253,0.4) 0%, transparent 100%)',
+                    filter: 'blur(60px)',
                     borderRadius: '50%',
                     pointerEvents: 'none',
-                    mixBlendMode: 'screen',
                 }} />
 
                 {/* Card 1 — Weight History (bottom-left) */}

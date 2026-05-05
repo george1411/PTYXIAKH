@@ -9,6 +9,7 @@
     "build": "cd client && npm install && npm run build"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.93.0",
     "@arcjet/inspect": "^1.0.0-beta.17",
     "@arcjet/node": "^1.0.0-beta.17",
     "axios": "^1.13.5",

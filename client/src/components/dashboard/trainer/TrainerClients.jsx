@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import axios from 'axios';
 import {
     Search, ChevronRight, Trash2, Plus, Save, X, Loader2, Send,
-    BookMarked, Copy, CheckCircle, Dumbbell, Pencil, RefreshCw
+    BookMarked, Copy, CheckCircle, Dumbbell, Pencil, RefreshCw, AlertTriangle
 } from 'lucide-react';
 import {
     LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer,
@@ -465,13 +465,26 @@ const ProgramPanel = ({ clientId }) => {
             .catch(console.error);
     }, [clientId]);
 
-    // Sync editState whenever selectedDay or program changes
+    // Sync editState whenever selectedDay or program changes, then re-check conflicts
     useEffect(() => {
         const workout = program.find(w => w.day === selectedDay);
         if (workout) {
-            setEditState({
-                name: workout.name,
-                exercises: workout.exercises.map(e => ({ ...e }))
+            const exercises = workout.exercises.map(e => ({ ...e, _conflict: null }));
+            setEditState({ name: workout.name, exercises });
+            Promise.all(
+                exercises.map(async (ex) => {
+                    try {
+                        const res = await axios.post(
+                            `/api/v1/trainer/clients/${clientId}/check-exercise`,
+                            { exerciseName: ex.exerciseName, targetMuscles: ex.targetMuscles || '' },
+                            { withCredentials: true }
+                        );
+                        const data = res.data?.data;
+                        return { ...ex, _conflict: data?.conflict ? data : null };
+                    } catch { return ex; }
+                })
+            ).then(checked => {
+                setEditState(prev => ({ ...prev, exercises: checked }));
             });
         } else {
             setEditState({ name: '', exercises: [] });
@@ -483,18 +496,38 @@ const ProgramPanel = ({ clientId }) => {
         e.name.toLowerCase().includes(exSearch.toLowerCase())
     );
 
-    const addExercise = (ex) => {
+    const addExercise = async (ex) => {
         setEditState(prev => ({
             ...prev,
             exercises: [...prev.exercises, {
                 exerciseId: ex.id || null,
                 exerciseName: ex.name,
                 targetMuscles: ex.targetMuscles || '',
-                sets: 3, reps: '10', weight: '', notes: ''
+                sets: 3, reps: '10', weight: '', notes: '',
+                _conflict: null,
             }]
         }));
         setExSearch('');
         setShowExSearch(false);
+
+        try {
+            const res = await axios.post(
+                `/api/v1/trainer/clients/${clientId}/check-exercise`,
+                { exerciseName: ex.name, targetMuscles: ex.targetMuscles || '' },
+                { withCredentials: true }
+            );
+            const data = res.data?.data;
+            if (data?.conflict) {
+                setEditState(prev => {
+                    const exs = [...prev.exercises];
+                    const lastIdx = [...exs].map(e => e.exerciseName).lastIndexOf(ex.name);
+                    if (lastIdx !== -1) {
+                        exs[lastIdx] = { ...exs[lastIdx], _conflict: data };
+                    }
+                    return { ...prev, exercises: exs };
+                });
+            }
+        } catch { /* fail silently */ }
     };
 
     const addCustomExercise = () => {
@@ -523,7 +556,7 @@ const ProgramPanel = ({ clientId }) => {
         try {
             await axios.post(
                 `/api/v1/trainer/clients/${clientId}/program`,
-                { day: selectedDay, name: editState.name, exercises: editState.exercises },
+                { day: selectedDay, name: editState.name, exercises: editState.exercises.map(({ _conflict, ...ex }) => ex) },
                 { withCredentials: true }
             );
             await loadProgram();
@@ -728,8 +761,16 @@ const ProgramPanel = ({ clientId }) => {
                             <div key={i} className="tc-exercise-row">
                                 <div className="tc-exercise-row-top">
                                     <div className="tc-exercise-info">
-                                        <span className="tc-exercise-name">{ex.exerciseName}</span>
-                                        {ex.targetMuscles && (
+                                        <div className="tc-exercise-name-row">
+                                            <span className="tc-exercise-name">{ex.exerciseName}</span>
+                                            {ex._conflict && (
+                                                <AlertTriangle size={12} className="tc-exercise-conflict-icon" title={ex._conflict.reason} />
+                                            )}
+                                        </div>
+                                        {ex._conflict && (
+                                            <span className="tc-exercise-conflict-reason">{ex._conflict.reason}</span>
+                                        )}
+                                        {ex.targetMuscles && !ex._conflict && (
                                             <span className="tc-exercise-muscle">{ex.targetMuscles}</span>
                                         )}
                                     </div>
