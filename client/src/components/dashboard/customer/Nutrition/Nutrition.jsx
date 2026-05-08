@@ -896,18 +896,12 @@ const MealLogger = ({ mealsData, onUpdate, loading, userId }) => {
 };
 
 // ─── Main Nutrition Page ──────────────────────────────────────
-const Nutrition = () => {
+const Nutrition = ({ userId: userIdProp }) => {
     const [mealsData,    setMealsData]    = useState(null);
     const [balanceData,  setBalanceData]  = useState(null);
     const [loadingMeals, setLoadingMeals] = useState(true);
     const [loadingBal,   setLoadingBal]   = useState(true);
-    const [userId,       setUserId]       = useState(null);
-
-    useEffect(() => {
-        axios.get('/api/v1/auth/me', { withCredentials: true })
-            .then(res => setUserId(res.data.data?.id ?? res.data.id ?? null))
-            .catch(() => {});
-    }, []);
+    const userId = userIdProp ?? null;
 
     const fetchMeals = useCallback(() => {
         setLoadingMeals(true);
@@ -937,9 +931,6 @@ const Nutrition = () => {
 
     return (
         <div className="nutrition-page">
-            <div className="nutrition-header">
-                <h2>Nutrition</h2>
-            </div>
             <div className="nutrition-grid">
                 {/* Row 1: macro rings | meal logger */}
                 <DailyMacroTracker

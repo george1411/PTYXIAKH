@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import useIsMobile from '../../../../../hooks/useIsMobile';
 import {
     LineChart, Line, XAxis, YAxis,
     ResponsiveContainer, CartesianGrid, Tooltip, ReferenceLine
@@ -201,6 +202,28 @@ const WeightHistory = () => {
 };
 
 
+// ─── Sparkline ───────────────────────────────────────────────
+function Sparkline({ values, width = 56, height = 18 }) {
+    if (!values?.length) return null;
+    const min = Math.min(...values);
+    const max = Math.max(...values);
+    const span = max - min || 1;
+    const pts = values.map((v, i) => {
+        const x = (i / Math.max(values.length - 1, 1)) * width;
+        const y = height - ((v - min) / span) * height;
+        return `${x.toFixed(1)},${y.toFixed(1)}`;
+    }).join(' ');
+    const lastY = height - ((values[values.length - 1] - min) / span) * height;
+    return (
+        <svg width={width} height={height} viewBox={`0 0 ${width} ${height}`}
+             style={{ flexShrink: 0 }} aria-hidden="true">
+            <polyline points={pts} fill="none" stroke="#818CF8" strokeWidth="1.5"
+                      strokeLinecap="round" strokeLinejoin="round" opacity="0.85" />
+            <circle cx={width} cy={lastY} r="2" fill="#a5b4fc" />
+        </svg>
+    );
+}
+
 // ─── Exercise History ────────────────────────────────────────
 const parseMuscles = (muscles) => {
     if (!muscles) return '';
@@ -226,15 +249,13 @@ const ExerciseHistoryGraph = ({ exercise, onBack }) => {
         if (!logs.length) return { chartData: [], allLogs: [] };
         const byDate = {};
         logs.forEach(l => {
-            if (!byDate[l.date]) byDate[l.date] = { date: l.date, best: 0, worst: Infinity };
-            if (l.kg > byDate[l.date].best) byDate[l.date].best = l.kg;
-            if (l.kg < byDate[l.date].worst) byDate[l.date].worst = l.kg;
+            if (!byDate[l.date]) byDate[l.date] = { date: l.date, max: 0 };
+            if (l.kg > byDate[l.date].max) byDate[l.date].max = l.kg;
         });
         const chartData = Object.values(byDate).map(d => ({
             date: d.date.slice(5), // MM-DD
             fullDate: d.date,
-            best: d.best,
-            worst: d.worst === Infinity ? d.best : d.worst,
+            max: d.max,
         }));
         return { chartData, allLogs: [...logs].reverse() };
     }, [logs]);
@@ -258,7 +279,7 @@ const ExerciseHistoryGraph = ({ exercise, onBack }) => {
     return (
         <div className="eh-graph-view">
             <div className="eh-graph-header">
-                <button className="eh-back-btn" onClick={onBack}>← Back</button>
+                <button className="eh-back-btn" onClick={onBack}>←</button>
                 <div className="eh-graph-title">
                     <h3>{exercise.name}</h3>
                     {exercise.muscles && <span className="eh-graph-muscles">{parseMuscles(exercise.muscles)}</span>}
@@ -273,18 +294,13 @@ const ExerciseHistoryGraph = ({ exercise, onBack }) => {
             ) : (
                 <>
                     <div className="eh-chart-wrap">
-                        <div className="eh-chart-legend">
-                            <span className="eh-legend-dot" style={{ background: '#4ade80' }} /> Best Set
-                            <span className="eh-legend-dot" style={{ background: '#f87171' }} /> Worst Set
-                        </div>
                         <ResponsiveContainer width="100%" height={200}>
                             <LineChart data={chartData} margin={{ top: 30, right: 16, left: 0, bottom: 0 }}>
                                 <CartesianGrid stroke="rgba(255,255,255,0.05)" vertical={false} />
                                 <XAxis dataKey="date" tick={{ fontSize: 10, fill: '#555' }} tickLine={false} axisLine={false} interval="preserveStartEnd" />
                                 <YAxis tick={{ fontSize: 10, fill: '#555' }} tickLine={false} axisLine={false} width={36} tickFormatter={v => `${v}kg`} />
                                 <Tooltip content={() => null} cursor={false} />
-                                <Line type="monotone" dataKey="best" name="Best Set" stroke="#4ade80" strokeWidth={2} dot={{ r: 3, fill: '#4ade80', stroke: 'none' }} activeDot={makeDotLabel('#4ade80')} />
-                                <Line type="monotone" dataKey="worst" name="Worst Set" stroke="#f87171" strokeWidth={2} dot={{ r: 3, fill: '#f87171', stroke: 'none' }} activeDot={makeDotLabel('#f87171')} />
+                                <Line type="monotone" dataKey="max" stroke="#818CF8" strokeWidth={2} dot={{ r: 3, fill: '#818CF8', stroke: 'none' }} activeDot={makeDotLabel('#818CF8')} />
                             </LineChart>
                         </ResponsiveContainer>
                     </div>
@@ -329,9 +345,6 @@ const ExerciseHistory = () => {
                 <div className="progress-card-title">
                     <h3>Exercise History</h3>
                 </div>
-                {selected && (
-                    <span className="eh-card-sub">Select an exercise to view progress</span>
-                )}
             </div>
 
             {loading ? (
@@ -340,13 +353,22 @@ const ExerciseHistory = () => {
                 exercises.length === 0 ? (
                     <div className="progress-empty"><p>No exercises logged yet — start tracking weights!</p></div>
                 ) : (
-                    <div className="eh-exercise-grid">
-                        {exercises.map(ex => (
-                            <button key={ex.id} className="eh-exercise-btn" onClick={() => setSelected(ex)}>
-                                <span className="eh-exercise-name">{ex.name}</span>
-                                <span className="eh-exercise-pr">{ex.maxWeight} kg</span>
-                            </button>
-                        ))}
+                    <div className="eh-list">
+                        {exercises.map((ex, i) => {
+                            const history = ex.history?.length ? ex.history : [ex.maxWeight];
+                            const last = history[history.length - 1];
+                            return (
+                                <button key={ex.id} className="eh-list-row" onClick={() => setSelected(ex)}
+                                    style={{ borderBottom: i < exercises.length - 1 ? '1px solid rgba(255,255,255,0.05)' : 'none' }}>
+                                    <span className="eh-list-name">{ex.name}</span>
+                                    <Sparkline values={history} />
+                                    <span className="eh-list-weight">
+                                        {Number.isInteger(last) ? last : parseFloat(last).toFixed(1)}
+                                        <span className="eh-list-unit">kg</span>
+                                    </span>
+                                </button>
+                            );
+                        })}
                     </div>
                 )
             ) : (
@@ -866,6 +888,7 @@ export const BMICalculator = () => {
 
 // ─── Main Progress Page ──────────────────────────────────────
 const Progress = () => {
+    const isMobile = useIsMobile();
     return (
         <div className="progress-page">
             <div className="progress-header">
@@ -873,12 +896,10 @@ const Progress = () => {
             </div>
 
             <div className="progress-grid">
-                {/* Row 1: Weight History | Exercise History */}
                 <WeightHistory />
                 <ExerciseHistory />
-                {/* Row 2: Weekly Steps | BMI Calculator */}
                 <WeeklySteps />
-                <BMICalculator />
+                {!isMobile && <BMICalculator />}
             </div>
         </div>
     );

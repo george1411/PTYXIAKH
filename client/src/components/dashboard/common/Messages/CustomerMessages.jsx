@@ -117,6 +117,8 @@ const CustomerMessages = ({ user, targetTrainer }) => {
     const pollRef                     = useRef(null);
     const inputRef                    = useRef(null);
     const plusMenuRef                 = useRef(null);
+    const isInitialMsgLoad            = useRef(false);
+    const isInitialGroupLoad          = useRef(false);
 
     // ── Fetch conversation list ──────────────────────────────────
     const fetchConvos = useCallback(async () => {
@@ -177,6 +179,7 @@ const CustomerMessages = ({ user, targetTrainer }) => {
     // ── When active conversation changes, load messages ──────────
     useEffect(() => {
         if (!active?.id) return;
+        isInitialMsgLoad.current = true;
         setLoadingMsgs(true);
         setMessages([]);
         fetchMessages(active.id).finally(() => setLoadingMsgs(false));
@@ -190,17 +193,22 @@ const CustomerMessages = ({ user, targetTrainer }) => {
     }, [active?.id]);
 
     useEffect(() => {
-        const el = messagesContainerRef.current;
-        if (!el) return;
-        const isNearBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 120;
-        if (isNearBottom) {
-            bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+        if (!messages.length) return;
+        if (isInitialMsgLoad.current) {
+            isInitialMsgLoad.current = false;
+            bottomRef.current?.scrollIntoView({ behavior: 'instant' });
+        } else {
+            const el = messagesContainerRef.current;
+            if (!el) return;
+            const isNearBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 120;
+            if (isNearBottom) bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
         }
     }, [messages]);
 
     // ── When active group changes, load its messages ─────────────
     useEffect(() => {
         if (!activeGroup?.id) return;
+        isInitialGroupLoad.current = true;
         setLoadingGroup(true);
         setGroupMessages([]);
         fetchGroupMessages(activeGroup.id).finally(() => setLoadingGroup(false));
@@ -210,11 +218,15 @@ const CustomerMessages = ({ user, targetTrainer }) => {
     }, [activeGroup?.id, fetchGroupMessages]);
 
     useEffect(() => {
-        const el = groupMessagesContainerRef.current;
-        if (!el) return;
-        const isNearBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 120;
-        if (isNearBottom) {
-            groupBottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+        if (!groupMessages.length) return;
+        if (isInitialGroupLoad.current) {
+            isInitialGroupLoad.current = false;
+            groupBottomRef.current?.scrollIntoView({ behavior: 'instant' });
+        } else {
+            const el = groupMessagesContainerRef.current;
+            if (!el) return;
+            const isNearBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 120;
+            if (isNearBottom) groupBottomRef.current?.scrollIntoView({ behavior: 'smooth' });
         }
     }, [groupMessages]);
 

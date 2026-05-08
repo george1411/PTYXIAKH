@@ -233,7 +233,7 @@ const CustomerDashboard = ({ user, onLogout, onUserUpdate }) => {
                         ) : activeTab === 'progress' ? (
                             <Progress />
                         ) : activeTab === 'nutrition' ? (
-                            <Nutrition />
+                            <Nutrition userId={user?.id} />
                         ) : activeTab === 'settings' ? (
                             <Settings user={user} onLogout={onLogout} onUserUpdate={onUserUpdate} />
                         ) : activeTab === 'messages' ? (

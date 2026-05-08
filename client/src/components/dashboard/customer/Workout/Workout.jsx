@@ -3,6 +3,30 @@ import { X, Info, ChevronDown, ChevronUp, ChevronLeft, ChevronRight, CheckCircle
 import axios from 'axios';
 import './Workout.css';
 
+// ─── Set Dot ──────────────────────────────────────────────────
+function SetDot({ filled, ariaLabel }) {
+    return (
+        <div
+            aria-label={ariaLabel}
+            style={{
+                width: 26, height: 26, borderRadius: '50%',
+                display: 'grid', placeItems: 'center',
+                background: filled ? 'rgba(129,140,248,0.18)' : 'transparent',
+                border: `1.5px solid ${filled ? '#818CF8' : 'rgba(255,255,255,0.18)'}`,
+                flexShrink: 0, transition: 'border-color 0.15s, background 0.15s',
+            }}
+        >
+            {filled && (
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none"
+                     stroke="#a5b4fc" strokeWidth="3"
+                     strokeLinecap="round" strokeLinejoin="round">
+                    <polyline points="20 6 9 17 4 12" />
+                </svg>
+            )}
+        </div>
+    );
+}
+
 const G_DAYS = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
 const G_SHORT = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 
@@ -371,11 +395,22 @@ const Workout = () => {
     const handleSetChange = (setId, field, value) => {
         if (!selectedExercise) return;
 
-        const updatedSets = selectedExercise.sets.map(set =>
-            set.id === setId ? { ...set, [field]: value } : set
-        );
+        const updatedSets = selectedExercise.sets.map(set => {
+            if (set.id !== setId) return set;
+            const updated = { ...set, [field]: value };
+            updated.completed = updated.kg !== '' && updated.reps !== '';
+            return updated;
+        });
 
         setSelectedExercise({ ...selectedExercise, sets: updatedSets });
+
+        // Keep dots in list in sync live
+        setWorkout(prev => ({
+            ...prev,
+            exercises: prev.exercises.map(ex =>
+                ex.id !== selectedExercise.id ? ex : { ...ex, sets: updatedSets }
+            )
+        }));
     };
 
     const saveExercise = async () => {
@@ -392,7 +427,6 @@ const Workout = () => {
         setWorkout({ ...workout, exercises: updatedExercises });
         closeExerciseModal();
 
-        // Persist to database
         try {
             await axios.post('/api/v1/workouts/logs', {
                 workoutExerciseId: updatedExercise.workoutExerciseId,
@@ -406,6 +440,7 @@ const Workout = () => {
             console.error('Error saving workout logs:', error);
         }
     };
+
 
 
 
@@ -483,56 +518,42 @@ const Workout = () => {
                 </div>
             )}
 
-            {/* Header */}
-            <div className="workout-header-row">
-                <div className="workout-header-title">
-                    <span>Exercise List</span>
+            {/* Exercise board */}
+            <div className="exercise-board">
+                <div className="exercise-board-header">
+                    <span className="exercise-board-title">EXERCISE LIST</span>
+                    <span className="exercise-board-count">
+                        {workout.exercises.filter(e => e.sets.every(s => s.completed)).length} / {workout.exercises.length} LOGGED
+                    </span>
                 </div>
-                <div className="workout-header-info">
-                    {workout.exercises.length} Exercises <span className="mx-2">|</span> {workout.name}
+
+                <div className="exercise-list custom-scrollbar">
+                    {workout.exercises.map((exercise) => (
+                        <div
+                            key={exercise.id}
+                            className={`exercise-row ${!isToday ? 'read-only' : ''}`}
+                            onClick={() => isToday && openExerciseModal(exercise)}
+                        >
+                            <div className="exercise-details">
+                                <h3 className="exercise-name">{exercise.name}</h3>
+                                <span className="exercise-meta">
+                                    {exercise.sets[0]?.targetReps ? `${exercise.sets[0].targetReps} reps` : `${exercise.sets.length} sets`}
+                                    {exercise.sets[0]?.targetKg ? ` · ${exercise.sets[0].targetKg} kg` : ''}
+                                </span>
+                            </div>
+
+                            <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+                                {exercise.sets.map((set, i) => (
+                                    <SetDot
+                                        key={i}
+                                        filled={set.completed}
+                                        ariaLabel={`Set ${i + 1} of ${exercise.sets.length} for ${exercise.name}`}
+                                    />
+                                ))}
+                            </div>
+                        </div>
+                    ))}
                 </div>
-            </div>
-
-            {/* List */}
-            {/* List - Redesigned as Cards */}
-            {/* List - Reverted to Row Style */}
-            <div className="exercise-list custom-scrollbar">
-                {workout.exercises.map((exercise) => (
-                    <div
-                        key={exercise.id}
-                        className={`exercise-row ${!isToday ? 'read-only' : ''}`}
-                        onClick={() => isToday && openExerciseModal(exercise)}
-                    >
-                        <div className="exercise-details">
-                            <h3 className="exercise-name">{exercise.name}</h3>
-                            <span className="exercise-meta">
-                                {exercise.sets.length} Sets
-                                {exercise.tip && " • Tip available"}
-                            </span>
-                        </div>
-
-                        {/* Right side: Either previews or Log button */}
-                        <div className="sets-preview">
-                            {exercise.sets.some(s => s.completed) ? (
-                                exercise.sets.map((set, idx) => (
-                                    <div key={idx} className={`set-pill-preview ${set.completed ? 'completed' : ''}`}>
-                                        <span>Set {set.id}</span>
-                                        {set.completed && <span>{set.kg}kg × {set.reps}</span>}
-                                    </div>
-                                ))
-                            ) : isToday ? (
-                                <button className="btn-log-exercise" onClick={(e) => {
-                                    e.stopPropagation();
-                                    openExerciseModal(exercise);
-                                }}>
-                                    Log
-                                </button>
-                            ) : (
-                                <span style={{ color: '#aaa', fontSize: '0.8rem' }}>Not logged</span>
-                            )}
-                        </div>
-                    </div>
-                ))}
             </div>
 
             {/* Modal */}

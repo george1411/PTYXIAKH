@@ -35,7 +35,7 @@ app.use(helmet());
 app.use(cors({
     origin: NODE_ENV === 'production'
         ? process.env.CLIENT_URL
-        : ['http://localhost:5173', 'http://localhost:5174', 'http://localhost:3000', 'http://localhost', 'capacitor://localhost', 'http://10.0.2.2:8080'],
+        : ['http://localhost:5173', 'http://localhost:5174', 'http://localhost:3000', 'http://localhost', 'capacitor://localhost', 'http://10.0.2.2:8080', 'https://rumor-scientist-manpower.ngrok-free.app'],
     credentials: true
 }));
 
@@ -64,6 +64,12 @@ app.use('/api/v1/nutrition', nutritionRouter);
 app.use('/api/v1/invite', inviteRouter);
 app.use('/api/v1/fitbit', fitbitRouter);
 app.use('/api/v1/groups', groupsRouter);
+
+app.get('/fitbit-done', (req, res) => {
+    const status = req.query.fitbit;
+    const msg = status === 'error' ? 'Something went wrong. Please try again.' : 'Fitbit connected successfully!';
+    res.send(`<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>GymLit – Fitbit</title><style>body{background:#000;color:#fff;font-family:sans-serif;display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;margin:0;gap:16px}h2{font-size:1.4rem;margin:0}p{color:#aaa;margin:0;text-align:center}button{background:#818CF8;color:#fff;border:none;border-radius:12px;padding:12px 28px;font-size:1rem;cursor:pointer;margin-top:8px}</style></head><body><h2>${msg}</h2><p>You can now return to GymLit.</p></body></html>`);
+});
 
 // Serve React frontend in production
 if (NODE_ENV === 'production') {

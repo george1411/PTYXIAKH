@@ -384,7 +384,8 @@ const FitbitSection = () => {
     }, []);
 
     const handleConnect = () => {
-        window.location.href = '/api/v1/fitbit/connect';
+        const base = axios.defaults.baseURL || '';
+        window.location.href = `${base}/api/v1/fitbit/connect`;
     };
 
     const handleDisconnect = async () => {
@@ -407,7 +408,7 @@ const FitbitSection = () => {
                 <>
                     <p className="settings-trainer-linked">Your Fitbit account is connected. Steps sync automatically from the Weekly Steps widget.</p>
                     <div className="settings-fitbit-actions">
-                        <button className="settings-btn settings-btn-primary" onClick={() => { window.location.href = '/api/v1/fitbit/switch'; }}>
+                        <button className="settings-btn settings-btn-primary" onClick={() => { const base = axios.defaults.baseURL || ''; window.location.href = `${base}/api/v1/fitbit/switch`; }}>
                             Switch Fitbit Account
                         </button>
                         <button className="settings-btn settings-btn-danger" onClick={handleDisconnect}>
