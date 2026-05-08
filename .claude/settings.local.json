@@ -51,7 +51,26 @@
       "Bash(netstat -ano)",
       "Bash(xargs -r taskkill //F //PID)",
       "Bash(git push *)",
-      "Read(//tmp/**)"
+      "Read(//tmp/**)",
+      "Bash(npx cap *)",
+      "Bash(findstr :5500)",
+      "PowerShell(& \"$env:LOCALAPPDATA\\\\Android\\\\Sdk\\\\platform-tools\\\\adb.exe\" reverse tcp:5500 tcp:5500)",
+      "PowerShell(& \"$env:LOCALAPPDATA\\\\Android\\\\Sdk\\\\platform-tools\\\\adb.exe\" shell \"curl -s -o /dev/null -w '%{http_code}' http://localhost:5500/api/v1/auth/signin -X POST -H 'Content-Type: application/json' -d '{\\\\\"email\\\\\":\\\\\"test\\\\\",\\\\\"password\\\\\":\\\\\"test\\\\\"}'\")",
+      "PowerShell(& \"$env:LOCALAPPDATA\\\\Android\\\\Sdk\\\\platform-tools\\\\adb.exe\" reverse --list)",
+      "PowerShell(& \"$env:LOCALAPPDATA\\\\Android\\\\Sdk\\\\platform-tools\\\\adb.exe\" reverse tcp:5500 tcp:5500 2>&1)",
+      "PowerShell(New-NetFirewallRule -DisplayName \"GymApp Backend 5500\" -Direction Inbound -Protocol TCP -LocalPort 5500 -Action Allow 2>&1)",
+      "PowerShell(Get-Process node)",
+      "PowerShell(Stop-Process -Force 2>&1)",
+      "PowerShell(netstat -ano)",
+      "PowerShell(Get-Process -Id 5748 2>&1)",
+      "Bash(findstr \":5500\")",
+      "Bash(Start-Process powershell *)",
+      "PowerShell(Start-Process powershell -ArgumentList '-NoExit', '-Command', 'cd \"c:/Users/georg/Downloads/PTYXIAKH\"; npm run dev' -WindowStyle Normal)",
+      "PowerShell(Start-Process powershell -ArgumentList '-NoExit', '-Command', 'cd \"c:/Users/georg/Downloads/PTYXIAKH/client\"; npm run dev' -WindowStyle Normal)",
+      "Bash(curl -s http://localhost:8080/api/v1/auth/me)",
+      "PowerShell(Stop-Process -Name \"node\" -Force -ErrorAction SilentlyContinue)",
+      "Bash(curl -s http://localhost:5173)",
+      "Bash(curl -s -X POST http://localhost:8080/api/v1/auth/sign-in -H \"Content-Type: application/json\" -d '{\"email\":\"trainer@gym.com\",\"password\":\"password123\"}')"
     ]
   }
 }

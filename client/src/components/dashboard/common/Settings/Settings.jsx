@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Check, User } from 'lucide-react';
 import axios from 'axios';
 import './Settings.css';
+import useIsMobile from '../../../../hooks/useIsMobile';
 
 const Toast = ({ message, type, onClear }) => {
     useEffect(() => {
@@ -446,6 +447,15 @@ const DangerSection = ({ onLogout }) => {
 
     return (
         <>
+            <div className="settings-section">
+                <div className="settings-section-header">
+                    <h3>Account</h3>
+                </div>
+                <button className="settings-btn settings-btn-signout" onClick={onLogout}>
+                    Sign Out
+                </button>
+            </div>
+
             <div className="settings-section settings-danger">
                 <div className="settings-section-header">
                     <h3>Danger Zone</h3>
@@ -478,6 +488,7 @@ const DangerSection = ({ onLogout }) => {
 
 // ─── Main Settings Page ──────────────────────────────────────
 const Settings = ({ user, onLogout, onUserUpdate, isTrainer = false }) => {
+    const isMobile = useIsMobile();
     return (
         <div className="settings-page">
             <div className="settings-header">
@@ -485,8 +496,8 @@ const Settings = ({ user, onLogout, onUserUpdate, isTrainer = false }) => {
             </div>
 
             <ProfileSection user={user} onUpdate={u => { if (onUserUpdate) onUserUpdate(u); }} isTrainer={isTrainer} />
-            {!isTrainer && <GoalsSection user={user} />}
-            {!isTrainer && <DailyGoalsSection user={user} />}
+            {!isTrainer && !isMobile && <GoalsSection user={user} />}
+            {!isTrainer && !isMobile && <DailyGoalsSection user={user} />}
             {!isTrainer && <TrainerSection user={user} />}
             {!isTrainer && <FitbitSection />}
             <PasswordSection />

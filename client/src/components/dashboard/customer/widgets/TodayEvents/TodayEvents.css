@@ -1,6 +1,5 @@
 .te-container {
     background: #000000;
-    border: 1px solid rgba(255,255,255,0.08);
     border-radius: 1rem;
     padding: 1.5rem;
     display: flex;
@@ -8,27 +7,30 @@
     height: 100%;
 }
 
-.te-top-row {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-bottom: 1rem;
+/* Small uppercase label — like tw-day-label */
+.te-label {
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    color: #a5b4fc;
+    margin-bottom: 4px;
 }
 
+/* Large bold count — like tw-workout-title */
 .te-title {
-    font-size: 1.6rem;
+    font-size: 1.5rem;
     font-weight: 900;
     color: #ffffff;
-    margin: 0;
-    letter-spacing: 0.01em;
+    margin: 0 0 2px;
+    letter-spacing: -0.01em;
     line-height: 1.1;
-    text-align: center;
+    text-transform: uppercase;
 }
 
 .te-divider {
     height: 1px;
-    background: #0a0a0a;
-    margin-bottom: 1rem;
+    background: rgba(255,255,255,0.06);
+    margin: 12px 0;
 }
 
 .te-loading {
@@ -42,7 +44,7 @@
     width: 24px;
     height: 24px;
     border: 3px solid rgba(255,255,255,0.08);
-    border-top-color: #fff;
+    border-top-color: #a5b4fc;
     border-radius: 50%;
     animation: te-spin 0.6s linear infinite;
 }
@@ -71,18 +73,18 @@
     flex: 1;
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 8px;
     overflow-y: auto;
 }
 
 .te-event {
     display: flex;
-    align-items: center;
-    gap: 4px;
+    flex-direction: column;
+    gap: 2px;
     padding: 10px 14px;
     background: #0a0a0a;
     border-radius: 10px;
-    flex-wrap: wrap;
+    border-left: 3px solid #818CF8;
 }
 
 .te-event-title {
@@ -91,15 +93,10 @@
     color: #ffffff;
 }
 
-.te-event-sep {
-    font-size: 0.88rem;
-    color: #6b7280;
-}
-
 .te-event-time {
-    font-size: 0.88rem;
+    font-size: 0.78rem;
     font-weight: 500;
-    color: #6b7280;
+    color: #818CF8;
 }
 
 .te-link-btn {
@@ -115,4 +112,4 @@
     transition: color 0.15s;
 }
 
-.te-link-btn:hover { color: #e0e0e0; }
+.te-link-btn:hover { color: #a5b4fc; }

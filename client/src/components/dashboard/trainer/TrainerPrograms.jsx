@@ -10,7 +10,7 @@ import './TrainerPrograms.css';
 const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 const DAY_ABBR = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
-const TrainerPrograms = () => {
+const TrainerPrograms = ({ initialProgramId }) => {
     // ── Tab ──
     const [programType, setProgramType] = useState('week'); // 'week' | 'day'
 
@@ -100,6 +100,11 @@ const TrainerPrograms = () => {
             .then(r => setAllExercises(r.data.data || r.data || []))
             .catch(console.error);
     }, []);
+
+    // Auto-select program from global search navigation
+    useEffect(() => {
+        if (initialProgramId) loadTemplate(initialProgramId);
+    }, [initialProgramId]);
 
     // ── Load a week template ──
     const loadTemplate = async (id) => {

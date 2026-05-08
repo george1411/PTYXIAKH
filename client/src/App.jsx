@@ -56,10 +56,12 @@ function App() {
   const handleLogout = async () => {
     try {
       await axios.post('/api/v1/auth/sign-out');
-      setUser(null);
-      setScreen(0);
     } catch (error) {
       console.error("Logout failed", error);
+    } finally {
+      localStorage.removeItem('jwt_token');
+      setUser(null);
+      setScreen(0);
     }
   };
 

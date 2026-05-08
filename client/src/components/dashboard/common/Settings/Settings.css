@@ -148,6 +148,17 @@
     cursor: not-allowed;
 }
 
+.settings-btn-signout {
+    background: transparent;
+    color: #e0e0e0;
+    border: 1px solid rgba(255,255,255,0.15);
+}
+
+.settings-btn-signout:hover {
+    background: rgba(255,255,255,0.06);
+    border-color: rgba(255,255,255,0.3);
+}
+
 .settings-btn-danger {
     background: transparent;
     color: #f87171;
@@ -377,4 +388,20 @@
     display: flex;
     gap: 10px;
     flex-wrap: wrap;
+}
+
+@media (max-width: 768px) {
+    .settings-section {
+        background: #000000;
+        border-color: rgba(255,255,255,0.05);
+    }
+    .settings-input {
+        background: #0a0a0a;
+    }
+    .settings-unit-toggle {
+        background: #0a0a0a;
+    }
+    .settings-confirm-cancel {
+        background: #0a0a0a;
+    }
 }

@@ -9,6 +9,7 @@ import TrainerGroups from './TrainerGroups';
 import Schedule from '../common/widgets/Schedule/Schedule';
 import Settings from '../common/Settings/Settings';
 import { Search, Bell, User } from 'lucide-react';
+import useIsMobile from '../../../hooks/useIsMobile';
 
 const NAV_TABS = [
     { id: 'overview',  label: 'Overview'  },
@@ -132,25 +133,65 @@ const NotificationBell = ({ onNavigateToMessages }) => {
 };
 
 const TrainerDashboard = ({ user, onLogout, onUserUpdate }) => {
-    const [activeTab, setActiveTab]         = useState('overview');
+    const [activeTab, setActiveTab]           = useState('overview');
     const [targetClientId, setTargetClientId] = useState(null);
+    const [targetProgramId, setTargetProgramId] = useState(null);
+    const isMobile = useIsMobile();
+
+    // ── Global search ──────────────────────────────────────────
+    const [searchQuery, setSearchQuery]   = useState('');
+    const [searchOpen, setSearchOpen]     = useState(false);
+    const [searchData, setSearchData]     = useState({ clients: [], programs: [] });
+    const [searchLoaded, setSearchLoaded] = useState(false);
+    const searchRef = useRef(null);
+
+    useEffect(() => {
+        const handleClick = (e) => {
+            if (searchRef.current && !searchRef.current.contains(e.target)) setSearchOpen(false);
+        };
+        document.addEventListener('mousedown', handleClick);
+        return () => document.removeEventListener('mousedown', handleClick);
+    }, []);
+
+    const loadSearchData = async () => {
+        if (searchLoaded) return;
+        try {
+            const [cr, pr] = await Promise.all([
+                axios.get('/api/v1/trainer/clients', { withCredentials: true }),
+                axios.get('/api/v1/trainer/templates', { withCredentials: true }),
+            ]);
+            setSearchData({ clients: cr.data.data || [], programs: pr.data.data || [] });
+            setSearchLoaded(true);
+        } catch {}
+    };
+
+    const searchResults = (() => {
+        if (!searchQuery.trim()) return null;
+        const q = searchQuery.toLowerCase();
+        return {
+            clients:  searchData.clients.filter(c => c.name.toLowerCase().includes(q) || c.email.toLowerCase().includes(q)).slice(0, 5),
+            programs: searchData.programs.filter(p => p.name.toLowerCase().includes(q)).slice(0, 5),
+        };
+    })();
+
+    const hasResults = searchResults && (searchResults.clients.length > 0 || searchResults.programs.length > 0);
 
     const navigateToClient = (clientId) => {
         setTargetClientId(clientId);
         setActiveTab('clients');
     };
 
+    const navigateToProgram = (programId) => {
+        setTargetProgramId(programId);
+        setActiveTab('programs');
+    };
+
     return (
         <div className="flex flex-col min-h-screen font-sans overflow-hidden" style={{ background: 'radial-gradient(ellipse at center, #0f0f14 0%, #000000 100%)', color: '#f0f0f0' }}>
-            {/* Sidebar — hidden, kept for easy restoration */}
-            <div style={{ display: 'none' }}>
-                <TrainerSidebar
-                    activeTab={activeTab}
-                    onNavigate={setActiveTab}
-                    onLogout={onLogout}
-                    user={user}
-                />
-            </div>
+            {/* Bottom nav on mobile */}
+            {isMobile && (
+                <TrainerSidebar activeTab={activeTab} onNavigate={setActiveTab} onLogout={onLogout} user={user} />
+            )}
 
             {/* Header */}
             <header className="shrink-0 sticky top-0 z-40" style={{ backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
@@ -163,8 +204,8 @@ const TrainerDashboard = ({ user, onLogout, onUserUpdate }) => {
                         <span style={{ fontSize: 9, fontWeight: 700, letterSpacing: '.18em', color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase', lineHeight: 1, marginLeft: 22 }}>Trainer</span>
                     </div>
 
-                    {/* Nav tabs — centered absolutely */}
-                    <nav style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', display: 'flex', alignItems: 'center', gap: 4 }}>
+                    {/* Nav tabs — centered, hidden on mobile */}
+                    <nav style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', display: isMobile ? 'none' : 'flex', alignItems: 'center', gap: 4 }}>
                             {NAV_TABS.map(tab => (
                                 <button
                                     key={tab.id}
@@ -204,14 +245,61 @@ const TrainerDashboard = ({ user, onLogout, onUserUpdate }) => {
                         <span className="hidden md:block text-sm font-semibold" style={{ whiteSpace: 'nowrap', color: '#ffffff' }}>
                             {new Date().toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })}
                         </span>
-                        <div className="relative hidden md:block">
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: 'rgba(255,255,255,0.3)' }} />
+                        <div className="relative hidden md:block" ref={searchRef}>
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: 'rgba(255,255,255,0.3)', zIndex: 1 }} />
                             <input
                                 type="text"
-                                placeholder="Search..."
-                                className="rounded-full py-1.5 pl-10 pr-4 text-sm focus:outline-none transition-colors w-44"
-                                style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', color: '#f0f0f0' }}
+                                placeholder="Search…"
+                                value={searchQuery}
+                                onChange={e => { setSearchQuery(e.target.value); setSearchOpen(true); }}
+                                onFocus={() => { loadSearchData(); setSearchOpen(true); }}
+                                className="rounded-full py-1.5 pl-10 pr-4 text-sm focus:outline-none transition-colors"
+                                style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', color: '#f0f0f0', width: 220 }}
                             />
+                            {searchOpen && searchQuery.trim() && (
+                                <div style={{ position: 'absolute', top: 'calc(100% + 8px)', right: 0, width: 280, background: '#111111', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 14, overflow: 'hidden', boxShadow: '0 12px 40px rgba(0,0,0,0.7)', zIndex: 200 }}>
+                                    {!hasResults ? (
+                                        <div style={{ padding: '14px 16px', fontSize: 13, color: 'rgba(255,255,255,0.3)', textAlign: 'center' }}>No results for "{searchQuery}"</div>
+                                    ) : (
+                                        <>
+                                            {searchResults.clients.length > 0 && (
+                                                <>
+                                                    <div style={{ padding: '10px 14px 4px', fontSize: 10, fontWeight: 700, letterSpacing: '0.1em', color: 'rgba(255,255,255,0.3)', textTransform: 'uppercase' }}>Clients</div>
+                                                    {searchResults.clients.map(c => (
+                                                        <button key={c.id} onClick={() => { navigateToClient(c.id); setSearchOpen(false); setSearchQuery(''); }}
+                                                            style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: '9px 14px', background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left', transition: 'background 0.12s' }}
+                                                            onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
+                                                            onMouseLeave={e => e.currentTarget.style.background = 'none'}>
+                                                            <div style={{ width: 28, height: 28, borderRadius: '50%', background: 'rgba(129,140,248,0.15)', color: '#a5b4fc', fontSize: 11, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>{c.name.charAt(0).toUpperCase()}</div>
+                                                            <div style={{ minWidth: 0 }}>
+                                                                <div style={{ fontSize: 13, fontWeight: 600, color: '#f0f0f0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.name}</div>
+                                                                <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.3)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.email}</div>
+                                                            </div>
+                                                        </button>
+                                                    ))}
+                                                </>
+                                            )}
+                                            {searchResults.programs.length > 0 && (
+                                                <>
+                                                    <div style={{ padding: '10px 14px 4px', fontSize: 10, fontWeight: 700, letterSpacing: '0.1em', color: 'rgba(255,255,255,0.3)', textTransform: 'uppercase', borderTop: searchResults.clients.length > 0 ? '1px solid rgba(255,255,255,0.06)' : 'none' }}>Programs</div>
+                                                    {searchResults.programs.map(p => (
+                                                        <button key={p.id} onClick={() => { navigateToProgram(p.id); setSearchOpen(false); setSearchQuery(''); }}
+                                                            style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: '9px 14px', background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left', transition: 'background 0.12s' }}
+                                                            onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
+                                                            onMouseLeave={e => e.currentTarget.style.background = 'none'}>
+                                                            <div style={{ width: 28, height: 28, borderRadius: 8, background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.5)', fontSize: 14, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>📋</div>
+                                                            <div style={{ minWidth: 0 }}>
+                                                                <div style={{ fontSize: 13, fontWeight: 600, color: '#f0f0f0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.name}</div>
+                                                                <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.3)' }}>{p.type === 'day' ? '1-Day Program' : 'Weekly Program'}</div>
+                                                            </div>
+                                                        </button>
+                                                    ))}
+                                                </>
+                                            )}
+                                        </>
+                                    )}
+                                </div>
+                            )}
                         </div>
                         <NotificationBell onNavigateToMessages={() => setActiveTab('clients')} />
                     </div>
@@ -219,7 +307,7 @@ const TrainerDashboard = ({ user, onLogout, onUserUpdate }) => {
             </header>
 
                 {/* Page content */}
-                <main className="flex-1 overflow-y-auto p-6 lg:p-8 custom-scrollbar relative" style={{ background: 'transparent' }}>
+                <main className="flex-1 overflow-y-auto p-6 lg:p-8 custom-scrollbar relative" style={{ background: 'transparent', paddingBottom: isMobile ? 80 : undefined }}>
                     <div className="max-w-7xl mx-auto relative z-10 h-full">
                         {activeTab === 'schedule' ? (
                             <Schedule onNavigate={setActiveTab} fullPage={true} isTrainer={true} />
@@ -232,7 +320,7 @@ const TrainerDashboard = ({ user, onLogout, onUserUpdate }) => {
                         ) : activeTab === 'groups' ? (
                             <TrainerGroups user={user} onNavigate={setActiveTab} onNavigateToClient={navigateToClient} />
                         ) : activeTab === 'programs' ? (
-                            <TrainerPrograms />
+                            <TrainerPrograms initialProgramId={targetProgramId} />
                         ) : activeTab === 'profile' ? (
                             <TrainerProfile user={user} onLogout={onLogout} />
                         ) : null}

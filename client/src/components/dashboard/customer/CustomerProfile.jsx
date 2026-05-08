@@ -19,6 +19,7 @@ const CustomerProfile = ({ user, onLogout, onUserUpdate }) => {
     });
     const [trainer, setTrainer] = useState(null);
     const [loadingTrainer, setLoadingTrainer] = useState(false);
+    const [weightGoal, setWeightGoal] = useState(() => localStorage.getItem('weightGoal') || '');
     const [editing, setEditing] = useState(false);
     const [saving, setSaving] = useState(false);
     const [saved, setSaved] = useState(false);
@@ -84,6 +85,8 @@ const CustomerProfile = ({ user, onLogout, onUserUpdate }) => {
             }, { withCredentials: true });
             if (res.data.success) {
                 if (onUserUpdate) onUserUpdate(res.data.data.user);
+                if (weightGoal) localStorage.setItem('weightGoal', weightGoal);
+                else localStorage.removeItem('weightGoal');
                 setSaved(true);
                 setEditing(false);
                 setTimeout(() => setSaved(false), 3000);
@@ -213,6 +216,13 @@ const CustomerProfile = ({ user, onLogout, onUserUpdate }) => {
                             {editing
                                 ? <input className="cp-input cp-input-small" type="number" min="100" max="250" value={form.height} onChange={set('height')} placeholder="—" />
                                 : <span>{form.height ? `${form.height} cm` : '—'}</span>
+                            }
+                        </div>
+                        <div className="cp-field">
+                            <label>Weight Goal (kg)</label>
+                            {editing
+                                ? <input className="cp-input cp-input-small" type="number" min="30" max="300" step="0.1" value={weightGoal} onChange={e => setWeightGoal(e.target.value)} placeholder="e.g. 75" />
+                                : <span>{weightGoal ? `${weightGoal} kg` : '—'}</span>
                             }
                         </div>
                     </div>

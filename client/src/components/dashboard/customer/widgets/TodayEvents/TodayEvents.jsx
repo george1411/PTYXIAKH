@@ -3,26 +3,15 @@ import { CalendarDays } from 'lucide-react';
 import axios from 'axios';
 import './TodayEvents.css';
 
-const DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-
-const COLOR_MAP = {
-    'event-1': '#e0e0e0',
-    'event-2': '#a5b4fc',
-    'event-3': '#38bdf8',
-    'event-4': '#60a5fa',
-};
-
 const TodayEvents = ({ onNavigate }) => {
     const [events, setEvents] = useState([]);
     const [loading, setLoading] = useState(true);
 
-    const today     = DAYS[new Date().getDay()];
     const now = new Date();
     const todayDate = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
-    const todayUpper = today.toUpperCase();
 
     useEffect(() => {
-        axios.get('/api/v1/schedule', { withCredentials: true })
+        axios.get('/api/v1/schedule/my-appointments', { withCredentials: true })
             .then(res => {
                 const all = res.data.data || [];
                 const todayEvents = all
@@ -41,16 +30,19 @@ const TodayEvents = ({ onNavigate }) => {
         return `${((h % 12) || 12)}:${String(m).padStart(2, '0')} ${ampm}`;
     };
 
+    const count = events.length;
+
     return (
         <div className="te-container">
-            <div className="te-top-row">
-                <h2 className="te-title">Today's Schedule</h2>
-            </div>
+            <span className="te-label">TODAY'S SCHEDULE</span>
+            <h2 className="te-title">
+                {loading ? '—' : count === 0 ? '0' : count} {count === 1 ? 'EVENT' : 'EVENTS'}
+            </h2>
             <div className="te-divider" />
 
             {loading ? (
                 <div className="te-loading"><div className="te-spinner" /></div>
-            ) : events.length === 0 ? (
+            ) : count === 0 ? (
                 <div className="te-empty">
                     <CalendarDays size={32} />
                     <p>No events today</p>
@@ -60,7 +52,6 @@ const TodayEvents = ({ onNavigate }) => {
                     {events.map((ev, i) => (
                         <div key={ev.id || i} className="te-event">
                             <span className="te-event-title">{ev.title}</span>
-                            <span className="te-event-sep"> : </span>
                             <span className="te-event-time">{fmt(ev.startTime)} – {fmt(ev.endTime)}</span>
                         </div>
                     ))}

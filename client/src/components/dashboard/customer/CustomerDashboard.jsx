@@ -16,7 +16,9 @@ import TodayWorkout from './widgets/TodayWorkout/TodayWorkout';
 import TodayEvents from './widgets/TodayEvents/TodayEvents';
 import TodayMacros from './widgets/TodayMacros/TodayMacros';
 import { ConsistencyCalendar } from '../common/widgets/Progress/Progress';
+import { StepsWidget, CaloriesWidget } from './widgets/MiniWidgets/MiniWidgets';
 import { Search, Bell, User } from 'lucide-react';
+import useIsMobile from '../../../hooks/useIsMobile';
 
 const NAV_TABS = [
     { id: 'overview',  label: 'Home'      },
@@ -137,6 +139,7 @@ const NotificationBell = ({ onNavigateToMessages }) => {
 const CustomerDashboard = ({ user, onLogout, onUserUpdate }) => {
     const [activeTab, setActiveTab]           = useState('overview');
     const [messageTarget, setMessageTarget]   = useState(null); // { id, name }
+    const isMobile = useIsMobile();
 
     const navigateTo = (tab) => setActiveTab(tab);
 
@@ -146,11 +149,11 @@ const CustomerDashboard = ({ user, onLogout, onUserUpdate }) => {
     };
 
     return (
-        <div className="flex flex-col min-h-screen text-[var(--text)] font-sans overflow-hidden" style={{ background: 'radial-gradient(ellipse at center, #0f0f14 0%, #000000 100%)' }}>
-            {/* Sidebar — hidden, kept for easy restoration */}
-            <div style={{ display: 'none' }}>
+        <div className="flex flex-col min-h-screen text-[var(--text)] font-sans" style={{ background: 'radial-gradient(ellipse at center, #0f0f14 0%, #000000 100%)', overflow: isMobile ? 'visible' : 'hidden' }}>
+            {/* Bottom nav on mobile */}
+            {isMobile && (
                 <Sidebar activeTab={activeTab} onNavigate={navigateTo} onLogout={onLogout} user={user} />
-            </div>
+            )}
 
             {/* Header */}
             <header className="shrink-0 sticky top-0 z-40" style={{ backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
@@ -163,8 +166,8 @@ const CustomerDashboard = ({ user, onLogout, onUserUpdate }) => {
                         <span style={{ fontSize: 9, fontWeight: 700, letterSpacing: '.18em', color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase', lineHeight: 1, marginLeft: 22 }}>Member</span>
                     </div>
 
-                    {/* Nav tabs — centered */}
-                    <nav style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', display: 'flex', alignItems: 'center', gap: 4 }}>
+                    {/* Nav tabs — centered, hidden on mobile */}
+                    <nav style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', display: isMobile ? 'none' : 'flex', alignItems: 'center', gap: 4 }}>
                         {NAV_TABS.map(tab => (
                             <button
                                 key={tab.id}
@@ -219,7 +222,7 @@ const CustomerDashboard = ({ user, onLogout, onUserUpdate }) => {
             </header>
 
             {/* Scrollable Grid Area */}
-            <main className="flex-1 p-6 lg:p-8 custom-scrollbar relative overflow-y-auto" style={{ background: 'transparent' }}>
+            <main className="flex-1 p-4 lg:p-8 custom-scrollbar relative overflow-y-auto" style={{ background: 'transparent', paddingBottom: isMobile ? 100 : undefined, WebkitOverflowScrolling: 'touch' }}>
 
 
                     <div className="max-w-7xl mx-auto relative z-10 h-full">
@@ -237,8 +240,18 @@ const CustomerDashboard = ({ user, onLogout, onUserUpdate }) => {
                             <CustomerMessages user={user} targetTrainer={messageTarget} />
                         ) : activeTab === 'profile' ? (
                             <CustomerProfile user={user} onLogout={onLogout} onUserUpdate={onUserUpdate} />
+                        ) : isMobile ? (
+                            /* Mobile Overview — single column stack */
+                            <div className="flex flex-col gap-4">
+                                <TodayWorkout onNavigate={navigateTo} />
+                                <TodayEvents onNavigate={navigateTo} />
+                                <div style={{ display: 'flex', gap: 12 }}>
+                                    <StepsWidget />
+                                    <CaloriesWidget />
+                                </div>
+                            </div>
                         ) : (
-                            /* Overview Grid */
+                            /* Desktop Overview Grid */
                             <div className="grid grid-cols-4 gap-4">
                                 {/* Row 1: Weekly Schedule */}
                                 <div className="col-span-4">

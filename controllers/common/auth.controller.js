@@ -138,7 +138,7 @@ export const signUp = async (req, res, next) => {
         res.status(201).json({
             success: true,
             message: 'User created succesfully',
-            data: { user: newUser }
+            data: { user: newUser, token }
         });
     } catch (error) {
         console.error("Sign Up Error Details:", error);
@@ -188,7 +188,7 @@ export const signIn = async (req, res, next) => {
         res.status(200).json({
             success: true,
             message: 'User signed in succesfully',
-            data: { user: safeUser }
+            data: { user: safeUser, token }
         });
 
     } catch (error) {

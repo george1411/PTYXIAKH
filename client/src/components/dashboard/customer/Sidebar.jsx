@@ -1,13 +1,15 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Settings, LogOut, ChevronRight, User } from 'lucide-react';
+import { Settings, LogOut, ChevronRight, User, Home, Dumbbell, Apple, Calendar, TrendingUp, MessageCircle } from 'lucide-react';
+import useIsMobile from '../../../hooks/useIsMobile';
 
 const NAV_ITEMS = [
-    { id: 'overview',  label: 'Home' },
-    { id: 'workout',   label: 'Workout' },
-    { id: 'nutrition', label: 'Nutrition' },
-    { id: 'schedule',  label: 'Schedule' },
-    { id: 'progress',  label: 'Progress' },
-    { id: 'messages',  label: 'Messages' },
+    { id: 'overview',   label: 'Home',      icon: Home          },
+    { id: 'workout',    label: 'Workout',   icon: Dumbbell      },
+    { id: 'nutrition',  label: 'Nutrition', icon: Apple         },
+    { id: 'schedule',   label: 'Schedule',  icon: Calendar      },
+    { id: 'progress',   label: 'Progress',  icon: TrendingUp    },
+    { id: 'messages',   label: 'Messages',  icon: MessageCircle },
+    { id: 'settings',   label: 'Profile',   icon: User          },
 ];
 
 const NavItem = ({ label, active, onClick }) => (
@@ -38,6 +40,7 @@ const NavItem = ({ label, active, onClick }) => (
 const Sidebar = ({ activeTab = 'overview', onNavigate, onLogout, user }) => {
     const [menuOpen, setMenuOpen] = useState(false);
     const menuRef = useRef(null);
+    const isMobile = useIsMobile();
 
     useEffect(() => {
         const handleClick = (e) => {
@@ -46,6 +49,37 @@ const Sidebar = ({ activeTab = 'overview', onNavigate, onLogout, user }) => {
         document.addEventListener('mousedown', handleClick);
         return () => document.removeEventListener('mousedown', handleClick);
     }, []);
+
+    if (isMobile) {
+        return (
+            <div style={{
+                position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 100,
+                background: '#0a0a0a', borderTop: '1px solid rgba(255,255,255,0.08)',
+                display: 'flex', alignItems: 'center',
+                paddingBottom: 'env(safe-area-inset-bottom)',
+            }}>
+                {NAV_ITEMS.map(({ id, label, icon: Icon }) => {
+                    const active = activeTab === id;
+                    return (
+                        <button
+                            key={id}
+                            onClick={() => onNavigate(id)}
+                            style={{
+                                flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center',
+                                justifyContent: 'center', gap: 3, padding: '10px 0',
+                                background: 'none', border: 'none', cursor: 'pointer',
+                                color: active ? '#818cf8' : 'rgba(255,255,255,0.35)',
+                                transition: 'color 0.15s',
+                            }}
+                        >
+                            <Icon size={20} />
+                            <span style={{ fontSize: '0.62rem', fontWeight: active ? 700 : 400 }}>{label}</span>
+                        </button>
+                    );
+                })}
+            </div>
+        );
+    }
 
     return (
         <div style={{ width: 200, display: 'flex', flexDirection: 'column', flexShrink: 0, height: '100%', background: '#0f0f0f', borderRadius: 12 }}>

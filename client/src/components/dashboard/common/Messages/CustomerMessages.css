@@ -5,7 +5,35 @@
     border: 1px solid rgba(255,255,255,0.08);
     border-radius: 16px;
     overflow: hidden;
-    background: #111111;
+    background: #000000;
+}
+
+/* Mobile: full-screen, no border/radius */
+.cm-wrap.cm-mobile {
+    height: calc(100vh - 160px);
+    border-radius: 0;
+    border: none;
+}
+
+.cm-wrap.cm-mobile .cm-sidebar {
+    width: 100%;
+    border-right: none;
+}
+
+.cm-wrap.cm-mobile .cm-container {
+    width: 100%;
+}
+
+/* Back button */
+.cm-back-btn {
+    background: none;
+    border: none;
+    color: #aaa;
+    cursor: pointer;
+    padding: 4px 8px 4px 0;
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
 }
 
 /* ─── Sidebar ──────────────────────────────────────────────────── */
@@ -15,7 +43,7 @@
     border-right: 1px solid rgba(255,255,255,0.08);
     display: flex;
     flex-direction: column;
-    background: #121212;
+    background: #000000;
     overflow-y: auto;
 }
 
@@ -46,7 +74,7 @@
 .cm-sidebar-search-input {
     width: 100%;
     padding: 7px 10px 7px 28px;
-    background: #1a1a1a;
+    background: #111111;
     border: 1px solid rgba(255,255,255,0.08);
     border-radius: 999px;
     color: #e0e0e0;
@@ -129,7 +157,7 @@
     width: 10px;
     height: 10px;
     border-radius: 50%;
-    border: 2px solid #121212;
+    border: 2px solid #000000;
 }
 .cm-convo-status-dot.online  { background: #22c55e; }
 .cm-convo-status-dot.offline { background: #444; }
@@ -191,7 +219,7 @@
     display: flex;
     flex-direction: column;
     overflow: hidden;
-    background: #0a0a0a;
+    background: #000000;
     border-left: 1px solid rgba(255,255,255,0.08);
 }
 
@@ -202,7 +230,7 @@
     gap: 14px;
     padding: 18px 24px;
     border-bottom: 1px solid rgba(255,255,255,0.08);
-    background: #111111;
+    background: #000000;
     flex-shrink: 0;
 }
 
@@ -252,7 +280,7 @@
     display: flex;
     flex-direction: column;
     gap: 4px;
-    background: #0a0a0a;
+    background: #000000;
 }
 
 .cm-state {
@@ -364,7 +392,7 @@
 }
 
 .cm-bubble.them {
-    background: #161616;
+    background: #111111;
     color: #f0f0f0;
     border-bottom-left-radius: 5px;
     border: 1px solid rgba(255,255,255,0.08);
@@ -387,7 +415,7 @@
     padding: 16px 24px;
     border-top: 1px solid rgba(255,255,255,0.08);
     flex-shrink: 0;
-    background: #111111;
+    background: #000000;
 }
 
 .cm-input {
@@ -397,14 +425,14 @@
     border-radius: 999px;
     font-size: 0.875rem;
     outline: none;
-    background: #1c1c1e;
+    background: #111111;
     color: #e0e0e0;
     transition: border-color 0.15s;
 }
 
 .cm-input::placeholder { color: rgba(255,255,255,0.25); }
 .cm-input:focus { border-color: #818cf8; box-shadow: 0 0 0 3px rgba(129,140,248,0.12); }
-.cm-input:disabled { background: #161616; color: #444; }
+.cm-input:disabled { background: #0a0a0a; color: #444; }
 
 .cm-send {
     width: 44px;
@@ -447,7 +475,7 @@
     border-radius: 10px;
     margin: 0 24px 8px;
     overflow: hidden;
-    background: #111;
+    background: #000000;
 }
 .cm-workout-picker-header {
     display: flex;
@@ -511,7 +539,7 @@
     position: absolute;
     bottom: calc(100% + 8px);
     left: 0;
-    background: #1a1a1a;
+    background: #111111;
     border: 1px solid rgba(255,255,255,0.1);
     border-radius: 12px;
     padding: 6px;
@@ -631,7 +659,7 @@
 }
 
 .cm-pain-modal {
-    background: #0d0d0d;
+    background: #000000;
     border: 1px solid rgba(255,255,255,0.07);
     border-radius: 16px;
     width: 100%;
@@ -720,7 +748,7 @@
 .cm-pain-svg-col {
     padding: 14px 8px 14px 18px;
     flex-shrink: 0;
-    background: #0a0a0a;
+    background: #000000;
     border-right: 1px solid rgba(255,255,255,0.06);
     display: flex;
     align-items: flex-start;

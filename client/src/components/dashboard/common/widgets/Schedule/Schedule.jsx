@@ -2,6 +2,7 @@ import React, { useEffect, useState, useMemo, useRef } from 'react';
 import { Plus, X, Trash2, ChevronLeft, ChevronRight } from 'lucide-react';
 import axios from 'axios';
 import './Schedule.css';
+import useIsMobile from '../../../../../hooks/useIsMobile';
 
 const DAYS     = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
 const DAY_ABBR = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
@@ -186,7 +187,7 @@ const AppointmentModal = ({ initialDate, event, onSave, onDelete, onClose, isNew
 };
 
 // ─── Monthly View ─────────────────────────────────────────────
-const MonthlyView = ({ currentDate, events, onDayClick, onEventClick }) => {
+const MonthlyView = ({ currentDate, events, onDayClick, onEventClick, isMobile, selectedDay, setSelectedDay }) => {
     const year  = currentDate.getFullYear();
     const month = currentDate.getMonth();
     const firstDay = new Date(year, month, 1);
@@ -200,6 +201,7 @@ const MonthlyView = ({ currentDate, events, onDayClick, onEventClick }) => {
         d.setDate(gridStart.getDate()+i);
         return d;
     });
+    if (isMobile && days.slice(35).every(d => d.getMonth() !== month)) days.splice(35);
 
     const todayStr = dateStr(new Date());
     const eventsByDate = {};
@@ -213,7 +215,9 @@ const MonthlyView = ({ currentDate, events, onDayClick, onEventClick }) => {
     return (
         <div className="cal-month-wrap">
             <div className="cal-month-headers">
-                {DAY_ABBR.map(d=><div key={d} className="cal-month-header-cell">{d}</div>)}
+                {DAY_ABBR.map((d,i)=>(
+                    <div key={d} className={`cal-month-header-cell${isMobile && (i===5||i===6) ? ' weekend' : ''}`}>{d}</div>
+                ))}
             </div>
             <div className="cal-month-days">
                 {days.map((day,i) => {
@@ -221,36 +225,73 @@ const MonthlyView = ({ currentDate, events, onDayClick, onEventClick }) => {
                     const inMonth = day.getMonth()===month;
                     const today   = ds===todayStr;
                     const evs     = eventsByDate[ds] || [];
+                    const dow     = day.getDay(); // 0=Sun, 6=Sat
+                    const isWeekend = dow===0 || dow===6;
                     return (
-                        <div key={i} className={`cal-month-day${!inMonth?' other-month':''}${today?' today':''}`}
-                            onClick={()=>onDayClick && onDayClick(ds)}>
+                        <div key={i} className={`cal-month-day${!inMonth?' other-month':''}${today?' today':''}${isMobile && isWeekend?' weekend':''}${isMobile && selectedDay===ds?' selected':''}`}
+                            onClick={()=>{
+                                if (isMobile) {
+                                    setSelectedDay(selectedDay === ds ? null : ds);
+                                } else {
+                                    onDayClick && onDayClick(ds);
+                                }
+                            }}>
                             <span className="cal-month-day-num">{day.getDate()}</span>
-                            <div className="cal-month-day-events">
-                                {evs.slice(0,3).map((ev,ei)=>{
-                                    const dur = ev.start && ev.end ? timeToMinutes(ev.end) - timeToMinutes(ev.start) : null;
-                                    const durLabel = dur ? (dur >= 60 ? `${dur/60}h` : `${dur}m`) : null;
-                                    return (
-                                        <div key={ei} className="cal-month-event-pill"
-                                            style={{background: getColorBg(ev.color)}}
-                                            onClick={e=>{e.stopPropagation();onEventClick(ev);}}>
-                                            <span className="cal-pill-top">{formatTime12(ev.start)} · {ev.title}</span>
-                                            {(ev.clientName || ev.groupName || durLabel) && (
-                                                <span className="cal-pill-sub">
-                                                    {ev.groupName && `👥 ${ev.groupName.split(' ')[0]}`}
-                                                    {ev.clientName && !ev.groupName && ev.clientName.split(' ')[0]}
-                                                    {(ev.clientName || ev.groupName) && durLabel && ' · '}
-                                                    {durLabel}
-                                                </span>
-                                            )}
-                                        </div>
-                                    );
-                                })}
-                                {evs.length>3 && <div className="cal-month-event-more">+{evs.length-3} more</div>}
-                            </div>
+                            {isMobile ? (
+                                /* Mobile: dots only */
+                                evs.length > 0 && (
+                                    <div className="cal-mobile-dots">
+                                        {evs.slice(0,3).map((ev,ei)=>(
+                                            <span key={ei} className="cal-mobile-dot" style={{background: getColorBg(ev.color)}} />
+                                        ))}
+                                    </div>
+                                )
+                            ) : (
+                                /* Desktop: full pills */
+                                <div className="cal-month-day-events">
+                                    {evs.slice(0,3).map((ev,ei)=>{
+                                        const dur = ev.start && ev.end ? timeToMinutes(ev.end) - timeToMinutes(ev.start) : null;
+                                        const durLabel = dur ? (dur >= 60 ? `${dur/60}h` : `${dur}m`) : null;
+                                        return (
+                                            <div key={ei} className="cal-month-event-pill"
+                                                style={{background: getColorBg(ev.color)}}
+                                                onClick={e=>{e.stopPropagation();onEventClick(ev);}}>
+                                                <span className="cal-pill-top">{formatTime12(ev.start)} · {ev.title}</span>
+                                                {(ev.clientName || ev.groupName || durLabel) && (
+                                                    <span className="cal-pill-sub">
+                                                        {ev.groupName && `👥 ${ev.groupName.split(' ')[0]}`}
+                                                        {ev.clientName && !ev.groupName && ev.clientName.split(' ')[0]}
+                                                        {(ev.clientName || ev.groupName) && durLabel && ' · '}
+                                                        {durLabel}
+                                                    </span>
+                                                )}
+                                            </div>
+                                        );
+                                    })}
+                                    {evs.length>3 && <div className="cal-month-event-more">+{evs.length-3} more</div>}
+                                </div>
+                            )}
                         </div>
                     );
                 })}
             </div>
+            {/* Mobile: selected day events panel */}
+            {isMobile && selectedDay && eventsByDate[selectedDay] && (
+                <div className="cal-day-panel">
+                    <div className="cal-day-panel-title">
+                        {new Date(selectedDay + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
+                    </div>
+                    {eventsByDate[selectedDay].map((ev, i) => (
+                        <div key={i} className="cal-day-panel-event" style={{ borderLeftColor: getColorBg(ev.color) }}>
+                            <div className="cal-day-panel-event-title">{ev.title}</div>
+                            <div className="cal-day-panel-event-time">{formatTime12(ev.start)} – {formatTime12(ev.end)}</div>
+                            {(ev.clientName || ev.groupName) && (
+                                <div className="cal-day-panel-event-sub">{ev.groupName || ev.clientName}</div>
+                            )}
+                        </div>
+                    ))}
+                </div>
+            )}
         </div>
     );
 };
@@ -381,10 +422,22 @@ const DailyView = ({ currentDate, events, onSlotClick, onEventClick }) => {
 
 // ─── Main Schedule Component ──────────────────────────────────
 const Schedule = ({ onNavigate, fullPage, hideTitle, isTrainer, readOnly }) => {
+    const isMobile = useIsMobile();
     const [view,        setView]        = useState('monthly'); // 'weekly' | 'monthly'
     const [currentDate, setCurrentDate] = useState(new Date());
     const [events,      setEvents]      = useState([]);
     const [modal,       setModal]       = useState(null); // { date, event?, isNew }
+    const [selectedDay, setSelectedDay] = useState(null);
+
+    const todayStr = dateStr(new Date());
+    const _now = new Date();
+    const isViewingCurrentMonth = currentDate.getFullYear() === _now.getFullYear() && currentDate.getMonth() === _now.getMonth();
+    const showTodayBtn = isMobile && (!isViewingCurrentMonth || (selectedDay !== null && selectedDay !== todayStr));
+
+    const goToToday = () => {
+        setCurrentDate(new Date());
+        setSelectedDay(null);
+    };
 
     const mapEvent = ev => ({
         id:         ev.id,
@@ -413,6 +466,12 @@ const Schedule = ({ onNavigate, fullPage, hideTitle, isTrainer, readOnly }) => {
     // ── Navigation label ──
     const navLabel = useMemo(() => {
         if (view==='monthly') {
+            if (isMobile) {
+                const today = new Date();
+                const month = currentDate.toLocaleDateString('en-US',{month:'long'});
+                const year  = currentDate.getFullYear();
+                return `${today.getDate()} ${month} ${year}`;
+            }
             return currentDate.toLocaleDateString('en-US',{month:'long',year:'numeric'});
         }
         if (view==='weekly') {
@@ -423,7 +482,7 @@ const Schedule = ({ onNavigate, fullPage, hideTitle, isTrainer, readOnly }) => {
             return `${mon.toLocaleDateString('en-US',{month:'short',day:'numeric'})} – ${sun.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})}`;
         }
         return currentDate.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'});
-    }, [view, currentDate]);
+    }, [view, currentDate, isMobile]);
 
     const navigate = (dir) => {
         const d = new Date(currentDate);
@@ -466,26 +525,39 @@ const Schedule = ({ onNavigate, fullPage, hideTitle, isTrainer, readOnly }) => {
         setModal(null);
     };
 
+    const touchStartX = useRef(null);
+    const handleTouchStart = (e) => { touchStartX.current = e.touches[0].clientX; };
+    const handleTouchEnd = (e) => {
+        if (touchStartX.current === null) return;
+        const diff = touchStartX.current - e.changedTouches[0].clientX;
+        if (Math.abs(diff) > 50) navigate(diff > 0 ? 1 : -1);
+        touchStartX.current = null;
+    };
+
     return (
-        <div className="cd-schedule-wrapper">
+        <div className="cd-schedule-wrapper"
+            onTouchStart={isMobile ? handleTouchStart : undefined}
+            onTouchEnd={isMobile ? handleTouchEnd : undefined}>
             {/* ── Top bar ── */}
             <div className="cd-schedule-top">
-                {/* View toggle */}
-                <div className="cal-view-toggle">
-                    {['weekly','monthly'].map(v=>(
-                        <button key={v} className={`cal-view-btn${view===v?' active':''}`}
-                            onClick={()=>setView(v)}>
-                            {v.charAt(0).toUpperCase()+v.slice(1)}
-                        </button>
-                    ))}
-                </div>
+                {/* View toggle — hidden on mobile */}
+                {!isMobile && (
+                    <div className="cal-view-toggle">
+                        {['weekly','monthly'].map(v=>(
+                            <button key={v} className={`cal-view-btn${view===v?' active':''}`}
+                                onClick={()=>setView(v)}>
+                                {v.charAt(0).toUpperCase()+v.slice(1)}
+                            </button>
+                        ))}
+                    </div>
+                )}
 
                 {/* Navigation */}
                 <div className="cd-schedule-week-nav">
-                    <button className="cd-schedule-nav-btn" onClick={()=>navigate(-1)}><ChevronLeft size={16}/></button>
+                    {!isMobile && <button className="cd-schedule-nav-btn" onClick={()=>navigate(-1)}><ChevronLeft size={16}/></button>}
                     <span className="cd-schedule-week-label">{navLabel}</span>
-                    <button className="cd-schedule-nav-btn" onClick={()=>navigate(1)}><ChevronRight size={16}/></button>
-                    <button className="cd-schedule-today-btn" onClick={()=>setCurrentDate(new Date())}>Today</button>
+                    {!isMobile && <button className="cd-schedule-nav-btn" onClick={()=>navigate(1)}><ChevronRight size={16}/></button>}
+                    {!isMobile && <button className="cd-schedule-today-btn" onClick={goToToday}>Today</button>}
                 </div>
 
                 {/* Add button */}
@@ -499,8 +571,18 @@ const Schedule = ({ onNavigate, fullPage, hideTitle, isTrainer, readOnly }) => {
             {/* ── View ── */}
             {view==='monthly' && (
                 <MonthlyView currentDate={currentDate} events={events}
+                    isMobile={isMobile}
+                    selectedDay={selectedDay}
+                    setSelectedDay={setSelectedDay}
                     onDayClick={readOnly ? null : ds=>openNew(ds)}
                     onEventClick={readOnly ? null : ev=>openEdit(ev)} />
+            )}
+
+            {/* Floating "Today" circle — mobile only, appears when a non-today day is selected */}
+            {showTodayBtn && (
+                <button className="cal-today-fab" onClick={goToToday}>
+                    {new Date().getDate()}
+                </button>
             )}
             {view==='weekly' && (
                 <WeeklyView currentDate={currentDate} events={events}

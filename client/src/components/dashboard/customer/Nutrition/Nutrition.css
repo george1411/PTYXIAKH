@@ -425,7 +425,12 @@
 
 @media (max-width: 700px) {
     .meal-groups {
-        grid-template-columns: 1fr;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+    }
+    .meal-group {
+        min-height: 80px;
+        padding: 10px;
     }
 }
 

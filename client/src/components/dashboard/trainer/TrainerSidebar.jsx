@@ -1,13 +1,14 @@
 import { useState, useRef, useEffect } from 'react';
-import { Settings, LogOut, ChevronRight, User } from 'lucide-react';
+import { Settings, LogOut, ChevronRight, User, LayoutDashboard, Users, UserCircle, MessageCircle, BookOpen, Calendar, Group } from 'lucide-react';
+import useIsMobile from '../../../hooks/useIsMobile';
 
-const NAV_ITEMS = [
-    { id: 'overview',  label: 'Overview' },
-    { id: 'clients',   label: 'Clients' },
-    { id: 'groups',    label: 'Groups' },
-    { id: 'programs',  label: 'Programs' },
-    { id: 'schedule',  label: 'Schedule' },
-    { id: 'profile',   label: 'Profile' },
+const ALL_NAV_ITEMS = [
+    { id: 'overview',  label: 'Overview',  icon: LayoutDashboard, mobileHide: false },
+    { id: 'clients',   label: 'Clients',   icon: Users,           mobileHide: false },
+    { id: 'groups',    label: 'Groups',    icon: Group,           mobileHide: true  },
+    { id: 'programs',  label: 'Programs',  icon: BookOpen,        mobileHide: true  },
+    { id: 'schedule',  label: 'Schedule',  icon: Calendar,        mobileHide: true  },
+    { id: 'profile',   label: 'Profile',   icon: UserCircle,      mobileHide: false },
 ];
 
 const NavItem = ({ label, active, onClick }) => (
@@ -38,6 +39,7 @@ const NavItem = ({ label, active, onClick }) => (
 const TrainerSidebar = ({ activeTab = 'overview', onNavigate, onLogout, user }) => {
     const [menuOpen, setMenuOpen] = useState(false);
     const menuRef = useRef(null);
+    const isMobile = useIsMobile();
 
     useEffect(() => {
         const handleClick = (e) => {
@@ -46,6 +48,52 @@ const TrainerSidebar = ({ activeTab = 'overview', onNavigate, onLogout, user }) 
         document.addEventListener('mousedown', handleClick);
         return () => document.removeEventListener('mousedown', handleClick);
     }, []);
+
+    const mobileItems = ALL_NAV_ITEMS.filter(i => !i.mobileHide);
+
+    if (isMobile) {
+        return (
+            <div style={{
+                position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 100,
+                background: '#0a0a0a', borderTop: '1px solid rgba(255,255,255,0.08)',
+                display: 'flex', alignItems: 'center',
+                paddingBottom: 'env(safe-area-inset-bottom)',
+            }}>
+                {mobileItems.map(({ id, label, icon: Icon }) => {
+                    const active = activeTab === id;
+                    return (
+                        <button
+                            key={id}
+                            onClick={() => onNavigate(id)}
+                            style={{
+                                flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center',
+                                justifyContent: 'center', gap: 3, padding: '10px 0',
+                                background: 'none', border: 'none', cursor: 'pointer',
+                                color: active ? '#818cf8' : 'rgba(255,255,255,0.35)',
+                                transition: 'color 0.15s',
+                            }}
+                        >
+                            <Icon size={20} />
+                            <span style={{ fontSize: '0.65rem', fontWeight: active ? 700 : 400 }}>{label}</span>
+                        </button>
+                    );
+                })}
+                {/* Profile/account icon always last */}
+                <button
+                    onClick={onLogout}
+                    style={{
+                        flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center',
+                        justifyContent: 'center', gap: 3, padding: '10px 0',
+                        background: 'none', border: 'none', cursor: 'pointer',
+                        color: 'rgba(255,255,255,0.35)', transition: 'color 0.15s',
+                    }}
+                >
+                    <LogOut size={20} />
+                    <span style={{ fontSize: '0.65rem' }}>Sign Out</span>
+                </button>
+            </div>
+        );
+    }
 
     return (
         <div style={{ width: 200, display: 'flex', flexDirection: 'column', flexShrink: 0, height: '100%', borderRadius: 12, backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', border: '1px solid rgba(255,255,255,0.05)' }}>
@@ -59,7 +107,7 @@ const TrainerSidebar = ({ activeTab = 'overview', onNavigate, onLogout, user }) 
 
             {/* Navigation */}
             <nav style={{ flex: 1, padding: '0 8px', display: 'flex', flexDirection: 'column', gap: 2 }}>
-                {NAV_ITEMS.map((item) => (
+                {ALL_NAV_ITEMS.map((item) => (
                     <NavItem
                         key={item.id}
                         label={item.label}
