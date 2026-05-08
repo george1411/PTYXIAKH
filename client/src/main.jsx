@@ -7,7 +7,7 @@ import axios from 'axios';
 axios.defaults.withCredentials = true;
 
 if (import.meta.env.PROD) {
-    axios.defaults.baseURL = 'http://192.168.1.3:8080';
+    axios.defaults.baseURL = 'https://gymlit-backend.onrender.com';
 
     // Attach stored JWT as Bearer token on every request (mobile)
     axios.interceptors.request.use((config) => {
