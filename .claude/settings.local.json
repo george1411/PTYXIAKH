@@ -70,7 +70,25 @@
       "Bash(curl -s http://localhost:8080/api/v1/auth/me)",
       "PowerShell(Stop-Process -Name \"node\" -Force -ErrorAction SilentlyContinue)",
       "Bash(curl -s http://localhost:5173)",
-      "Bash(curl -s -X POST http://localhost:8080/api/v1/auth/sign-in -H \"Content-Type: application/json\" -d '{\"email\":\"trainer@gym.com\",\"password\":\"password123\"}')"
+      "Bash(curl -s -X POST http://localhost:8080/api/v1/auth/sign-in -H \"Content-Type: application/json\" -d '{\"email\":\"trainer@gym.com\",\"password\":\"password123\"}')",
+      "Bash(node -e ' *)",
+      "Bash(ipconfig)",
+      "Bash(mysqldump -u root -ppassword123! gymapp --no-tablespaces 2>nul > \"c:/Users/georg/Downloads/gymapp_dump.sql\" && echo \"Done\")",
+      "Bash(mysql --host=gateway01.eu-central-1.prod.aws.tidbcloud.com --port=4000 --user=2XY8oQ3zwQG7oPU.root --password=Yqrq1kL4Idz2iYr7 --ssl-mode=REQUIRED -e \"CREATE DATABASE IF NOT EXISTS gymlit;\")",
+      "Bash(mysql --host=gateway01.eu-central-1.prod.aws.tidbcloud.com --port=4000 --user=2XY8oQ3zwQG7oPU.root --password=Yqrq1kL4Idz2iYr7 --ssl-mode=REQUIRED gymlit)",
+      "Bash(mysqldump -u root -ppassword123! gymapp --no-tablespaces --default-character-set=utf8mb4)",
+      "Bash(mysqldump -u root -ppassword123! gymapp --no-tablespaces --default-character-set=utf8mb4 --set-charset)",
+      "Bash(iconv -f cp850 -t utf8)",
+      "Bash(mysql --host=gateway01.eu-central-1.prod.aws.tidbcloud.com --port=4000 --user=2XY8oQ3zwQG7oPU.root --password=Yqrq1kL4Idz2iYr7 --ssl-mode=REQUIRED --default-character-set=utf8mb4 gymlit)",
+      "Bash(mysql --host=gateway01.eu-central-1.prod.aws.tidbcloud.com --port=4000 --user=2XY8oQ3zwQG7oPU.root --password=Yqrq1kL4Idz2iYr7 --ssl-mode=REQUIRED gymlit -e \"SHOW TABLES;\")",
+      "PowerShell($env:JAVA_HOME = \"C:\\\\Program Files\\\\Java\\\\jdk-23\"; cd \"c:\\\\Users\\\\georg\\\\Downloads\\\\PTYXIAKH\\\\client\\\\android\"; .\\\\gradlew.bat assembleDebug 2>&1 | Select-Object -Last 5)",
+      "Bash(npm run *)",
+      "Bash(echo \"client started with PID $!\")",
+      "Bash(awk '{print $5}')",
+      "Bash(xargs -I{} kill -9 {})"
+    ],
+    "additionalDirectories": [
+      "c:\\Users\\georg\\Downloads"
     ]
   }
 }

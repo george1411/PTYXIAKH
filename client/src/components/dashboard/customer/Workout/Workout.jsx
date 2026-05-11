@@ -224,23 +224,29 @@ const GroupWorkout = () => {
                         <div className="modal-body custom-scrollbar">
                             {(selectedEx.sets[0]?.targetReps || selectedEx.sets[0]?.targetKg) && (
                                 <div className="workout-trainer-target">
-                                    <span className="workout-trainer-target-label">Trainer target:</span>
-                                    <span className="workout-trainer-target-value">
-                                        {selectedEx.sets.length} sets
-                                        {selectedEx.sets[0]?.targetReps ? ` × ${selectedEx.sets[0].targetReps} reps` : ''}
-                                        {selectedEx.sets[0]?.targetKg ? ` @ ${selectedEx.sets[0].targetKg} kg` : ''}
-                                    </span>
+                                    <div className="workout-trainer-target-row">
+                                        <span className="workout-trainer-target-label">Trainer target:</span>
+                                        <span className="workout-trainer-target-value">
+                                            {selectedEx.sets.length} sets
+                                            {selectedEx.sets[0]?.targetReps ? ` × ${selectedEx.sets[0].targetReps} reps` : ''}
+                                            {selectedEx.sets[0]?.targetKg ? ` @ ${selectedEx.sets[0].targetKg} kg` : ''}
+                                        </span>
+                                    </div>
+                                    <div className="workout-double-tap-hint">Double-tap a field to fill</div>
                                 </div>
                             )}
                             <div className="sets-header"><span>#</span><span>KG</span><span>REPS</span></div>
+
                             {selectedEx.sets.map(set => (
                                 <div key={set.id} className="set-row">
                                     <div className="set-number">{set.id}</div>
                                     <input type="number" className="workout-input" value={set.kg}
                                         onChange={e => handleSetChange(set.id, 'kg', e.target.value)}
+                                        onDoubleClick={() => { if (set.kg === '' && set.targetKg) handleSetChange(set.id, 'kg', String(set.targetKg)); }}
                                         placeholder={set.targetKg ? String(set.targetKg) : '-'} />
                                     <input type="number" className="workout-input" value={set.reps}
                                         onChange={e => handleSetChange(set.id, 'reps', e.target.value)}
+                                        onDoubleClick={() => { if (set.reps === '' && set.targetReps) handleSetChange(set.id, 'reps', String(set.targetReps)); }}
                                         placeholder={set.targetReps ? String(set.targetReps) : '-'} />
                                 </div>
                             ))}
@@ -572,12 +578,15 @@ const Workout = () => {
                             {/* Trainer target hint */}
                             {(selectedExercise.sets[0]?.targetReps || selectedExercise.sets[0]?.targetKg) && (
                                 <div className="workout-trainer-target">
-                                    <span className="workout-trainer-target-label">Trainer target:</span>
-                                    <span className="workout-trainer-target-value">
-                                        {selectedExercise.sets.length} sets
-                                        {selectedExercise.sets[0]?.targetReps ? ` × ${selectedExercise.sets[0].targetReps} reps` : ''}
-                                        {selectedExercise.sets[0]?.targetKg ? ` @ ${selectedExercise.sets[0].targetKg} kg` : ''}
-                                    </span>
+                                    <div className="workout-trainer-target-row">
+                                        <span className="workout-trainer-target-label">Trainer target:</span>
+                                        <span className="workout-trainer-target-value">
+                                            {selectedExercise.sets.length} sets
+                                            {selectedExercise.sets[0]?.targetReps ? ` × ${selectedExercise.sets[0].targetReps} reps` : ''}
+                                            {selectedExercise.sets[0]?.targetKg ? ` @ ${selectedExercise.sets[0].targetKg} kg` : ''}
+                                        </span>
+                                    </div>
+                                    <div className="workout-double-tap-hint">Double-tap a field to fill</div>
                                 </div>
                             )}
 
@@ -587,6 +596,7 @@ const Workout = () => {
                                 <span>REPS</span>
                             </div>
 
+
                             {selectedExercise.sets.map((set) => (
                                 <div key={set.id} className="set-row">
                                     <div className="set-number">{set.id}</div>
@@ -595,6 +605,7 @@ const Workout = () => {
                                         className="workout-input"
                                         value={set.kg}
                                         onChange={(e) => handleSetChange(set.id, 'kg', e.target.value)}
+                                        onDoubleClick={() => { if (set.kg === '' && set.targetKg) handleSetChange(set.id, 'kg', String(set.targetKg)); }}
                                         placeholder={set.targetKg ? String(set.targetKg) : '-'}
                                     />
                                     <input
@@ -602,6 +613,7 @@ const Workout = () => {
                                         className="workout-input"
                                         value={set.reps}
                                         onChange={(e) => handleSetChange(set.id, 'reps', e.target.value)}
+                                        onDoubleClick={() => { if (set.reps === '' && set.targetReps) handleSetChange(set.id, 'reps', String(set.targetReps)); }}
                                         placeholder={set.targetReps ? String(set.targetReps) : '-'}
                                     />
                                 </div>

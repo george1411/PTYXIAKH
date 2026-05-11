@@ -52,7 +52,6 @@ const TodayWorkout = ({ onNavigate }) => {
                 <>
                     <div className="tw-top-row">
                         <span className="tw-day-label">TODAY'S WORKOUT</span>
-                        {logged && <span className="tw-done-badge"><CheckCircle2 size={13} /> Done</span>}
                     </div>
 
                     <h2 className="tw-workout-title">{workout.name?.toUpperCase()}</h2>

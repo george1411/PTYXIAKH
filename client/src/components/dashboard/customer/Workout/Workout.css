@@ -8,7 +8,7 @@
 .workout-tab-bar {
     display: flex;
     gap: 4px;
-    background: #000000;
+    background: #111111;
     border-radius: 10px;
     padding: 4px;
     margin-bottom: 16px;
@@ -267,32 +267,62 @@
 .workout-header-info {
     font-size: 0.75rem;
     color: #a1a1aa;
-    /* zinc-400 */
     text-transform: uppercase;
     letter-spacing: 0.05em;
+}
+
+/* Exercise Board */
+.exercise-board {
+    background: #111111;
+    border-radius: 16px;
+    overflow: hidden;
+}
+
+.exercise-board-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 16px;
+}
+
+.exercise-board-title {
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    color: #e0e0e0;
+    text-transform: uppercase;
+}
+
+.exercise-board-count {
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    color: #e0e0e0;
+    text-transform: uppercase;
 }
 
 /* Exercise List */
 .exercise-list {
     display: flex;
     flex-direction: column;
-    gap: 1px;
-    background-color: #0a0a0a;
-    border-radius: 0 0 12px 12px;
+    gap: 0;
+    background-color: transparent;
     overflow-y: auto;
+    padding: 0 10px 10px;
 }
 
 .exercise-row {
-    display: grid;
-    grid-template-columns: 2fr 3fr;
-    /* Name vs Sets */
-    background-color: #000000;
-    /* zinc-900 */
-    padding: 1rem 1.5rem;
+    display: flex;
+    justify-content: space-between;
     align-items: center;
-    gap: 1rem;
+    background-color: #000000;
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 12px;
+    padding: 0.85rem 1rem;
+    gap: 0.75rem;
     transition: background-color 0.2s;
     cursor: pointer;
+    margin-bottom: 8px;
 }
 
 .exercise-row:hover {
@@ -312,12 +342,17 @@
     display: flex;
     flex-direction: column;
     gap: 0.25rem;
+    flex: 1;
+    min-width: 0;
 }
 
 .exercise-name {
     font-weight: 600;
     color: white;
     font-size: 0.95rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .exercise-meta {
@@ -413,7 +448,7 @@
 .modal-title-group h2 {
     font-size: 1.25rem;
     font-weight: 700;
-    color: white;
+    color: #818CF8;
     margin-bottom: 0.25rem;
 }
 
@@ -441,23 +476,34 @@
 
 .workout-trainer-target {
     display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    background: #000000;
-    border: 1px solid rgba(255,255,255,0.08);
+    flex-direction: column;
+    gap: 0.25rem;
+    background: rgba(129, 140, 248, 0.1);
+    border: 1px solid rgba(129, 140, 248, 0.35);
     border-radius: 8px;
     padding: 0.5rem 0.75rem;
     margin-bottom: 1rem;
     font-size: 0.8rem;
 }
 
+.workout-trainer-target-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
 .workout-trainer-target-label {
-    color: #888;
+    color: #818CF8;
     font-weight: 600;
 }
 
 .workout-trainer-target-value {
-    color: #ccc;
+    color: #c7d2fe;
+}
+
+.workout-double-tap-hint {
+    font-size: 0.68rem;
+    color: #818CF8;
 }
 
 .sets-header {
@@ -467,7 +513,7 @@
     margin-bottom: 0.75rem;
     text-align: center;
     font-size: 0.7rem;
-    color: #71717a;
+    color: #818CF8;
     font-weight: 700;
     letter-spacing: 0.05em;
 }
@@ -485,7 +531,7 @@
     align-items: center;
     justify-content: center;
     background-color: #0a0a0a;
-    color: #a1a1aa;
+    color: #818CF8;
     height: 3rem;
     border-radius: 8px;
     font-weight: 600;
@@ -502,6 +548,11 @@
     font-size: 1.125rem;
     font-weight: 600;
     width: 100%;
+}
+
+.workout-input::placeholder {
+    color: rgba(129, 140, 248, 0.45);
+    font-weight: 500;
 }
 
 .workout-input:focus {

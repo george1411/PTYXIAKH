@@ -77,14 +77,14 @@ export const switchFitbitAccount = async (req, res) => {
         res.redirect(`${FITBIT_AUTH_URL}?${params.toString()}`);
     } catch (err) {
         console.error('Switch Fitbit error:', err.message);
-        res.redirect('https://gymlit-backend.onrender.com/fitbit-done?fitbit=error');
+        res.redirect('http://localhost:5173?fitbit=error');
     }
 };
 
 export const fitbitCallback = async (req, res) => {
     try {
         const { code, state } = req.query;
-        if (!code || !state) return res.redirect('https://gymlit-backend.onrender.com/fitbit-done?fitbit=error');
+        if (!code || !state) return res.redirect('http://localhost:5173?fitbit=error');
 
         const userId = parseInt(Buffer.from(state, 'base64').toString('utf8'));
 
@@ -114,10 +114,10 @@ export const fitbitCallback = async (req, res) => {
             );
         }
 
-        res.redirect('https://gymlit-backend.onrender.com/fitbit-done?fitbit=connected');
+        res.redirect('http://localhost:5173?fitbit=connected');
     } catch (err) {
         console.error('Fitbit callback error:', err.response?.data || err.message);
-        res.redirect('https://gymlit-backend.onrender.com/fitbit-done?fitbit=error');
+        res.redirect('http://localhost:5173?fitbit=error');
     }
 };
 

@@ -185,20 +185,38 @@ export const getExercisePRs = async (req, res, next) => {
 export const getExerciseHistory = async (req, res, next) => {
     try {
         const userId = req.user.id;
-        const rows = await sequelize.query(
+        // Per-session (per day) max weight for each exercise
+        const sessionRows = await sequelize.query(
             `SELECT e.id, e.name, e.targetMuscles AS muscles,
-                    MAX(wl.kg) AS maxWeight,
-                    COUNT(wl.id) AS totalSets,
-                    MAX(DATE(wl.loggedAt)) AS lastLogged
+                    DATE(wl.loggedAt) AS sessionDate,
+                    MAX(wl.kg) AS sessionMax
              FROM WorkoutLogs wl
              JOIN WorkoutExercises we ON wl.workoutExerciseId = we.id
              JOIN Exercises e ON we.exerciseId = e.id
              WHERE wl.userId = :userId AND wl.kg IS NOT NULL AND wl.kg > 0
-             GROUP BY e.id, e.name, e.targetMuscles
-             ORDER BY e.name ASC`,
+             GROUP BY e.id, e.name, e.targetMuscles, DATE(wl.loggedAt)
+             ORDER BY e.name ASC, sessionDate ASC`,
             { replacements: { userId }, type: QueryTypes.SELECT }
         );
-        res.status(200).json({ success: true, data: rows });
+
+        // Group by exercise and build history arrays
+        const exerciseMap = {};
+        for (const row of sessionRows) {
+            if (!exerciseMap[row.id]) {
+                exerciseMap[row.id] = { id: row.id, name: row.name, muscles: row.muscles, sessions: [] };
+            }
+            exerciseMap[row.id].sessions.push(parseFloat(row.sessionMax));
+        }
+
+        const result = Object.values(exerciseMap).map(ex => ({
+            id: ex.id,
+            name: ex.name,
+            muscles: ex.muscles,
+            maxWeight: Math.max(...ex.sessions),
+            history: ex.sessions.slice(-6),
+        }));
+
+        res.status(200).json({ success: true, data: result });
     } catch (error) { next(error); }
 };
 

@@ -1,9 +1,0 @@
-services:
-  - type: web
-    name: gymlit-backend
-    env: node
-    buildCommand: npm install
-    startCommand: node app.js
-    envVars:
-      - key: NODE_ENV
-        value: production

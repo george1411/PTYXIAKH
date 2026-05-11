@@ -32,7 +32,9 @@ const TrainerPrograms = ({ initialProgramId }) => {
     const [allExercises, setAllExercises] = useState([]);
     const [exSearch, setExSearch]         = useState('');
     const [showExSearch, setShowExSearch] = useState(false);
-    const searchRef    = useRef(null);
+    const [exDropdownPos, setExDropdownPos] = useState(null);
+    const searchRef      = useRef(null);
+    const exInputWrapRef = useRef(null);
     const importRef    = useRef(null);
     const newImportRef = useRef(null);
 
@@ -71,7 +73,9 @@ const TrainerPrograms = ({ initialProgramId }) => {
     // ── Day: Exercise search ──
     const [dayExSearch, setDayExSearch]         = useState('');
     const [dayShowExSearch, setDayShowExSearch] = useState(false);
-    const daySearchRef = useRef(null);
+    const [dayExDropdownPos, setDayExDropdownPos] = useState(null);
+    const daySearchRef      = useRef(null);
+    const dayExInputWrapRef = useRef(null);
 
     // ── Fetch week templates ──
     const fetchTemplates = async () => {
@@ -105,6 +109,36 @@ const TrainerPrograms = ({ initialProgramId }) => {
     useEffect(() => {
         if (initialProgramId) loadTemplate(initialProgramId);
     }, [initialProgramId]);
+
+    // ── Week exercise dropdown: fixed positioning ──
+    useEffect(() => {
+        if (!showExSearch) return;
+        const update = () => {
+            if (exInputWrapRef.current) {
+                const r = exInputWrapRef.current.getBoundingClientRect();
+                setExDropdownPos({ top: r.bottom + 4, left: r.left, width: r.width });
+            }
+        };
+        update();
+        window.addEventListener('scroll', update, true);
+        window.addEventListener('resize', update);
+        return () => { window.removeEventListener('scroll', update, true); window.removeEventListener('resize', update); };
+    }, [showExSearch]);
+
+    // ── Day exercise dropdown: fixed positioning ──
+    useEffect(() => {
+        if (!dayShowExSearch) return;
+        const update = () => {
+            if (dayExInputWrapRef.current) {
+                const r = dayExInputWrapRef.current.getBoundingClientRect();
+                setDayExDropdownPos({ top: r.bottom + 4, left: r.left, width: r.width });
+            }
+        };
+        update();
+        window.addEventListener('scroll', update, true);
+        window.addEventListener('resize', update);
+        return () => { window.removeEventListener('scroll', update, true); window.removeEventListener('resize', update); };
+    }, [dayShowExSearch]);
 
     // ── Load a week template ──
     const loadTemplate = async (id) => {
@@ -609,12 +643,12 @@ const TrainerPrograms = ({ initialProgramId }) => {
                                         )}
 
                                         <div className="tp-add-exercise" ref={searchRef}>
-                                            <div className="tp-ex-input-wrap">
+                                            <div className="tp-ex-input-wrap" ref={exInputWrapRef}>
                                                 <Plus size={14} className="tp-ex-input-icon" />
                                                 <input className="tp-ex-input" placeholder="Type exercise name..." value={exSearch} onChange={e => setExSearch(e.target.value)} onFocus={() => setShowExSearch(true)} onKeyDown={e => { if (e.key === 'Enter' && exSearch.trim()) addCustomExercise(); }} />
                                             </div>
-                                            {showExSearch && (
-                                                <div className="tp-ex-dropdown">
+                                            {showExSearch && exDropdownPos && (
+                                                <div className="tp-ex-dropdown" style={{ position: 'fixed', top: exDropdownPos.top, left: exDropdownPos.left, width: exDropdownPos.width, zIndex: 1000 }}>
                                                     {exSearch.trim() && filteredEx.length === 0 && <div className="tp-ex-dropdown-item tp-ex-dropdown-custom" onClick={addCustomExercise}><Plus size={13} /> Add "{exSearch.trim()}"</div>}
                                                     {exSearch.trim() && filteredEx.length > 0 && <div className="tp-ex-dropdown-item tp-ex-dropdown-custom" onClick={addCustomExercise}><Plus size={13} /> Add "{exSearch.trim()}" as new</div>}
                                                     {(exSearch.trim() ? filteredEx : allExercises).slice(0, 20).map(ex => (
@@ -759,12 +793,12 @@ const TrainerPrograms = ({ initialProgramId }) => {
                                         )}
 
                                         <div className="tp-add-exercise" ref={daySearchRef}>
-                                            <div className="tp-ex-input-wrap">
+                                            <div className="tp-ex-input-wrap" ref={dayExInputWrapRef}>
                                                 <Plus size={14} className="tp-ex-input-icon" />
                                                 <input className="tp-ex-input" placeholder="Type exercise name..." value={dayExSearch} onChange={e => setDayExSearch(e.target.value)} onFocus={() => setDayShowExSearch(true)} onKeyDown={e => { if (e.key === 'Enter' && dayExSearch.trim()) addCustomDayExercise(); }} />
                                             </div>
-                                            {dayShowExSearch && (
-                                                <div className="tp-ex-dropdown">
+                                            {dayShowExSearch && dayExDropdownPos && (
+                                                <div className="tp-ex-dropdown" style={{ position: 'fixed', top: dayExDropdownPos.top, left: dayExDropdownPos.left, width: dayExDropdownPos.width, zIndex: 1000 }}>
                                                     {dayExSearch.trim() && filteredDayEx.length === 0 && <div className="tp-ex-dropdown-item tp-ex-dropdown-custom" onClick={addCustomDayExercise}><Plus size={13} /> Add "{dayExSearch.trim()}"</div>}
                                                     {dayExSearch.trim() && filteredDayEx.length > 0 && <div className="tp-ex-dropdown-item tp-ex-dropdown-custom" onClick={addCustomDayExercise}><Plus size={13} /> Add "{dayExSearch.trim()}" as new</div>}
                                                     {(dayExSearch.trim() ? filteredDayEx : allExercises).slice(0, 20).map(ex => (

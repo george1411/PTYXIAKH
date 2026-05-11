@@ -1,16 +1,10 @@
 import { Sequelize } from 'sequelize';
 import { DB_HOST, DB_NAME, DB_PASSWORD, DB_USER } from '../config/env.js';
 
-const isTiDB = DB_HOST && DB_HOST.includes('tidbcloud.com');
-
 const sequelize = new Sequelize(DB_NAME, DB_USER, DB_PASSWORD, {
     host: DB_HOST,
-    port: process.env.DB_PORT ? parseInt(process.env.DB_PORT) : 3306,
     dialect: 'mysql',
-    logging: false,
-    dialectOptions: isTiDB ? {
-        ssl: { rejectUnauthorized: true }
-    } : {}
+    logging: false
 });
 
 const connectToDatabase = async () => {
