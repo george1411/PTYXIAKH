@@ -25,7 +25,7 @@ export const getScheduleEvents = async (req, res, next) => {
     }
 };
 
-// GET appointments for the logged-in customer (direct + group events)
+// GET appointments for the logged-in customer (own + assigned by trainer + group events)
 export const getMyAppointments = async (req, res, next) => {
     try {
         const userId = req.user.id;
@@ -34,11 +34,13 @@ export const getMyAppointments = async (req, res, next) => {
             `SELECT se.id, se.userId, se.clientId, se.groupId, se.title, se.day, se.date,
                     se.startTime, se.endTime, se.color,
                     u.name AS trainerName,
-                    g.name AS groupName
+                    g.name AS groupName,
+                    CASE WHEN se.userId = :userId THEN 1 ELSE 0 END AS isOwn
              FROM ScheduleEvents se
              JOIN Users u ON u.id = se.userId
              LEFT JOIN \`Groups\` g ON g.id = se.groupId
-             WHERE se.clientId = :userId
+             WHERE se.userId = :userId
+                OR se.clientId = :userId
                 OR (se.groupId IS NOT NULL AND EXISTS (
                     SELECT 1 FROM GroupMembers gm WHERE gm.groupId = se.groupId AND gm.userId = :userId
                 ))

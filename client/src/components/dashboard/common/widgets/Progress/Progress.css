@@ -58,6 +58,13 @@
     margin-bottom: 16px;
 }
 
+.progress-section-label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    color: #a5b4fc;
+}
+
 .progress-card-title {
     display: flex;
     align-items: center;
@@ -174,8 +181,8 @@
 }
 
 .progress-range-btn.active {
-    background: #818CF8;
-    color: #ffffff;
+    background: #ffffff;
+    color: #000000;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
 }
 
@@ -852,6 +859,25 @@
     flex-direction: column;
     overflow-y: auto;
     max-height: 360px;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(129, 140, 248, 0.3) transparent;
+}
+
+.eh-list::-webkit-scrollbar {
+    width: 4px;
+}
+
+.eh-list::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.eh-list::-webkit-scrollbar-thumb {
+    background: rgba(129, 140, 248, 0.3);
+    border-radius: 4px;
+}
+
+.eh-list::-webkit-scrollbar-thumb:hover {
+    background: rgba(129, 140, 248, 0.6);
 }
 
 .eh-list-row {
@@ -1071,6 +1097,25 @@
 .eh-log-body {
     overflow-y: auto;
     max-height: 140px;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(129, 140, 248, 0.3) transparent;
+}
+
+.eh-log-body::-webkit-scrollbar {
+    width: 4px;
+}
+
+.eh-log-body::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.eh-log-body::-webkit-scrollbar-thumb {
+    background: rgba(129, 140, 248, 0.3);
+    border-radius: 4px;
+}
+
+.eh-log-body::-webkit-scrollbar-thumb:hover {
+    background: rgba(129, 140, 248, 0.6);
 }
 
 .eh-log-row {

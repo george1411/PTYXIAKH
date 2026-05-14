@@ -105,7 +105,7 @@ const WeeklySteps = () => {
         <div className="progress-card ws-card">
             <div className="progress-card-header">
                 <div className="progress-card-title">
-                    <h3>Weekly Steps</h3>
+                    <span className="progress-section-label">WEEKLY STEPS</span>
                 </div>
                 <div className="ws-header-actions">
                     {!fitbitConnected && (

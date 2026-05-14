@@ -73,7 +73,7 @@ const WeeklyMeasurements = () => {
     return (
         <div style={{ display: 'flex', flexDirection: 'column', height: '100%', background: '#000000', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '1rem', padding: '1rem' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
-                <h3 style={{ color: '#f0f0f0', fontWeight: 700, fontSize: '0.95rem', margin: 0 }}>Weight Progress</h3>
+                <span style={{ fontSize: '0.65rem', fontWeight: 700, letterSpacing: '0.12em', color: '#a5b4fc', marginTop: '0.5rem' }}>WEIGHT PROGRESS</span>
             </div>
 
             <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.5rem', marginBottom: '0.75rem' }}>
@@ -100,7 +100,7 @@ const WeeklyMeasurements = () => {
                             tickFormatter={v => v % 1 === 0 ? v : v.toFixed(1)}
                             tick={{ fontSize: 10, fill: '#555' }} tickLine={false} axisLine={false} width={36}
                         />
-                        <Line type="monotone" dataKey="weight" stroke="#818CF8" strokeWidth={2.5} fill="none" dot={renderDot} activeDot={false} />
+                        <Line type="monotone" dataKey="weight" stroke="#818CF8" strokeWidth={2.5} fill="none" dot={renderDot} activeDot={false} isAnimationActive={false} />
                         {weightGoal && (
                             <ReferenceLine
                                 y={weightGoal}

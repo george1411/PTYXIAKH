@@ -66,6 +66,13 @@
     color: var(--accent);
 }
 
+.nutrition-section-label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    color: #a5b4fc;
+}
+
 .nutrition-card-title h3 {
     font-size: 1rem;
     font-weight: 700;
@@ -208,7 +215,7 @@
 }
 
 .balance-stat-label {
-    font-size: 0.7rem;
+    font-size: 0.75rem;
     font-weight: 600;
     color: #999;
     text-transform: uppercase;
@@ -230,7 +237,7 @@
 }
 
 .balance-divider {
-    font-size: 0.82rem;
+    font-size: 0.75rem;
     font-weight: 600;
     color: #ddd;
     padding: 0 8px;
@@ -261,7 +268,7 @@
 .balance-result.on-target .balance-result-value { color: #e0e0e0; }
 
 .balance-result-label {
-    font-size: 0.7rem;
+    font-size: 0.75rem;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.07em;
@@ -388,7 +395,7 @@
 }
 
 .water-label {
-    font-size: 0.82rem;
+    font-size: 0.75rem;
     color: #888;
     text-align: center;
     font-weight: 500;
@@ -517,7 +524,7 @@
 
 .meal-item-name {
     display: block;
-    font-size: 0.82rem;
+    font-size: 0.75rem;
     font-weight: 600;
     color: #e0e0e0;
     white-space: nowrap;
@@ -829,7 +836,7 @@
 }
 
 .meal-quick-label {
-    font-size: 0.7rem;
+    font-size: 0.75rem;
     font-weight: 700;
     color: rgba(165,180,252,0.6);
     text-transform: uppercase;
@@ -882,7 +889,7 @@
 }
 
 .meal-quick-chip-amt {
-    font-size: 0.7rem;
+    font-size: 0.75rem;
     color: rgba(165,180,252,0.5);
 }
 

@@ -49,9 +49,10 @@
 
 .cm-sidebar-title {
     padding: 20px 18px 12px;
-    font-size: 1rem;
-    font-weight: 800;
-    color: #f0f0f0;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    color: #a5b4fc;
     flex-shrink: 0;
     border-bottom: 1px solid rgba(255,255,255,0.06);
 }

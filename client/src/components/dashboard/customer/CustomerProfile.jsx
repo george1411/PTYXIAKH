@@ -39,10 +39,20 @@ const CustomerProfile = ({ user, onLogout, onUserUpdate }) => {
             });
             setAvatarPreview(user.profileImage || null);
 
+            setLoadingTrainer(true);
             if (user.trainerId) {
-                setLoadingTrainer(true);
                 axios.get(`/api/v1/trainer/${user.trainerId}/public`, { withCredentials: true })
                     .then(res => { if (res.data.success) setTrainer(res.data.data); })
+                    .catch(() => {})
+                    .finally(() => setLoadingTrainer(false));
+            } else {
+                // Fall back: find trainer from chat conversations
+                axios.get('/api/v1/chat/conversations', { withCredentials: true })
+                    .then(res => {
+                        const convos = res.data.data || [];
+                        const trainerConvo = convos.find(c => c.role === 'trainer');
+                        if (trainerConvo) setTrainer({ name: trainerConvo.name, profileImage: trainerConvo.profileImage || null });
+                    })
                     .catch(() => {})
                     .finally(() => setLoadingTrainer(false));
             }
@@ -233,7 +243,7 @@ const CustomerProfile = ({ user, onLogout, onUserUpdate }) => {
                     <div className="cp-card-header"><h2>My Trainer</h2></div>
                     {loadingTrainer ? (
                         <div className="cp-trainer-loading"><div className="cp-spinner" /></div>
-                    ) : !user?.trainerId || !trainer ? (
+                    ) : !trainer ? (
                         <p className="cp-placeholder">No trainer assigned yet.</p>
                     ) : (
                         <div className="cp-trainer">

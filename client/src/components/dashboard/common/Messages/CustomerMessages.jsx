@@ -441,7 +441,7 @@ const CustomerMessages = ({ user, targetTrainer }) => {
         <div className={`cm-wrap ${isMobile ? 'cm-mobile' : ''}`}>
             {/* ── Sidebar ── */}
             <div className="cm-sidebar" style={isMobile && !showList ? { display: 'none' } : {}}>
-                <div className="cm-sidebar-title">Messages</div>
+                <div className="cm-sidebar-title">MESSAGES</div>
                 <div className="cm-sidebar-search">
                     <Search size={13} className="cm-sidebar-search-icon" />
                     <input

@@ -26,7 +26,7 @@ const TodayMacros = () => {
 
     return (
         <div className="tm-card">
-            <h3 className="tm-title">Today's Macros</h3>
+            <span className="tm-label-top">TODAY'S MACROS</span>
 
             {loading ? (
                 <div className="tm-loading"><div className="tm-spinner" /></div>

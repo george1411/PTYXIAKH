@@ -451,15 +451,16 @@ const Schedule = ({ onNavigate, fullPage, hideTitle, isTrainer, readOnly }) => {
         clientName: ev.clientName || ev.trainerName || null,
         groupId:    ev.groupId || null,
         groupName:  ev.groupName || null,
+        isOwn:      ev.isOwn === 1 || ev.isOwn === true,
     });
 
     useEffect(() => {
         if (!fullPage) return;
-        const url = readOnly ? '/api/v1/schedule/my-appointments' : '/api/v1/schedule';
+        const url = isTrainer ? '/api/v1/schedule' : '/api/v1/schedule/my-appointments';
         axios.get(url, { withCredentials: true })
             .then(res => setEvents((res.data.data||[]).map(mapEvent)))
             .catch(console.error);
-    }, [fullPage, readOnly]);
+    }, [fullPage, isTrainer]);
 
     if (!fullPage) return <ScheduleWidget onNavigate={onNavigate} hideTitle={hideTitle} />;
 
@@ -494,7 +495,7 @@ const Schedule = ({ onNavigate, fullPage, hideTitle, isTrainer, readOnly }) => {
 
     // ── Handlers ──
     const openNew = (date, startTime='09:00') => { if (readOnly) return; setModal({ date, startTime, isNew: true }); };
-    const openEdit = (ev) => { if (readOnly) return; setModal({ date: ev.date, event: ev, isNew: false }); };
+    const openEdit = (ev) => { if (readOnly) return; if (!isTrainer && !ev.isOwn) return; setModal({ date: ev.date, event: ev, isNew: false }); };
 
     const handleSave = async (data) => {
         try {
@@ -560,7 +561,7 @@ const Schedule = ({ onNavigate, fullPage, hideTitle, isTrainer, readOnly }) => {
                     {!isMobile && <button className="cd-schedule-today-btn" onClick={goToToday}>Today</button>}
                 </div>
 
-                {/* Add button */}
+                {/* Add button — trainers always, customers always (not readOnly) */}
                 {!readOnly && (
                     <button className="cd-schedule-add-btn" onClick={()=>openNew(dateStr(currentDate))}>
                         <Plus size={15}/> ADD

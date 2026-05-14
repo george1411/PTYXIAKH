@@ -9,11 +9,11 @@
     height: 100%;
 }
 
-.tm-title {
-    font-size: 1rem;
+.tm-label-top {
+    font-size: 0.65rem;
     font-weight: 700;
-    color: #f0f0f0;
-    margin: 0;
+    letter-spacing: 0.12em;
+    color: #a5b4fc;
 }
 
 .tm-loading {

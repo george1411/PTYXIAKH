@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import axios from 'axios';
 import Sidebar from './Sidebar';
 import Workout from './Workout/Workout';
@@ -138,10 +138,69 @@ const NotificationBell = ({ onNavigateToMessages }) => {
 
 const CustomerDashboard = ({ user, onLogout, onUserUpdate }) => {
     const [activeTab, setActiveTab]           = useState('overview');
-    const [messageTarget, setMessageTarget]   = useState(null); // { id, name }
+    const [messageTarget, setMessageTarget]   = useState(null);
+    const [searchQuery, setSearchQuery]         = useState('');
+    const [searchExercises, setSearchExercises] = useState([]);
+    const [searchConvos, setSearchConvos]       = useState([]);
+    const [showSearchDrop, setShowSearchDrop]   = useState(false);
+    const [progressExercise, setProgressExercise] = useState(null);
+    const searchRef = useRef(null);
     const isMobile = useIsMobile();
 
-    const navigateTo = (tab) => setActiveTab(tab);
+    useEffect(() => {
+        axios.get('/api/v1/stats/exercise-history', { withCredentials: true })
+            .then(res => setSearchExercises(res.data.data || []))
+            .catch(() => {});
+        axios.get('/api/v1/chat/conversations', { withCredentials: true })
+            .then(res => setSearchConvos(res.data.data || []))
+            .catch(() => {});
+    }, []);
+
+    const searchResults = useMemo(() => {
+        const q = searchQuery.trim().toLowerCase();
+        if (!q) return [];
+        const exercises = searchExercises
+            .filter(ex => ex.name.toLowerCase().includes(q))
+            .slice(0, 4)
+            .map(ex => ({ ...ex, _type: 'exercise' }));
+        const people = searchConvos
+            .filter(c => c.name?.toLowerCase().includes(q))
+            .slice(0, 3)
+            .map(c => ({ ...c, _type: 'person' }));
+        return [...people, ...exercises];
+    }, [searchQuery, searchExercises, searchConvos]);
+
+    useEffect(() => {
+        setShowSearchDrop(searchResults.length > 0);
+    }, [searchResults]);
+
+    useEffect(() => {
+        const handler = (e) => {
+            if (searchRef.current && !searchRef.current.contains(e.target)) {
+                setShowSearchDrop(false);
+                setSearchQuery('');
+            }
+        };
+        document.addEventListener('mousedown', handler);
+        return () => document.removeEventListener('mousedown', handler);
+    }, []);
+
+    const handleSearchSelect = (item) => {
+        setSearchQuery('');
+        setShowSearchDrop(false);
+        if (item._type === 'person') {
+            setMessageTarget({ id: item.id, name: item.name });
+            setActiveTab('messages');
+        } else {
+            setProgressExercise(item);
+            setActiveTab('progress');
+        }
+    };
+
+    const navigateTo = (tab) => {
+        if (tab !== 'progress') setProgressExercise(null);
+        setActiveTab(tab);
+    };
 
     const handleMessageTrainer = (id, name) => {
         setMessageTarget({ id, name });
@@ -171,7 +230,7 @@ const CustomerDashboard = ({ user, onLogout, onUserUpdate }) => {
                         {NAV_TABS.map(tab => (
                             <button
                                 key={tab.id}
-                                onClick={() => setActiveTab(tab.id)}
+                                onClick={() => navigateTo(tab.id)}
                                 style={{
                                     padding: '5px 14px 8px',
                                     border: 'none',
@@ -207,14 +266,65 @@ const CustomerDashboard = ({ user, onLogout, onUserUpdate }) => {
                         <span className="hidden md:block text-sm font-semibold" style={{ whiteSpace: 'nowrap', color: '#ffffff' }}>
                             {new Date().toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })}
                         </span>
-                        <div className="relative hidden md:block">
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: 'rgba(255,255,255,0.3)' }} />
+                        <div className="relative hidden md:block" ref={searchRef}>
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: 'rgba(255,255,255,0.3)', zIndex: 1 }} />
                             <input
                                 type="text"
                                 placeholder="Search..."
-                                className="rounded-full py-1.5 pl-10 pr-4 text-sm focus:outline-none transition-colors w-44"
+                                value={searchQuery}
+                                onChange={e => setSearchQuery(e.target.value)}
+                                onKeyDown={e => { if (e.key === 'Escape') { setShowSearchDrop(false); setSearchQuery(''); } }}
+                                className="rounded-full py-1.5 pl-10 pr-4 text-sm focus:outline-none transition-colors w-52"
                                 style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', color: '#f0f0f0' }}
                             />
+                            {showSearchDrop && (
+                                <div style={{
+                                    position: 'absolute',
+                                    top: 'calc(100% + 8px)',
+                                    left: 0,
+                                    right: 0,
+                                    background: '#1a1a1a',
+                                    border: '1px solid rgba(255,255,255,0.1)',
+                                    borderRadius: 12,
+                                    overflow: 'hidden',
+                                    zIndex: 9999,
+                                    boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
+                                }}>
+                                    {searchResults.map((item, i) => (
+                                        <button
+                                            key={`${item._type}-${item.id}`}
+                                            onClick={() => handleSearchSelect(item)}
+                                            style={{
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'space-between',
+                                                width: '100%',
+                                                padding: '10px 14px',
+                                                background: 'transparent',
+                                                border: 'none',
+                                                borderBottom: i < searchResults.length - 1 ? '1px solid rgba(255,255,255,0.05)' : 'none',
+                                                cursor: 'pointer',
+                                                textAlign: 'left',
+                                                gap: 8,
+                                            }}
+                                            onMouseEnter={e => e.currentTarget.style.background = 'rgba(129,140,248,0.08)'}
+                                            onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                                        >
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0 }}>
+                                                {item._type === 'person' && (
+                                                    <div style={{ width: 22, height: 22, borderRadius: '50%', background: '#2a2a2a', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: '0.65rem', fontWeight: 700, color: '#818CF8' }}>
+                                                        {item.name?.charAt(0).toUpperCase()}
+                                                    </div>
+                                                )}
+                                                <span style={{ fontSize: '0.82rem', fontWeight: 600, color: '#e0e0e0', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.name}</span>
+                                            </div>
+                                            <span style={{ fontSize: '0.72rem', fontWeight: 700, color: item._type === 'person' ? 'rgba(129,140,248,0.6)' : '#818CF8', flexShrink: 0 }}>
+                                                {item._type === 'person' ? 'Message' : `${item.maxWeight} kg`}
+                                            </span>
+                                        </button>
+                                    ))}
+                                </div>
+                            )}
                         </div>
                         <NotificationBell onNavigateToMessages={() => navigateTo('messages')} />
                     </div>
@@ -229,9 +339,9 @@ const CustomerDashboard = ({ user, onLogout, onUserUpdate }) => {
                         {activeTab === 'workout' ? (
                             <Workout />
                         ) : activeTab === 'schedule' ? (
-                            <Schedule onNavigate={setActiveTab} fullPage={true} readOnly={true} />
+                            <Schedule onNavigate={setActiveTab} fullPage={true} />
                         ) : activeTab === 'progress' ? (
-                            <Progress />
+                            <Progress selectedExercise={progressExercise} onExerciseClear={() => setProgressExercise(null)} />
                         ) : activeTab === 'nutrition' ? (
                             <Nutrition userId={user?.id} />
                         ) : activeTab === 'settings' ? (

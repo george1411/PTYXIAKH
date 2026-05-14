@@ -216,8 +216,8 @@ const GroupWorkout = () => {
                     <div className="modal-content" onClick={e => e.stopPropagation()}>
                         <div className="modal-header">
                             <div className="modal-title-group">
-                                <h2>{selectedEx.exName}</h2>
                                 <span className="modal-subtitle">{selProg?.name}</span>
+                                <h2>{selectedEx.exName}</h2>
                             </div>
                             <X className="modal-close-btn w-6 h-6" onClick={closeModal} />
                         </div>
@@ -568,8 +568,8 @@ const Workout = () => {
                     <div className="modal-content" onClick={e => e.stopPropagation()}>
                         <div className="modal-header">
                             <div className="modal-title-group">
+                                <span className="modal-subtitle">{viewedDayName} · DAY {daysOfWeek.indexOf(viewedDayName) + 1}</span>
                                 <h2>{selectedExercise.name}</h2>
-                                <span className="modal-subtitle">{workout.name}</span>
                             </div>
                             <X className="modal-close-btn w-6 h-6" onClick={closeExerciseModal} />
                         </div>

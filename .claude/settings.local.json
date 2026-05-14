@@ -85,7 +85,8 @@
       "Bash(npm run *)",
       "Bash(echo \"client started with PID $!\")",
       "Bash(awk '{print $5}')",
-      "Bash(xargs -I{} kill -9 {})"
+      "Bash(xargs -I{} kill -9 {})",
+      "Bash(mysql -u root -ppassword123! gymapp -e \"SELECT id, name, email FROM Users WHERE email LIKE '%georgemarkakis7%' OR name LIKE '%George Markakis%';\")"
     ],
     "additionalDirectories": [
       "c:\\Users\\georg\\Downloads"

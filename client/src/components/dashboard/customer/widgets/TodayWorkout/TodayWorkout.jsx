@@ -14,6 +14,7 @@ const TodayWorkout = ({ onNavigate }) => {
     const today      = DAYS[_now.getDay()];
     const todayUpper = today.toUpperCase();
     const todayDate  = `${_now.getFullYear()}-${String(_now.getMonth() + 1).padStart(2, '0')}-${String(_now.getDate()).padStart(2, '0')}`;
+    const dayNumber  = (_now.getDay() + 6) % 7 + 1; // Mon=1 … Sun=7
 
     useEffect(() => {
         const fetch = async () => {
@@ -39,12 +40,12 @@ const TodayWorkout = ({ onNavigate }) => {
             ) : !workout ? (
                 <>
                     <div className="tw-top-row">
-                        <h2 className="tw-workout-title">Today's Workout</h2>
+                        <span className="tw-day-label">TODAY'S WORKOUT</span>
                     </div>
+                    <h2 className="tw-workout-title">REST DAY · DAY {dayNumber}</h2>
                     <div className="tw-divider" />
                     <div className="tw-rest">
                         <Clock size={36} />
-                        <p className="tw-rest-text">Rest Day</p>
                         <span className="tw-rest-sub">No workout scheduled. Enjoy your recovery!</span>
                     </div>
                 </>
@@ -54,7 +55,7 @@ const TodayWorkout = ({ onNavigate }) => {
                         <span className="tw-day-label">TODAY'S WORKOUT</span>
                     </div>
 
-                    <h2 className="tw-workout-title">{workout.name?.toUpperCase()}</h2>
+                    <h2 className="tw-workout-title">{workout.name?.toUpperCase()} · DAY {dayNumber}</h2>
 
                     <div className="tw-divider" />
 

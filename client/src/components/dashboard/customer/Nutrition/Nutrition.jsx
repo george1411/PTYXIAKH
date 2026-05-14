@@ -118,7 +118,7 @@ const DailyMacroTracker = ({ mealsData, balanceData, loading, onGoalsUpdated }) 
         <div className="nutrition-card" style={{ position: 'relative' }}>
             <div className="nutrition-card-header">
                 <div className="nutrition-card-title" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <h3>Daily Macro Tracker</h3>
+                    <span className="nutrition-section-label">DAILY MACRO TRACKER</span>
                     <button
                         onClick={openEdit}
                         title="Edit nutrition goals"
@@ -254,7 +254,7 @@ const NutritionHistoryChart = () => {
         <div className="nutrition-card">
             <div className="nutrition-card-header">
                 <div className="nutrition-card-title">
-                    <h3>Nutrition History</h3>
+                    <span className="nutrition-section-label">NUTRITION HISTORY</span>
                 </div>
                 <RangeToggle
                     value={range}
@@ -379,7 +379,7 @@ export const WaterIntakeTracker = () => {
         <div className="nutrition-card">
             <div className="nutrition-card-header">
                 <div className="nutrition-card-title">
-                    <h3>Water Intake</h3>
+                    <span className="nutrition-section-label">WATER INTAKE</span>
                 </div>
                 <span className="nutrition-subtext">{glasses} / 8 glasses</span>
             </div>
@@ -673,7 +673,7 @@ const MealLogger = ({ mealsData, onUpdate, loading, userId }) => {
         <div className="nutrition-card">
             <div className="nutrition-card-header">
                 <div className="nutrition-card-title">
-                    <h3>Meal Logger</h3>
+                    <span className="nutrition-section-label">MEAL LOGGER</span>
                 </div>
                 <button className="nutrition-add-btn" onClick={openModal}>
                     <Plus size={15} /> Add Meal

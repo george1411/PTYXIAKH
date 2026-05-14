@@ -103,7 +103,7 @@ const WeightHistory = () => {
         <div className="progress-card">
             <div className="progress-card-header">
                 <div className="progress-card-title">
-                    <h3>Weight History</h3>
+                    <span className="progress-section-label">WEIGHT HISTORY</span>
                     <div className="wh-log-anchor">
                         <button
                             className={`wh-log-btn ${showLog ? 'active' : ''}`}
@@ -140,10 +140,8 @@ const WeightHistory = () => {
                     value={range}
                     onChange={setRange}
                     options={[
-                        { value: '30', label: '1M' },
                         { value: '90', label: '3M' },
                         { value: '365', label: '1Y' },
-                        { value: 'all', label: 'All' },
                     ]}
                 />
             </div>
@@ -180,7 +178,7 @@ const WeightHistory = () => {
                                     tickFormatter={v => v % 1 === 0 ? v : v.toFixed(1)}
                                     tick={{ fontSize: 11, fill: '#555' }} tickLine={false} axisLine={false} width={40}
                                 />
-                                <Line type="monotone" dataKey="weight" stroke="#818CF8" strokeWidth={2.5} fill="none" dot={renderDot} activeDot={false} />
+                                <Line type="monotone" dataKey="weight" stroke="#818CF8" strokeWidth={2.5} fill="none" dot={renderDot} activeDot={false} isAnimationActive={false} />
                                 {weightGoal && (
                                     <ReferenceLine
                                         y={weightGoal}
@@ -327,7 +325,7 @@ const ExerciseHistoryGraph = ({ exercise, onBack }) => {
     );
 };
 
-const ExerciseHistory = () => {
+const ExerciseHistory = ({ initialExercise, onExerciseClear }) => {
     const [exercises, setExercises] = useState([]);
     const [loading, setLoading]     = useState(true);
     const [selected, setSelected]   = useState(null);
@@ -339,11 +337,15 @@ const ExerciseHistory = () => {
             .finally(() => setLoading(false));
     }, []);
 
+    useEffect(() => {
+        if (initialExercise) setSelected(initialExercise);
+    }, [initialExercise]);
+
     return (
         <div className="progress-card eh-card">
             <div className="progress-card-header">
                 <div className="progress-card-title">
-                    <h3>Exercise History</h3>
+                    <span className="progress-section-label">EXERCISE HISTORY</span>
                 </div>
             </div>
 
@@ -372,7 +374,7 @@ const ExerciseHistory = () => {
                     </div>
                 )
             ) : (
-                <ExerciseHistoryGraph exercise={selected} onBack={() => setSelected(null)} />
+                <ExerciseHistoryGraph exercise={selected} onBack={() => { setSelected(null); if (onExerciseClear) onExerciseClear(); }} />
             )}
         </div>
     );
@@ -451,7 +453,7 @@ export const ConsistencyCalendar = () => {
         <div className="progress-card">
             <div className="progress-card-header">
                 <div className="progress-card-title">
-                    <h3>Workout Consistency</h3>
+                    <span style={{ fontSize: '0.65rem', fontWeight: 700, letterSpacing: '0.12em', color: '#a5b4fc' }}>WORKOUT CONSISTENCY</span>
                 </div>
                 <span style={{ fontSize: '0.75rem', color: '#999' }}>Last 6 months</span>
             </div>
@@ -840,7 +842,7 @@ export const BMICalculator = () => {
         <div className="progress-card bmi-card">
             <div className="progress-card-header">
                 <div className="progress-card-title">
-                    <h3>BMI Calculator</h3>
+                    <span className="progress-section-label">BMI CALCULATOR</span>
                 </div>
             </div>
 
@@ -887,17 +889,14 @@ export const BMICalculator = () => {
 };
 
 // ─── Main Progress Page ──────────────────────────────────────
-const Progress = () => {
+const Progress = ({ selectedExercise, onExerciseClear }) => {
     const isMobile = useIsMobile();
     return (
         <div className="progress-page">
-            <div className="progress-header">
-                <h2>Progress</h2>
-            </div>
 
             <div className="progress-grid">
                 <WeightHistory />
-                <ExerciseHistory />
+                <ExerciseHistory initialExercise={selectedExercise} onExerciseClear={onExerciseClear} />
                 <WeeklySteps />
                 {!isMobile && <BMICalculator />}
             </div>
