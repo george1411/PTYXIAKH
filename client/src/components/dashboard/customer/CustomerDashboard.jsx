@@ -220,7 +220,7 @@ const CustomerDashboard = ({ user, onLogout, onUserUpdate }) => {
                     {/* Logo */}
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 2, flexShrink: 0 }}>
                         <span style={{ fontWeight: 900, fontSize: '1.1rem', letterSpacing: '-0.02em', color: '#fff', lineHeight: 1 }}>
-                            Gym<span style={{ color: '#818cf8' }}>Lit</span>
+                            Gym<span style={{ color: '#A5B4FC' }}>Lit</span>
                         </span>
                         <span style={{ fontSize: 9, fontWeight: 700, letterSpacing: '.18em', color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase', lineHeight: 1, marginLeft: 22 }}>Member</span>
                     </div>
@@ -307,18 +307,18 @@ const CustomerDashboard = ({ user, onLogout, onUserUpdate }) => {
                                                 textAlign: 'left',
                                                 gap: 8,
                                             }}
-                                            onMouseEnter={e => e.currentTarget.style.background = 'rgba(129,140,248,0.08)'}
+                                            onMouseEnter={e => e.currentTarget.style.background = 'rgba(165,180,252,0.08)'}
                                             onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
                                         >
                                             <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0 }}>
                                                 {item._type === 'person' && (
-                                                    <div style={{ width: 22, height: 22, borderRadius: '50%', background: '#2a2a2a', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: '0.65rem', fontWeight: 700, color: '#818CF8' }}>
+                                                    <div style={{ width: 22, height: 22, borderRadius: '50%', background: '#2a2a2a', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: '0.65rem', fontWeight: 700, color: '#A5B4FC' }}>
                                                         {item.name?.charAt(0).toUpperCase()}
                                                     </div>
                                                 )}
                                                 <span style={{ fontSize: '0.82rem', fontWeight: 600, color: '#e0e0e0', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.name}</span>
                                             </div>
-                                            <span style={{ fontSize: '0.72rem', fontWeight: 700, color: item._type === 'person' ? 'rgba(129,140,248,0.6)' : '#818CF8', flexShrink: 0 }}>
+                                            <span style={{ fontSize: '0.72rem', fontWeight: 700, color: item._type === 'person' ? 'rgba(165,180,252,0.6)' : '#A5B4FC', flexShrink: 0 }}>
                                                 {item._type === 'person' ? 'Message' : `${item.maxWeight} kg`}
                                             </span>
                                         </button>
@@ -332,7 +332,7 @@ const CustomerDashboard = ({ user, onLogout, onUserUpdate }) => {
             </header>
 
             {/* Scrollable Grid Area */}
-            <main className="flex-1 p-4 lg:p-8 custom-scrollbar relative overflow-y-auto" style={{ background: 'transparent', paddingBottom: isMobile ? 100 : undefined, WebkitOverflowScrolling: 'touch' }}>
+            <main className="flex-1 p-4 lg:p-5 custom-scrollbar relative overflow-y-auto" style={{ background: 'transparent', paddingBottom: isMobile ? 100 : undefined, WebkitOverflowScrolling: 'touch' }}>
 
 
                     <div className="max-w-7xl mx-auto relative z-10 h-full">
@@ -362,7 +362,7 @@ const CustomerDashboard = ({ user, onLogout, onUserUpdate }) => {
                             </div>
                         ) : (
                             /* Desktop Overview Grid */
-                            <div className="grid grid-cols-4 gap-4">
+                            <div className="grid grid-cols-4 gap-3">
                                 {/* Row 1: Weekly Schedule */}
                                 <div className="col-span-4">
                                     <Schedule onNavigate={setActiveTab} hideTitle />

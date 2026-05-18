@@ -5,7 +5,7 @@
     border: 1px solid rgba(255,255,255,0.08);
     border-radius: 16px;
     overflow: hidden;
-    background: #000000;
+    background: #0a0a0a;
 }
 
 /* Mobile: full-screen, no border/radius */
@@ -43,7 +43,7 @@
     border-right: 1px solid rgba(255,255,255,0.08);
     display: flex;
     flex-direction: column;
-    background: #000000;
+    background: #0a0a0a;
     overflow-y: auto;
 }
 
@@ -75,7 +75,7 @@
 .cm-sidebar-search-input {
     width: 100%;
     padding: 7px 10px 7px 28px;
-    background: #111111;
+    background: #0a0a0a;
     border: 1px solid rgba(255,255,255,0.08);
     border-radius: 999px;
     color: #e0e0e0;
@@ -112,9 +112,9 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background: rgba(129,140,248,0.12);
-    border: 1px solid rgba(129,140,248,0.2);
-    color: #818cf8;
+    background: rgba(165,180,252,0.12);
+    border: 1px solid rgba(165,180,252,0.2);
+    color: #A5B4FC;
 }
 
 .cm-convo-item {
@@ -142,9 +142,9 @@
     width: 40px;
     height: 40px;
     border-radius: 50%;
-    background: rgba(129,140,248,0.10);
-    border: 1px solid rgba(129,140,248,0.25);
-    color: #c4b5fd;
+    background: rgba(165,180,252,0.10);
+    border: 1px solid rgba(165,180,252,0.25);
+    color: #A5B4FC;
     font-weight: 700;
     font-size: 1rem;
     display: flex;
@@ -202,7 +202,7 @@
 .cm-convo-badge {
     min-width: 18px;
     height: 18px;
-    background: #818CF8;
+    background: #A5B4FC;
     color: #fff;
     font-size: 0.65rem;
     font-weight: 700;
@@ -220,7 +220,7 @@
     display: flex;
     flex-direction: column;
     overflow: hidden;
-    background: #000000;
+    background: #0a0a0a;
     border-left: 1px solid rgba(255,255,255,0.08);
 }
 
@@ -231,7 +231,7 @@
     gap: 14px;
     padding: 18px 24px;
     border-bottom: 1px solid rgba(255,255,255,0.08);
-    background: #000000;
+    background: #0a0a0a;
     flex-shrink: 0;
 }
 
@@ -239,9 +239,9 @@
     width: 46px;
     height: 46px;
     border-radius: 50%;
-    background: rgba(129,140,248,0.10);
-    border: 1px solid rgba(129,140,248,0.25);
-    color: #c4b5fd;
+    background: rgba(165,180,252,0.10);
+    border: 1px solid rgba(165,180,252,0.25);
+    color: #A5B4FC;
     font-weight: 700;
     font-size: 1.2rem;
     display: flex;
@@ -281,7 +281,7 @@
     display: flex;
     flex-direction: column;
     gap: 4px;
-    background: #000000;
+    background: #0a0a0a;
 }
 
 .cm-state {
@@ -386,14 +386,14 @@
 .cm-bubble p { margin: 0 0 3px; }
 
 .cm-bubble.me {
-    background: #818CF8;
+    background: #A5B4FC;
     color: #0a0a0a;
     font-weight: 600;
     border-bottom-right-radius: 5px;
 }
 
 .cm-bubble.them {
-    background: #111111;
+    background: #0a0a0a;
     color: #f0f0f0;
     border-bottom-left-radius: 5px;
     border: 1px solid rgba(255,255,255,0.08);
@@ -416,7 +416,7 @@
     padding: 16px 24px;
     border-top: 1px solid rgba(255,255,255,0.08);
     flex-shrink: 0;
-    background: #000000;
+    background: #0a0a0a;
 }
 
 .cm-input {
@@ -426,20 +426,20 @@
     border-radius: 999px;
     font-size: 0.875rem;
     outline: none;
-    background: #111111;
+    background: #0a0a0a;
     color: #e0e0e0;
     transition: border-color 0.15s;
 }
 
 .cm-input::placeholder { color: rgba(255,255,255,0.25); }
-.cm-input:focus { border-color: #818cf8; box-shadow: 0 0 0 3px rgba(129,140,248,0.12); }
+.cm-input:focus { border-color: #A5B4FC; box-shadow: 0 0 0 3px rgba(165,180,252,0.12); }
 .cm-input:disabled { background: #0a0a0a; color: #444; }
 
 .cm-send {
     width: 44px;
     height: 44px;
     border-radius: 50%;
-    background: #818CF8;
+    background: #A5B4FC;
     color: #fff;
     border: none;
     cursor: pointer;
@@ -469,14 +469,14 @@
     flex-shrink: 0;
     transition: background 0.15s, color 0.15s;
 }
-.cm-workout-btn:hover { background: rgba(129,140,248,0.15); color: #818CF8; border-color: #818CF8; }
+.cm-workout-btn:hover { background: rgba(165,180,252,0.15); color: #A5B4FC; border-color: #A5B4FC; }
 
 .cm-workout-picker {
     border: 1px solid rgba(255,255,255,0.08);
     border-radius: 10px;
     margin: 0 24px 8px;
     overflow: hidden;
-    background: #000000;
+    background: #0a0a0a;
 }
 .cm-workout-picker-header {
     display: flex;
@@ -540,7 +540,7 @@
     position: absolute;
     bottom: calc(100% + 8px);
     left: 0;
-    background: #111111;
+    background: #0a0a0a;
     border: 1px solid rgba(255,255,255,0.1);
     border-radius: 12px;
     padding: 6px;
@@ -660,7 +660,7 @@
 }
 
 .cm-pain-modal {
-    background: #000000;
+    background: #0a0a0a;
     border: 1px solid rgba(255,255,255,0.07);
     border-radius: 16px;
     width: 100%;
@@ -699,7 +699,7 @@
     font-size: 0.65rem;
     font-weight: 700;
     letter-spacing: 0.1em;
-    color: #818cf8;
+    color: #A5B4FC;
     display: block;
     margin-bottom: 6px;
 }
@@ -707,7 +707,7 @@
 .cm-pain-title {
     font-size: 1.3rem;
     font-weight: 800;
-    color: #818cf8;
+    color: #A5B4FC;
     margin: 0;
 }
 
@@ -749,7 +749,7 @@
 .cm-pain-svg-col {
     padding: 14px 8px 14px 18px;
     flex-shrink: 0;
-    background: #000000;
+    background: #0a0a0a;
     border-right: 1px solid rgba(255,255,255,0.06);
     display: flex;
     align-items: flex-start;
@@ -991,7 +991,7 @@
     transition: all 0.15s;
 }
 .cm-group-tab:hover { background: rgba(255,255,255,0.08); color: #f0f0f0; }
-.cm-group-tab.active { background: rgba(129,140,248,0.15); color: #818cf8; font-weight: 600; }
+.cm-group-tab.active { background: rgba(165,180,252,0.15); color: #A5B4FC; font-weight: 600; }
 
 /* ─── Program panel ──────────────────────────────────────────────── */
 .cm-prog-panel {
@@ -1061,11 +1061,11 @@
     transition: all 0.15s;
 }
 .cm-prog-day-tab:hover { background: rgba(255,255,255,0.08); color: #f0f0f0; }
-.cm-prog-day-tab.active { background: rgba(129,140,248,0.15); color: #818cf8; font-weight: 600; }
+.cm-prog-day-tab.active { background: rgba(165,180,252,0.15); color: #A5B4FC; font-weight: 600; }
 .cm-prog-day-dot {
     width: 5px;
     height: 5px;
-    background: #818cf8;
+    background: #A5B4FC;
     border-radius: 50%;
 }
 
@@ -1091,8 +1091,8 @@
 .cm-prog-ex-right { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
 .cm-prog-my-log {
     font-size: 0.72rem;
-    color: #818cf8;
-    background: rgba(129,140,248,0.1);
+    color: #A5B4FC;
+    background: rgba(165,180,252,0.1);
     border-radius: 5px;
     padding: 2px 7px;
     white-space: nowrap;
@@ -1129,20 +1129,20 @@
     outline: none;
     text-align: center;
 }
-.cm-prog-log-input:focus { border-color: rgba(129,140,248,0.4); }
+.cm-prog-log-input:focus { border-color: rgba(165,180,252,0.4); }
 .cm-prog-log-weight { width: 64px; }
 .cm-prog-log-sep { color: rgba(255,255,255,0.25); font-size: 0.85rem; }
 .cm-prog-log-submit {
     padding: 5px 12px;
     border-radius: 6px;
     border: none;
-    background: rgba(129,140,248,0.2);
-    color: #818cf8;
+    background: rgba(165,180,252,0.2);
+    color: #A5B4FC;
     font-size: 0.85rem;
     font-weight: 700;
     cursor: pointer;
     transition: all 0.15s;
     margin-left: auto;
 }
-.cm-prog-log-submit:hover:not(:disabled) { background: rgba(129,140,248,0.35); }
+.cm-prog-log-submit:hover:not(:disabled) { background: rgba(165,180,252,0.35); }
 .cm-prog-log-submit:disabled { opacity: 0.5; cursor: not-allowed; }

@@ -38,6 +38,14 @@ const Meal = sequelize.define('Meal', {
     fat: {
         type: DataTypes.FLOAT,
         defaultValue: 0
+    },
+    amount: {
+        type: DataTypes.STRING,
+        allowNull: true
+    },
+    unit: {
+        type: DataTypes.STRING,
+        allowNull: true
     }
 }, {
     timestamps: true,

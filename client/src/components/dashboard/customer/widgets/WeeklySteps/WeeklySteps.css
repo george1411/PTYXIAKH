@@ -11,7 +11,7 @@
 
 .ws-log-input {
     width: 120px;
-    background: #000000;
+    background: #0a0a0a;
     border: 1px solid rgba(255,255,255,0.1);
     border-radius: 8px;
     color: #e0e0e0;
@@ -80,7 +80,7 @@
 }
 
 .ws-tooltip {
-    background: #000000;
+    background: #0a0a0a;
     border: 1px solid rgba(255,255,255,0.1);
     border-radius: 8px;
     padding: 8px 12px;

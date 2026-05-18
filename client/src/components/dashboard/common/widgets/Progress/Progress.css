@@ -41,7 +41,7 @@
 
 /* ─── Card ─────────────────────────────────────────────────── */
 .progress-card {
-    background: #000000;
+    background: #0a0a0a;
     border: 1px solid rgba(255,255,255,0.08);
     border-radius: 16px;
     padding: 24px;
@@ -220,12 +220,12 @@
 
 .progress-weight-diff.positive {
     color: #a5b4fc;
-    background: rgba(129,140,248,0.15);
+    background: rgba(165,180,252,0.15);
 }
 
 .progress-weight-diff.negative {
     color: #a5b4fc;
-    background: rgba(129,140,248,0.15);
+    background: rgba(165,180,252,0.15);
 }
 
 .progress-weight-diff.neutral {
@@ -276,7 +276,7 @@
 }
 
 .progress-pr-item:hover {
-    border-color: rgba(129,140,248,0.2);
+    border-color: rgba(165,180,252,0.2);
 }
 
 .progress-pr-item-left {
@@ -299,8 +299,8 @@
 }
 
 .progress-pr-badge.gold {
-    background: rgba(129,140,248,0.2);
-    color: #818CF8;
+    background: rgba(165,180,252,0.2);
+    color: #A5B4FC;
 }
 
 .progress-pr-badge.silver {
@@ -310,7 +310,7 @@
 
 .progress-pr-badge.bronze {
     background: rgba(196,181,253,0.12);
-    color: #c4b5fd;
+    color: #A5B4FC;
 }
 
 .progress-pr-num {
@@ -397,7 +397,7 @@
     display: flex;
     gap: 2px;
     flex: 1;
-    overflow-x: auto;
+    overflow: hidden;
 }
 
 .progress-heatmap-week {
@@ -426,8 +426,8 @@
 }
 
 .progress-heatmap-cell.level-1 {
-    background: #818CF8;
-    box-shadow: 0 0 6px rgba(129,140,248,0.4);
+    background: #A5B4FC;
+    box-shadow: 0 0 6px rgba(165,180,252,0.4);
 }
 
 .progress-heatmap-cell.future {
@@ -502,7 +502,7 @@
 /* ─── AI Weight Prediction Widget ─────────────────────────── */
 .progress-card-prediction {
     border: 1px solid rgba(255,255,255,0.08);
-    background: #000000;
+    background: #0a0a0a;
 }
 
 .prediction-form {
@@ -733,7 +733,7 @@
 /* ─── BMI Calculator Widget ──────────────────────────────────── */
 .bmi-card {
     border: 1px solid rgba(255,255,255,0.08);
-    background: #000000;
+    background: #0a0a0a;
     overflow: visible;
     height: auto;
 }
@@ -797,7 +797,7 @@
 .bmi-label {
     font-size: 0.85rem;
     font-weight: 600;
-    color: #818CF8;
+    color: #A5B4FC;
     text-transform: uppercase;
     letter-spacing: 0.06em;
 }
@@ -860,7 +860,7 @@
     overflow-y: auto;
     max-height: 360px;
     scrollbar-width: thin;
-    scrollbar-color: rgba(129, 140, 248, 0.3) transparent;
+    scrollbar-color: rgba(165, 180, 252, 0.3) transparent;
 }
 
 .eh-list::-webkit-scrollbar {
@@ -872,12 +872,12 @@
 }
 
 .eh-list::-webkit-scrollbar-thumb {
-    background: rgba(129, 140, 248, 0.3);
+    background: rgba(165, 180, 252, 0.3);
     border-radius: 4px;
 }
 
 .eh-list::-webkit-scrollbar-thumb:hover {
-    background: rgba(129, 140, 248, 0.6);
+    background: rgba(165, 180, 252, 0.6);
 }
 
 .eh-list-row {
@@ -949,7 +949,7 @@
 
 .eh-exercise-btn:hover {
     background: #1f1f1f;
-    border-color: rgba(129,140,248,0.3);
+    border-color: rgba(165,180,252,0.3);
 }
 
 .eh-exercise-name {
@@ -965,7 +965,7 @@
 .eh-exercise-pr {
     font-size: 0.75rem;
     font-weight: 700;
-    color: #818CF8;
+    color: #A5B4FC;
 }
 
 .eh-card-sub {
@@ -1096,9 +1096,9 @@
 
 .eh-log-body {
     overflow-y: auto;
-    max-height: 140px;
+    max-height: 84px;
     scrollbar-width: thin;
-    scrollbar-color: rgba(129, 140, 248, 0.3) transparent;
+    scrollbar-color: rgba(165, 180, 252, 0.3) transparent;
 }
 
 .eh-log-body::-webkit-scrollbar {
@@ -1110,12 +1110,12 @@
 }
 
 .eh-log-body::-webkit-scrollbar-thumb {
-    background: rgba(129, 140, 248, 0.3);
+    background: rgba(165, 180, 252, 0.3);
     border-radius: 4px;
 }
 
 .eh-log-body::-webkit-scrollbar-thumb:hover {
-    background: rgba(129, 140, 248, 0.6);
+    background: rgba(165, 180, 252, 0.6);
 }
 
 .eh-log-row {

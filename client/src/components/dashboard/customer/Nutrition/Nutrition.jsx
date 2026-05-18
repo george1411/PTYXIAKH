@@ -22,63 +22,23 @@ const RangeToggle = ({ value, onChange, options }) => (
     </div>
 );
 
-// ─── SVG Circular Macro Ring ──────────────────────────────────
-const MacroRing = ({ label, value, target, gradFrom, gradTo, labelColor, unit }) => {
-    const r = 38;
-    const circ = 2 * Math.PI * r;
-    const pct = target > 0 ? Math.min(value / target, 1) : 0;
-    const offset = circ - pct * circ;
-    const gradId = `grad-${label.toLowerCase()}`;
-
-    return (
-        <div className="macro-ring-item">
-            <svg width="104" height="104" viewBox="0 0 104 104">
-                <defs>
-                    <linearGradient id={gradId} x1="0%" y1="0%" x2="100%" y2="0%">
-                        <stop offset="0%" stopColor={gradFrom} />
-                        <stop offset="100%" stopColor={gradTo} />
-                    </linearGradient>
-                </defs>
-                <circle cx="52" cy="52" r={r} fill="none" stroke="#2a2a2a" strokeWidth="7" />
-                <circle
-                    cx="52" cy="52" r={r}
-                    fill="none"
-                    stroke={`url(#${gradId})`}
-                    strokeWidth="7"
-                    strokeDasharray={circ}
-                    strokeDashoffset={offset}
-                    strokeLinecap="round"
-                    transform="rotate(-90 52 52)"
-                    style={{ transition: 'stroke-dashoffset 0.7s ease' }}
-                />
-                <text x="52" y="49" textAnchor="middle" fontSize="15" fontWeight="800" fill="#f0f0f0">
-                    {Math.round(value)}
-                </text>
-                <text x="52" y="63" textAnchor="middle" fontSize="9" fill="#666">
-                    / {Math.round(target)} {unit}
-                </text>
-            </svg>
-            <div className="macro-ring-label" style={{ color: labelColor }}>{label}</div>
-        </div>
-    );
-};
-
-// ─── Daily Macro Tracker ──────────────────────────────────────
+// ─── Macro field definitions (used in edit modal) ─────────────
 const MACRO_FIELDS = [
-    { key: 'cal',  label: 'Calories', unit: 'kcal', min: 500,  max: 6000 },
-    { key: 'prot', label: 'Protein',  unit: 'g',    min: 10,   max: 500  },
-    { key: 'carbs',label: 'Carbs',    unit: 'g',    min: 10,   max: 1000 },
-    { key: 'fat',  label: 'Fat',      unit: 'g',    min: 5,    max: 300  },
+    { key: 'cal',   label: 'Calories', unit: 'kcal', min: 500,  max: 6000 },
+    { key: 'prot',  label: 'Protein',  unit: 'g',    min: 10,   max: 500  },
+    { key: 'carbs', label: 'Carbs',    unit: 'g',    min: 10,   max: 1000 },
+    { key: 'fat',   label: 'Fat',      unit: 'g',    min: 5,    max: 300  },
 ];
 
+// ─── HeroDay — replaces DailyMacroTracker ────────────────────
 const DailyMacroTracker = ({ mealsData, balanceData, loading, onGoalsUpdated }) => {
     const totals = mealsData?.totals || { calories: 0, protein: 0, carbs: 0, fat: 0 };
     const [calTarget,     setCalTarget]     = useState(2500);
     const [proteinTarget, setProteinTarget] = useState(150);
-    const [carbsTarget,   setCarbsTarget]   = useState(281);
-    const [fatTarget,     setFatTarget]     = useState(69);
+    const [carbsTarget,   setCarbsTarget]   = useState(200);
+    const [fatTarget,     setFatTarget]     = useState(50);
     const [editOpen, setEditOpen] = useState(false);
-    const [draft, setDraft] = useState({ cal: '', prot: '', carbs: '', fat: '' });
+    const [draft, setDraft] = useState({ cal: 2500, prot: 150, carbs: 200, fat: 50 });
     const [saving, setSaving] = useState(false);
 
     useEffect(() => {
@@ -114,25 +74,110 @@ const DailyMacroTracker = ({ mealsData, balanceData, loading, onGoalsUpdated }) 
         setSaving(false);
     };
 
+    const remaining = Math.max(0, calTarget - totals.calories);
+    const p = Math.min(1, totals.calories / Math.max(1, calTarget));
+    const today = new Date().toLocaleDateString('en-US', {
+        weekday: 'long', month: 'short', day: 'numeric',
+    });
+
+    const R = 110, STROKE = 14, CX = 130, CY = 130;
+    const CIRC = 2 * Math.PI * R;
+
+    const macros = [
+        { label: 'Calories', cur: totals.calories, max: calTarget,     color: '#e0e0e0', unit: 'kcal' },
+        { label: 'Protein',  cur: totals.protein,  max: proteinTarget, color: '#a5b4fc', unit: 'g' },
+        { label: 'Carbs',    cur: totals.carbs,    max: carbsTarget,   color: '#30a195', unit: 'g' },
+        { label: 'Fat',      cur: totals.fat,      max: fatTarget,     color: '#A5B4FC', unit: 'g' },
+    ];
+
     return (
-        <div className="nutrition-card" style={{ position: 'relative' }}>
-            <div className="nutrition-card-header">
-                <div className="nutrition-card-title" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <span className="nutrition-section-label">DAILY MACRO TRACKER</span>
-                    <button
-                        onClick={openEdit}
-                        title="Edit nutrition goals"
-                        style={{ background: 'none', border: 'none', padding: 3, cursor: 'pointer', color: 'rgba(255,255,255,0.3)', display: 'flex', alignItems: 'center', borderRadius: 4, transition: 'color 0.15s' }}
-                        onMouseEnter={e => e.currentTarget.style.color = '#f0f0f0'}
-                        onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.3)'}
-                    >
-                        <Pencil size={13} />
-                    </button>
+        <div className="nutrition-card" style={{ padding: '24px 28px', position: 'relative' }}>
+            {/* Hero row — ring + headline */}
+            <div style={{ display: 'grid', gridTemplateColumns: '240px 1fr', gap: 28, alignItems: 'center', marginBottom: 22 }}>
+                <div style={{ position: 'relative', width: 240, height: 240, flexShrink: 0 }}>
+                    <svg width="240" height="240" viewBox="0 0 260 260">
+                        <circle cx={CX} cy={CY} r={R}
+                            stroke="rgba(255,255,255,0.05)" strokeWidth={STROKE} fill="none" />
+                        <circle cx={CX} cy={CY} r={R}
+                            stroke="#A5B4FC" strokeWidth={STROKE} fill="none"
+                            strokeDasharray={CIRC}
+                            strokeDashoffset={CIRC * (1 - p)}
+                            strokeLinecap="round"
+                            transform={`rotate(-90 ${CX} ${CY})`}
+                            style={{ transition: 'stroke-dashoffset 0.6s ease' }} />
+                    </svg>
+                    <div style={{
+                        position: 'absolute', inset: 0,
+                        display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                    }}>
+                        <div style={{ fontSize: 10.5, fontWeight: 800, letterSpacing: '0.2em', color: '#a5b4fc' }}>
+                            REMAINING
+                        </div>
+                        <div style={{
+                            fontSize: 60, fontWeight: 800, letterSpacing: '-0.035em',
+                            color: '#f0f0f0', marginTop: 6, lineHeight: 1,
+                            fontVariantNumeric: 'tabular-nums',
+                        }}>
+                            {loading ? '—' : remaining.toLocaleString()}
+                        </div>
+                        <div style={{ fontSize: 12, fontWeight: 700, color: '#555', letterSpacing: '0.06em', marginTop: 4 }}>
+                            kcal
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
+                        <span className="nutrition-section-label" style={{ color: '#a5b4fc' }}>
+                            {today.toUpperCase()}
+                        </span>
+                    </div>
+                    <h1 style={{
+                        margin: 0, fontSize: 30, fontWeight: 800,
+                        letterSpacing: '-0.025em', lineHeight: 1.1, color: '#f0f0f0',
+                    }}>
+                        <span style={{ color: '#f0f0f0' }}>{loading ? '—' : Math.round(totals.calories).toLocaleString()} kcal</span> <span style={{ color: '#A5B4FC' }}>consumed today</span>
+                    </h1>
+                    <div style={{ fontSize: 14, color: '#888', fontWeight: 500, marginTop: 10, fontVariantNumeric: 'tabular-nums' }}>
+                        <span style={{ color: '#a5b4fc', fontWeight: 700 }}>{Math.round(totals.protein)}g</span> protein
+                        {' · '}
+                        <span style={{ color: '#30a195', fontWeight: 700 }}>{Math.round(totals.carbs)}g</span> carbs
+                        {' · '}
+                        <span style={{ color: '#f0f0f0', fontWeight: 700 }}>{Math.round(totals.fat)}g</span> fat
+                        <button onClick={openEdit} title="Edit nutrition goals"
+                            style={{ background: 'none', border: 'none', padding: '0 0 0 6px', cursor: 'pointer', color: 'rgba(255,255,255,0.3)', display: 'inline-flex', alignItems: 'center', verticalAlign: 'middle' }}
+                            onMouseEnter={e => e.currentTarget.style.color = '#f0f0f0'}
+                            onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.3)'}>
+                            <Pencil size={11} />
+                        </button>
+                    </div>
                 </div>
             </div>
 
+            {/* Macro strip */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                {macros.map(m => {
+                    const mp = Math.min(1, m.cur / Math.max(1, m.max));
+                    return (
+                        <div key={m.label}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 4 }}>
+                                <span style={{ fontSize: 10.5, fontWeight: 800, letterSpacing: '0.14em', color: '#888', textTransform: 'uppercase' }}>{m.label}</span>
+                                <span style={{ fontSize: 11.5, fontWeight: 700, color: '#888', fontVariantNumeric: 'tabular-nums' }}>
+                                    <span style={{ color: '#f0f0f0' }}>{m.cur < 10 ? m.cur.toFixed(1) : Math.round(m.cur)}</span>
+                                    <span style={{ color: '#555' }}> / {m.max} {m.unit}</span>
+                                </span>
+                            </div>
+                            <div style={{ height: 6, background: 'rgba(255,255,255,0.05)', borderRadius: 999, overflow: 'hidden' }}>
+                                <div style={{ width: `${mp * 100}%`, height: '100%', background: m.color, borderRadius: 999, transition: 'width 0.4s ease' }} />
+                            </div>
+                        </div>
+                    );
+                })}
+            </div>
+
+            {/* Goal edit popover */}
             {editOpen && (
-                <div style={{ position: 'absolute', top: 56, left: 16, zIndex: 50, background: '#111', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 12, padding: '18px 20px', width: 260, boxShadow: '0 8px 32px rgba(0,0,0,0.6)' }}>
+                <div style={{ position: 'absolute', top: 56, left: 16, zIndex: 50, background: '#0a0a0a', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 12, padding: '18px 20px', width: 260, boxShadow: '0 8px 32px rgba(0,0,0,0.6)' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
                         <span style={{ fontSize: '0.82rem', fontWeight: 700, color: '#f0f0f0' }}>Edit Goals</span>
                         <button onClick={() => setEditOpen(false)} style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.4)', cursor: 'pointer', padding: 0 }}><X size={15} /></button>
@@ -157,73 +202,6 @@ const DailyMacroTracker = ({ mealsData, balanceData, loading, onGoalsUpdated }) 
                     >
                         {saving ? 'Saving…' : 'Save Goals'}
                     </button>
-                </div>
-            )}
-
-            {loading ? (
-                <div className="nutrition-loading"><div className="nutrition-spinner" /></div>
-            ) : (
-                <div className="macro-rings-row">
-                    <MacroRing label="Calories" value={totals.calories} target={calTarget}     gradFrom="#555"    gradTo="#e0e0e0" labelColor="#e0e0e0" unit="kcal" />
-                    <MacroRing label="Protein"  value={totals.protein}  target={proteinTarget} gradFrom="#334"    gradTo="#a5b4fc" labelColor="#a5b4fc" unit="g" />
-                    <MacroRing label="Carbs"    value={totals.carbs}    target={carbsTarget}   gradFrom="#1e3a5f" gradTo="#38bdf8" labelColor="#38bdf8" unit="g" />
-                    <MacroRing label="Fat"      value={totals.fat}      target={fatTarget}     gradFrom="#2a1a3a" gradTo="#c084fc" labelColor="#c084fc" unit="g" />
-                </div>
-            )}
-        </div>
-    );
-};
-
-// ─── Calorie Balance Card ─────────────────────────────────────
-const CalorieBalanceCard = ({ balanceData, loading }) => {
-    const data = balanceData;
-    const statusClass = !data ? '' : data.status === 'surplus' ? 'surplus' : data.status === 'deficit' ? 'deficit' : 'on-target';
-    const statusLabel = !data ? '' : data.status === 'surplus' ? 'Surplus' : data.status === 'deficit' ? 'Deficit' : 'On Target';
-
-    return (
-        <div className="nutrition-card">
-            <div className="nutrition-card-header">
-                <div className="nutrition-card-title">
-                    <h3>Calorie Balance</h3>
-                </div>
-            </div>
-            {loading ? (
-                <div className="nutrition-loading"><div className="nutrition-spinner" /></div>
-            ) : !data ? (
-                <div className="nutrition-empty"><p>No data available</p></div>
-            ) : (
-                <div className="balance-content">
-                    <div className="balance-row">
-                        <div className="balance-stat">
-                            <span className="balance-stat-label">Consumed</span>
-                            <span className="balance-stat-value">{Math.round(data.consumed)}</span>
-                            <span className="balance-stat-unit">kcal</span>
-                        </div>
-                        <div className="balance-divider">vs</div>
-                        <div className="balance-stat">
-                            <span className="balance-stat-label">Target</span>
-                            <span className="balance-stat-value">{Math.round(data.target)}</span>
-                            <span className="balance-stat-unit">kcal</span>
-                        </div>
-                    </div>
-                    <div className={`balance-result ${statusClass}`}>
-                        <span className="balance-result-value">
-                            {data.balance > 0 ? '+' : ''}{Math.round(data.balance)} kcal
-                        </span>
-                        <span className="balance-result-label">{statusLabel}</span>
-                    </div>
-                    <div className="balance-protein-row">
-                        <span className="balance-protein-label">Protein</span>
-                        <div className="balance-protein-bar-wrap">
-                            <div
-                                className="balance-protein-bar"
-                                style={{ width: `${Math.min((data.proteinConsumed / (data.proteinTarget || 150)) * 100, 100)}%` }}
-                            />
-                        </div>
-                        <span className="balance-protein-values">
-                            {Math.round(data.proteinConsumed)}g / {data.proteinTarget}g
-                        </span>
-                    </div>
                 </div>
             )}
         </div>
@@ -278,13 +256,13 @@ const NutritionHistoryChart = () => {
                         <BarChart data={chartData} barGap={2}>
                             <CartesianGrid stroke="rgba(255,255,255,0.05)" strokeDasharray="3 3" vertical={false} />
                             <XAxis dataKey="date" tick={{ fontSize: 11, fill: '#555' }} tickLine={false} axisLine={false} interval="preserveStartEnd" />
-                            <YAxis tick={{ fontSize: 11, fill: '#555' }} tickLine={false} axisLine={false} width={40} />
+                            <YAxis tick={{ fontSize: 11, fill: '#555' }} tickLine={false} axisLine={false} width={40} domain={[0, 3000]} />
                             <Legend wrapperStyle={{ fontSize: '12px', paddingTop: '8px', color: '#888' }} />
                             <Bar dataKey="Calories" fill="#e0e0e0" radius={[3, 3, 0, 0]}>
                                 <LabelList dataKey="Calories" position="top" style={{ fill: '#e0e0e0', fontSize: 10, fontWeight: 600 }} />
                             </Bar>
-                            <Bar dataKey="Protein" fill="#818CF8" radius={[3, 3, 0, 0]}>
-                                <LabelList dataKey="Protein" position="top" style={{ fill: '#818CF8', fontSize: 10, fontWeight: 600 }} />
+                            <Bar dataKey="Protein" fill="#A5B4FC" radius={[3, 3, 0, 0]}>
+                                <LabelList dataKey="Protein" position="top" style={{ fill: '#A5B4FC', fontSize: 10, fontWeight: 600 }} />
                             </Bar>
                         </BarChart>
                     </ResponsiveContainer>
@@ -348,11 +326,12 @@ export const WeeklyNutritionSummary = () => {
     );
 };
 
-// ─── Water Intake Tracker ─────────────────────────────────────
+// ─── WaterIntakeTracker — single filling glass ────────────────
 export const WaterIntakeTracker = () => {
     const [glasses, setGlasses] = useState(0);
     const [loading, setLoading] = useState(true);
-    const [saving, setSaving] = useState(false);
+    const [saving,  setSaving]  = useState(false);
+    const goal = 8;
 
     useEffect(() => {
         axios.get('/api/v1/dailylogs/today', { withCredentials: true })
@@ -361,49 +340,100 @@ export const WaterIntakeTracker = () => {
             .finally(() => setLoading(false));
     }, []);
 
-    const handleGlassClick = async (index) => {
-        // Clicking the last filled glass unfills it, otherwise fill up to clicked
-        const newVal = glasses === index + 1 ? index : index + 1;
+    const update = async (newVal) => {
+        if (saving || newVal < 0 || newVal > goal) return;
         setSaving(true);
         try {
             await axios.post('/api/v1/dailylogs/water', { glasses: newVal }, { withCredentials: true });
             setGlasses(newVal);
         } catch (err) {
             console.error('Water update error:', err);
-        } finally {
-            setSaving(false);
-        }
+        } finally { setSaving(false); }
     };
 
+    const fillPct  = glasses / goal;
+    const isFull   = glasses >= goal;
+    const isEmpty  = glasses === 0;
+
+    // SVG glass geometry
+    const W = 180, H = 240;
+    const glassTop = 12, glassBot = 228;
+    const topL = 14, topR = 166;
+    const botL = 36, botR = 144;
+    const innerH = glassBot - glassTop;
+    const waterTopY = glassBot - fillPct * innerH;
+    const textDark = fillPct > 0.55;
+
     return (
-        <div className="nutrition-card">
-            <div className="nutrition-card-header">
-                <div className="nutrition-card-title">
-                    <span className="nutrition-section-label">WATER INTAKE</span>
-                </div>
-                <span className="nutrition-subtext">{glasses} / 8 glasses</span>
-            </div>
+        <div className="nutrition-card" style={{ padding: '18px 20px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+
             {loading ? (
                 <div className="nutrition-loading"><div className="nutrition-spinner" /></div>
             ) : (
-                <div className="water-content">
-                    <div className="water-glasses-grid">
-                        {Array.from({ length: 8 }, (_, i) => (
-                            <button
-                                key={i}
-                                className={`water-glass-btn ${i < glasses ? 'filled' : ''}`}
-                                onClick={() => handleGlassClick(i)}
-                                disabled={saving}
-                                title={i < glasses ? 'Click to unfill' : 'Click to fill'}
-                            >
-                                <span className="water-glass-icon"></span>
-                            </button>
+                <>
+                    {/* Big glass — click to add */}
+                    <div style={{ display: 'flex', justifyContent: 'center', flex: 1, position: 'relative', paddingTop: 18 }}>
+                        <svg
+                            viewBox={`0 0 ${W} ${H}`}
+                            style={{ width: '100%', maxWidth: 200, height: H, cursor: isFull ? 'default' : 'pointer', overflow: 'hidden', display: 'block' }}
+                            onClick={() => !isFull && update(glasses + 1)}
+                            onContextMenu={e => { e.preventDefault(); !isEmpty && update(glasses - 1); }}
+                        >
+                            <defs>
+                                <clipPath id="wglass-clip">
+                                    <polygon points={`${topL},${glassTop} ${topR},${glassTop} ${botR},${glassBot} ${botL},${glassBot}`} />
+                                </clipPath>
+                                <linearGradient id="wglass-grad" x1="0" y1="0" x2="0" y2="1">
+                                    <stop offset="0%" stopColor="#7dd3fc" stopOpacity="0.85" />
+                                    <stop offset="100%" stopColor="#0284c7" stopOpacity="1" />
+                                </linearGradient>
+                            </defs>
+
+                            {/* Glass body background */}
+                            <polygon
+                                points={`${topL},${glassTop} ${topR},${glassTop} ${botR},${glassBot} ${botL},${glassBot}`}
+                                fill="rgba(255,255,255,0.03)"
+                            />
+
+                            {/* Water fill */}
+                            <g clipPath="url(#wglass-clip)">
+                                <rect
+                                    x="0" y={glassTop} width={W} height={innerH}
+                                    fill="url(#wglass-grad)"
+                                    style={{
+                                        transformOrigin: `${W / 2}px ${glassBot}px`,
+                                        transform: `scaleY(${fillPct})`,
+                                        transition: 'transform 0.65s cubic-bezier(0.4, 0, 0.2, 1)',
+                                    }}
+                                />
+                            </g>
+
+                            {/* Glass outline */}
+                            <polygon
+                                points={`${topL},${glassTop} ${topR},${glassTop} ${botR},${glassBot} ${botL},${glassBot}`}
+                                fill="none"
+                                stroke={isEmpty ? 'rgba(56,189,248,0.2)' : 'rgba(56,189,248,0.55)'}
+                                strokeWidth="1.5"
+                                strokeLinejoin="round"
+                                style={{ transition: 'stroke 0.4s' }}
+                            />
+
+                        </svg>
+
+                    </div>
+
+                    {/* Dots indicator */}
+                    <div style={{ display: 'flex', justifyContent: 'center', gap: 6, paddingBottom: 4 }}>
+                        {Array.from({ length: goal }).map((_, i) => (
+                            <div key={i} style={{
+                                width: 7, height: 7,
+                                borderRadius: '50%',
+                                background: i < glasses ? '#38bdf8' : 'rgba(255,255,255,0.08)',
+                                transition: 'background 0.3s',
+                            }} />
                         ))}
                     </div>
-                    <div className="water-progress-bar">
-                        <div className="water-progress-fill" style={{ width: `${(glasses / 8) * 100}%` }} />
-                    </div>
-                </div>
+                </>
             )}
         </div>
     );
@@ -412,8 +442,9 @@ export const WaterIntakeTracker = () => {
 // ─── Meal Logger ──────────────────────────────────────────────
 const MEAL_TYPES  = ['breakfast', 'lunch', 'dinner', 'snack'];
 const MEAL_LABELS = { breakfast: 'Breakfast', lunch: 'Lunch', dinner: 'Dinner', snack: 'Snack' };
+const MEAL_TIMES  = { breakfast: '08:30', lunch: '13:00', dinner: '19:30', snack: '16:00' };
 
-// ─── localStorage helpers for recent / saved foods ────────────
+// ─── localStorage helpers ─────────────────────────────────────
 const recentKey = (uid) => `gymlit_recent_foods_${uid}`;
 const savedKey  = (uid) => `gymlit_saved_foods_${uid}`;
 
@@ -446,6 +477,149 @@ const UNITS = [
 
 const EMPTY_FORM = { mealType: 'breakfast', food: '', amount: '100', unit: 'g', foodName: '', calories: '', protein: '', carbs: '', fat: '' };
 
+// ─── Meal Timeline Row ────────────────────────────────────────
+const MealsTimelineRow = ({ type, items, openModal, handleDelete, recentMeals = [], onGhostClick, onGhostRemove, onMoveToType }) => {
+    const [isDragOver, setIsDragOver] = useState(false);
+    const isEmpty = items.length === 0;
+    const totals = items.reduce((s, m) => ({
+        calories: s.calories + (m.calories || 0),
+        protein:  s.protein  + (m.protein  || 0),
+        carbs:    s.carbs    + (m.carbs    || 0),
+        fat:      s.fat      + (m.fat      || 0),
+    }), { calories: 0, protein: 0, carbs: 0, fat: 0 });
+    const ghosts = recentMeals.filter(r => r.mealType === type).slice(0, 3);
+
+    const handleDragOver = (e) => { e.preventDefault(); setIsDragOver(true); };
+    const handleDragLeave = (e) => { if (!e.currentTarget.contains(e.relatedTarget)) setIsDragOver(false); };
+    const handleDrop = (e) => {
+        e.preventDefault();
+        setIsDragOver(false);
+        const mealId = e.dataTransfer.getData('mealId');
+        const fromType = e.dataTransfer.getData('fromType');
+        if (mealId && fromType !== type) onMoveToType(mealId, type);
+    };
+
+    return (
+        <div
+            onDragOver={handleDragOver}
+            onDragLeave={handleDragLeave}
+            onDrop={handleDrop}
+            style={{
+                background: '#0a0a0a',
+                border: isDragOver ? '1px solid rgba(165,180,252,0.45)' : '1px solid rgba(255,255,255,0.07)',
+                borderRadius: 14,
+                padding: '16px 18px',
+                flex: 1,
+                minHeight: 0,
+                transition: 'border-color 0.15s',
+                boxShadow: isDragOver ? '0 0 0 3px rgba(165,180,252,0.08)' : 'none',
+            }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: (isEmpty && ghosts.length === 0) ? 0 : 12, flexWrap: 'wrap', gap: 6 }}>
+                <span style={{ fontSize: 14, fontWeight: 800, color: '#f0f0f0' }}>
+                    {MEAL_LABELS[type]}
+                </span>
+                {!isEmpty && (
+                    <span style={{ fontSize: 11, fontWeight: 600, color: '#555', fontVariantNumeric: 'tabular-nums', letterSpacing: '0.01em' }}>
+                        <span style={{ color: '#f0f0f0', fontWeight: 700 }}>{Math.round(totals.calories)}</span> kcal
+                        {' · '}
+                        <span style={{ color: '#a5b4fc', fontWeight: 700 }}>{Math.round(totals.protein)}g</span> prot
+                        {' · '}
+                        <span style={{ color: '#30a195', fontWeight: 700 }}>{Math.round(totals.carbs)}g</span> carbs
+                        {' · '}
+                        <span style={{ color: '#A5B4FC', fontWeight: 700 }}>{Math.round(totals.fat)}g</span> fat
+                    </span>
+                )}
+            </div>
+
+            {!isEmpty && (
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                    {items.map(meal => (
+                        <div key={meal.id}
+                            draggable
+                            onDragStart={e => {
+                                e.dataTransfer.setData('mealId', meal.id);
+                                e.dataTransfer.setData('fromType', type);
+                                e.dataTransfer.effectAllowed = 'move';
+                            }}
+                            style={{
+                                display: 'inline-flex', alignItems: 'center', gap: 6,
+                                padding: '6px 10px 6px 13px',
+                                background: 'rgba(255,255,255,0.05)',
+                                border: '1px solid rgba(255,255,255,0.1)',
+                                borderRadius: 999,
+                                cursor: 'grab',
+                            }}>
+                            <span style={{ fontSize: 13, fontWeight: 700, color: '#f0f0f0' }}>
+                                {meal.foodName}
+                            </span>
+                            {meal.amount && (
+                                <span style={{ fontSize: 12, fontWeight: 500, color: '#666', fontVariantNumeric: 'tabular-nums' }}>
+                                    {meal.amount}{meal.unit && meal.unit !== 'qty' ? meal.unit : ''}
+                                </span>
+                            )}
+                            <span style={{ fontSize: 12, fontWeight: 700, color: '#A5B4FC', fontVariantNumeric: 'tabular-nums' }}>
+                                {Math.round(meal.calories || 0)}kcal
+                            </span>
+                            <button onClick={() => handleDelete(meal.id)}
+                                style={{ background: 'transparent', border: 0, padding: 0, marginLeft: 2, color: '#444', cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
+                                <X size={10} />
+                            </button>
+                        </div>
+                    ))}
+                </div>
+            )}
+
+            {isEmpty && ghosts.length > 0 && (
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 7 }}>
+                    {ghosts.map((meal, i) => (
+                        <div
+                            key={i}
+                            style={{
+                                display: 'inline-flex', alignItems: 'center', gap: 5,
+                                padding: '5px 10px 5px 11px',
+                                background: 'transparent',
+                                border: '1px solid rgba(255,255,255,0.1)',
+                                borderRadius: 999,
+                                opacity: 0.3,
+                                transition: 'opacity 0.15s',
+                                userSelect: 'none',
+                            }}
+                            onMouseEnter={e => e.currentTarget.style.opacity = '0.75'}
+                            onMouseLeave={e => e.currentTarget.style.opacity = '0.3'}
+                        >
+                            <div
+                                onClick={() => onGhostClick(meal, type)}
+                                style={{ display: 'inline-flex', alignItems: 'center', gap: 5, cursor: 'pointer' }}
+                            >
+                                <span style={{ fontSize: 12, fontWeight: 700, color: '#f0f0f0' }}>
+                                    {meal.foodName || meal.food}
+                                </span>
+                                {meal.amount && (
+                                    <span style={{ fontSize: 11, fontWeight: 500, color: '#888', fontVariantNumeric: 'tabular-nums' }}>
+                                        {meal.amount}{meal.unit && meal.unit !== 'qty' ? meal.unit : ''}
+                                    </span>
+                                )}
+                                <span style={{ fontSize: 11, fontWeight: 700, color: '#A5B4FC', fontVariantNumeric: 'tabular-nums' }}>
+                                    {Math.round(meal.calories || 0)}kcal
+                                </span>
+                                <Plus size={9} style={{ color: '#666', flexShrink: 0 }} />
+                            </div>
+                            <button
+                                onClick={e => { e.stopPropagation(); onGhostRemove(meal); }}
+                                style={{ background: 'transparent', border: 0, padding: 0, marginLeft: 2, color: '#555', cursor: 'pointer', display: 'flex', alignItems: 'center', transition: 'color 0.15s' }}
+                                onMouseEnter={e => e.currentTarget.style.color = '#ef4444'}
+                                onMouseLeave={e => e.currentTarget.style.color = '#555'}
+                            >
+                                <X size={9} />
+                            </button>
+                        </div>
+                    ))}
+                </div>
+            )}
+        </div>
+    );
+};
+
 const MealLogger = ({ mealsData, onUpdate, loading, userId }) => {
     const [showModal, setShowModal]   = useState(false);
     const [form, setForm]             = useState(EMPTY_FORM);
@@ -454,18 +628,19 @@ const MealLogger = ({ mealsData, onUpdate, loading, userId }) => {
     const [submitting, setSubmitting] = useState(false);
     const [recent, setRecent]         = useState([]);
     const [saved, setSaved]           = useState([]);
-    const [dragOverType, setDragOverType] = useState(null);
     const foodRef = useRef(null);
-    // skipLookupRef: set true when filling from saved/recent to prevent API overwrite
     const skipLookupRef      = useRef(false);
-    // nutritionLockedRef: set true when user manually edits a nutrition field
     const nutritionLockedRef = useRef(false);
-    // track prev food name so we only reset the lock when food name actually changes
     const prevFoodRef        = useRef('');
 
-    const openModal = () => {
+    useEffect(() => {
+        if (userId) setRecent(getRecent(userId));
+    }, [userId]);
+
+    const openModal = (type) => {
         setRecent(getRecent(userId));
         setSaved(getSaved(userId));
+        setForm({ ...EMPTY_FORM, mealType: type ?? EMPTY_FORM.mealType });
         setShowModal(true);
         setTimeout(() => foodRef.current?.focus(), 50);
     };
@@ -480,7 +655,6 @@ const MealLogger = ({ mealsData, onUpdate, loading, userId }) => {
         prevFoodRef.current        = '';
     };
 
-    // Fill form from a recent/saved entry — skip the auto-lookup that would overwrite nutrition
     const fillFromFood = (entry) => {
         skipLookupRef.current      = true;
         nutritionLockedRef.current = false;
@@ -505,16 +679,14 @@ const MealLogger = ({ mealsData, onUpdate, loading, userId }) => {
         setSaved(getSaved(userId));
     };
 
-    // Build the API query from food + amount + unit
     const buildQuery = (food, amount, unit) => {
         if (!food?.trim()) return '';
         const amt = parseFloat(amount);
         if (!amt) return food.trim();
-        if (unit === 'qty') return `${amt} ${food.trim()}`;   // "3 eggs"
-        return `${amt}${unit} ${food.trim()}`;                 // "300g chicken breast"
+        if (unit === 'qty') return `${amt} ${food.trim()}`;
+        return `${amt}${unit} ${food.trim()}`;
     };
 
-    // Auto-lookup when food, amount, or unit changes (500 ms debounce)
     useEffect(() => {
         if (!form.food?.trim()) {
             setLookup('idle');
@@ -523,20 +695,11 @@ const MealLogger = ({ mealsData, onUpdate, loading, userId }) => {
             prevFoodRef.current = '';
             return;
         }
-
-        // If food name changed, reset the nutrition lock so new food gets fresh data
         if (form.food !== prevFoodRef.current) {
             nutritionLockedRef.current = false;
             prevFoodRef.current = form.food;
         }
-
-        // Skip lookup when loading from saved/recent (nutrition already filled)
-        if (skipLookupRef.current) {
-            skipLookupRef.current = false;
-            return;
-        }
-
-        // Skip lookup when user has manually edited nutrition fields
+        if (skipLookupRef.current) { skipLookupRef.current = false; return; }
         if (nutritionLockedRef.current) return;
 
         setLookup('loading');
@@ -570,44 +733,6 @@ const MealLogger = ({ mealsData, onUpdate, loading, userId }) => {
         }
     };
 
-    // ── Drag & Drop handlers ─────────────────────────────────────
-    const handleDragStart = (e, meal, fromType) => {
-        e.dataTransfer.setData('application/json', JSON.stringify({ id: meal.id, fromType }));
-        e.dataTransfer.effectAllowed = 'move';
-        // Position the drag ghost where the cursor is on the element
-        const rect = e.currentTarget.getBoundingClientRect();
-        const offsetX = e.clientX - rect.left;
-        const offsetY = e.clientY - rect.top;
-        e.dataTransfer.setDragImage(e.currentTarget, offsetX, offsetY);
-        e.currentTarget.classList.add('dragging');
-    };
-
-    const handleDragEnd = (e) => {
-        e.currentTarget.classList.remove('dragging');
-        setDragOverType(null);
-    };
-
-    const handleDragOver = (e, type) => {
-        e.preventDefault();
-        e.dataTransfer.dropEffect = 'move';
-        setDragOverType(type);
-    };
-
-    const handleDragLeave = () => setDragOverType(null);
-
-    const handleDrop = async (e, toType) => {
-        e.preventDefault();
-        setDragOverType(null);
-        try {
-            const { id, fromType } = JSON.parse(e.dataTransfer.getData('application/json'));
-            if (fromType === toType) return;
-            await axios.patch(`/api/v1/meals/${id}/type`, { mealType: toType }, { withCredentials: true });
-            onUpdate();
-        } catch (err) {
-            console.error('Move meal error:', err);
-        }
-    };
-
     const handleDelete = async (id) => {
         try {
             await axios.delete(`/api/v1/meals/${id}`, { withCredentials: true });
@@ -635,12 +760,14 @@ const MealLogger = ({ mealsData, onUpdate, loading, userId }) => {
                 protein:  prot,
                 carbs:    carb,
                 fat:      fat,
+                amount:   form.amount || null,
+                unit:     form.unit !== 'qty' ? form.unit : null,
             }, { withCredentials: true });
 
-            // Always save to recent with the exact nutrition values used
             const entry = {
                 food:     form.food || name,
                 foodName: name,
+                mealType: form.mealType,
                 amount:   form.amount,
                 unit:     form.unit,
                 calories: cal,
@@ -649,8 +776,8 @@ const MealLogger = ({ mealsData, onUpdate, loading, userId }) => {
                 fat:      fat,
             };
             pushRecent(userId, entry);
+            setRecent(getRecent(userId));
 
-            // If this food is saved, update its stored nutrition to match what was used
             if (isSaved(userId, entry.food)) {
                 const list = getSaved(userId).map(f =>
                     f.food.toLowerCase() === entry.food.toLowerCase() ? { ...f, ...entry } : f
@@ -667,83 +794,86 @@ const MealLogger = ({ mealsData, onUpdate, loading, userId }) => {
         }
     };
 
+    const handleMoveToType = async (mealId, newType) => {
+        try {
+            await axios.patch(`/api/v1/meals/${mealId}/type`, { mealType: newType }, { withCredentials: true });
+            onUpdate();
+        } catch { /* silent */ }
+    };
+
+    const removeRecent = (entry) => {
+        const list = getRecent(userId).filter(f => f.food.toLowerCase() !== entry.food.toLowerCase());
+        localStorage.setItem(recentKey(userId), JSON.stringify(list));
+        setRecent(list);
+    };
+
+    const addMealDirectly = async (entry, mealType) => {
+        try {
+            await axios.post('/api/v1/meals', {
+                mealType,
+                foodName: entry.foodName || entry.food,
+                calories: entry.calories || 0,
+                protein:  entry.protein  || 0,
+                carbs:    entry.carbs    || 0,
+                fat:      entry.fat      || 0,
+                amount:   entry.amount   || null,
+                unit:     entry.unit !== 'qty' ? entry.unit : null,
+            }, { withCredentials: true });
+            pushRecent(userId, { ...entry, mealType });
+            setRecent(getRecent(userId));
+            onUpdate();
+        } catch { /* silent */ }
+    };
+
     const grouped = mealsData?.meals || { breakfast: [], lunch: [], dinner: [], snack: [] };
 
     return (
-        <div className="nutrition-card">
-            <div className="nutrition-card-header">
-                <div className="nutrition-card-title">
-                    <span className="nutrition-section-label">MEAL LOGGER</span>
-                </div>
-                <button className="nutrition-add-btn" onClick={openModal}>
-                    <Plus size={15} /> Add Meal
+        <div className="nutrition-card" style={{ display: 'flex', flexDirection: 'column', gap: 14, padding: '18px 18px 16px', height: '100%', boxSizing: 'border-box' }}>
+            <div className="nutrition-card-header" style={{ marginBottom: 0 }}>
+                <span className="nutrition-section-label">TODAY'S MEALS</span>
+                <button onClick={() => openModal()}
+                    style={{
+                        display: 'flex', alignItems: 'center', gap: 6,
+                        padding: '7px 14px',
+                        background: 'rgba(165,180,252,0.12)',
+                        border: '1px solid rgba(165,180,252,0.25)',
+                        borderRadius: 999, color: '#a5b4fc',
+                        fontSize: 12, fontWeight: 700, fontFamily: 'inherit',
+                        cursor: 'pointer', letterSpacing: '0.02em',
+                    }}>
+                    <Plus size={12} /> Add meal
                 </button>
             </div>
 
             {loading ? (
                 <div className="nutrition-loading"><div className="nutrition-spinner" /></div>
             ) : (
-                <div className="meal-groups">
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 10, flex: 1, minHeight: 0 }}>
                     {MEAL_TYPES.map(type => (
-                        <div
+                        <MealsTimelineRow
                             key={type}
-                            className={`meal-group ${dragOverType === type ? 'drag-over' : ''}`}
-                            onDragOver={e => handleDragOver(e, type)}
-                            onDragLeave={handleDragLeave}
-                            onDrop={e => handleDrop(e, type)}
-                        >
-                            <div className="meal-group-header">
-                                <span className="meal-group-label">{MEAL_LABELS[type]}</span>
-                                <span className="meal-group-cal">
-                                    {grouped[type].reduce((s, m) => s + (m.calories || 0), 0)} kcal
-                                </span>
-                            </div>
-                            {grouped[type].length === 0 ? (
-                                <div className="meal-empty">Nothing logged yet</div>
-                            ) : (
-                                <div className="meal-list">
-                                    {grouped[type].map(meal => (
-                                        <div
-                                            key={meal.id}
-                                            className="meal-item"
-                                            draggable
-                                            onDragStart={e => handleDragStart(e, meal, type)}
-                                            onDragEnd={handleDragEnd}
-                                        >
-                                            <div className="meal-item-name-wrap">
-                                                <span className="meal-item-name">{meal.foodName}</span>
-                                                <div className="meal-item-tooltip">
-                                                    <div className="meal-tooltip-name">{meal.foodName}</div>
-                                                    <div className="meal-tooltip-row">
-                                                        <span className="meal-tooltip-chip cal">{meal.calories} kcal</span>
-                                                        <span className="meal-tooltip-chip prot">{meal.protein}g protein</span>
-                                                        <span className="meal-tooltip-chip carb">{meal.carbs}g carbs</span>
-                                                        <span className="meal-tooltip-chip fat">{meal.fat}g fat</span>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <button className="meal-delete-btn" onClick={() => handleDelete(meal.id)}>
-                                                <X size={14} />
-                                            </button>
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
-                        </div>
+                            type={type}
+                            items={grouped[type] || []}
+                            openModal={openModal}
+                            handleDelete={handleDelete}
+                            recentMeals={recent}
+                            onGhostClick={addMealDirectly}
+                            onGhostRemove={removeRecent}
+                            onMoveToType={handleMoveToType}
+                        />
                     ))}
                 </div>
             )}
 
             {/* Add Meal Modal */}
             {showModal && (
-                <div className="meal-modal-overlay" onClick={closeModal}>
+                <div className="meal-modal-overlay">
                     <div className="meal-modal" onClick={e => e.stopPropagation()}>
                         <div className="meal-modal-header">
                             <h4>Add Meal</h4>
                             <button className="meal-modal-close" onClick={closeModal}><X size={18} /></button>
                         </div>
 
-                        {/* Recent & Saved quick-select */}
                         {(recent.length > 0 || saved.length > 0) && (
                             <div className="meal-quick-sections">
                                 {saved.length > 0 && (
@@ -753,7 +883,8 @@ const MealLogger = ({ mealsData, onUpdate, loading, userId }) => {
                                             {saved.map((f, i) => (
                                                 <div key={i} className="meal-quick-chip saved" onClick={() => fillFromFood(f)}>
                                                     <span className="meal-quick-chip-name">{f.food}</span>
-                                                    <span className="meal-quick-chip-amt">{f.amount}{f.unit !== 'qty' ? f.unit : 'x'}</span>
+                                                    {f.amount && <span className="meal-quick-chip-amt">{f.amount}{f.unit && f.unit !== 'qty' ? f.unit : ''}</span>}
+                                                    {f.calories > 0 && <span className="meal-quick-chip-cal">{Math.round(f.calories)}kcal</span>}
                                                     <button className="meal-quick-unsave" title="Unsave" onClick={e => { e.stopPropagation(); handleToggleSave(f); }}>
                                                         <X size={10} />
                                                     </button>
@@ -769,7 +900,8 @@ const MealLogger = ({ mealsData, onUpdate, loading, userId }) => {
                                             {recent.map((f, i) => (
                                                 <div key={i} className="meal-quick-chip" onClick={() => fillFromFood(f)}>
                                                     <span className="meal-quick-chip-name">{f.food}</span>
-                                                    <span className="meal-quick-chip-amt">{f.amount}{f.unit !== 'qty' ? f.unit : 'x'}</span>
+                                                    {f.amount && <span className="meal-quick-chip-amt">{f.amount}{f.unit && f.unit !== 'qty' ? f.unit : ''}</span>}
+                                                    {f.calories > 0 && <span className="meal-quick-chip-cal">{Math.round(f.calories)}kcal</span>}
                                                     <button className="meal-quick-save" title={isSaved(userId, f.food) ? 'Saved' : 'Save'} onClick={e => { e.stopPropagation(); handleToggleSave(f); setSaved(getSaved(userId)); }}>
                                                         {isSaved(userId, f.food) ? <BookmarkCheck size={11} /> : <Bookmark size={11} />}
                                                     </button>
@@ -782,7 +914,6 @@ const MealLogger = ({ mealsData, onUpdate, loading, userId }) => {
                         )}
 
                         <form onSubmit={handleAdd} className="meal-form">
-                            {/* Meal type selector */}
                             <div className="meal-form-field">
                                 <label>Meal Type</label>
                                 <select
@@ -794,7 +925,6 @@ const MealLogger = ({ mealsData, onUpdate, loading, userId }) => {
                                 </select>
                             </div>
 
-                            {/* Food name */}
                             <div className="meal-form-field">
                                 <label>Food</label>
                                 <div className="meal-search-wrap">
@@ -816,7 +946,6 @@ const MealLogger = ({ mealsData, onUpdate, loading, userId }) => {
                                 </div>
                             </div>
 
-                            {/* Amount + Unit */}
                             <div className="meal-amount-row">
                                 <div className="meal-form-field" style={{ flex: 1 }}>
                                     <label>Amount</label>
@@ -856,7 +985,6 @@ const MealLogger = ({ mealsData, onUpdate, loading, userId }) => {
                                 Nutrition is looked up automatically. Use "qty" for pieces (eggs, apples…).
                             </div>
 
-                            {/* Auto-filled macro fields (editable) */}
                             <div className="meal-form-row">
                                 <div className="meal-form-field">
                                     <label>Calories (kcal)</label>
@@ -931,18 +1059,28 @@ const Nutrition = ({ userId: userIdProp }) => {
 
     return (
         <div className="nutrition-page">
-            <div className="nutrition-grid">
-                {/* Row 1: macro rings | meal logger */}
-                <DailyMacroTracker
+            <div className="nutrition-hero">
+                {/* Left: HeroDay + bottom row */}
+                <div className="nutrition-hero-left">
+                    <DailyMacroTracker
+                        mealsData={mealsData}
+                        balanceData={balanceData}
+                        loading={loadingMeals || loadingBal}
+                        onGoalsUpdated={fetchBalance}
+                    />
+                    <div className="nutrition-bottom-row">
+                        <WaterIntakeTracker />
+                        <NutritionHistoryChart />
+                    </div>
+                </div>
+
+                {/* Right: full-height meals timeline */}
+                <MealLogger
                     mealsData={mealsData}
-                    balanceData={balanceData}
-                    loading={loadingMeals || loadingBal}
-                    onGoalsUpdated={fetchBalance}
+                    onUpdate={handleMealUpdate}
+                    loading={loadingMeals}
+                    userId={userId}
                 />
-                <MealLogger mealsData={mealsData} onUpdate={handleMealUpdate} loading={loadingMeals} userId={userId} />
-                {/* Row 2: water intake | history */}
-                <WaterIntakeTracker />
-                <NutritionHistoryChart />
             </div>
         </div>
     );

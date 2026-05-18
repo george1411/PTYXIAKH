@@ -395,11 +395,15 @@ const ProgramPanel = ({ clientId }) => {
             const res = await axios.get(`/api/v1/trainer/templates/${tplId}`, { withCredentials: true });
             const data = res.data.data;
             const pd = data.programData;
-            setEditState({
-                name: pd.name || data.name || '',
-                exercises: pd.exercises || []
-            });
+            const workoutName = pd.name || data.name || selectedDay;
+            const exercises = (pd.exercises || []).map(({ _conflict, ...ex }) => ex);
+            await axios.post(
+                `/api/v1/trainer/clients/${clientId}/program`,
+                { day: selectedDay, name: workoutName, exercises },
+                { withCredentials: true }
+            );
             setShowLoadDayModal(false);
+            await loadProgram();
         } catch (e) { console.error(e); }
     };
 
@@ -421,23 +425,32 @@ const ProgramPanel = ({ clientId }) => {
 
     // Apply a saved template to this client
     const handleLoadTemplate = async (tplId) => {
+        setSavingTpl(true);
         try {
             const res = await axios.get(`/api/v1/trainer/templates/${tplId}`, { withCredentials: true });
-            const days = (res.data.data.programData || []).filter(w => w.day);
+            const days = (res.data.data.programData || []).filter(w => w.day && (w.name || (w.exercises && w.exercises.length > 0)));
             if (days.length === 0) {
                 alert('This program has no days configured yet. Add workouts to it in the Programs tab first.');
                 return;
             }
+            let loaded = 0;
             for (const w of days) {
-                await axios.post(
-                    `/api/v1/trainer/clients/${clientId}/program`,
-                    { day: w.day, name: w.name || w.day, exercises: w.exercises || [] },
-                    { withCredentials: true }
-                );
+                try {
+                    await axios.post(
+                        `/api/v1/trainer/clients/${clientId}/program`,
+                        { day: w.day, name: w.name || w.day, exercises: w.exercises || [] },
+                        { withCredentials: true }
+                    );
+                    loaded++;
+                } catch (dayErr) {
+                    console.error(`Failed to load ${w.day}:`, dayErr);
+                }
             }
             setShowTemplateModal(false);
             await loadProgram();
+            if (days[0]?.day) setSelectedDay(days[0].day);
         } catch (e) { console.error(e); }
+        finally { setSavingTpl(false); }
     };
 
     const handleDeleteTemplate = async (tplId, e) => {

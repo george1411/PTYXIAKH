@@ -44,10 +44,10 @@ const WeeklyMeasurements = () => {
         if (isFirst) labelX = cx - 6;
         return (
             <g key={`dot-${index}`} style={{ cursor: 'pointer' }} onClick={() => setSelectedIdx(isSelected ? null : index)}>
-                <circle cx={cx} cy={cy} r={isSelected ? 5 : 3} fill={isSelected ? '#818CF8' : '#111'} stroke="#818CF8" strokeWidth={2} />
+                <circle cx={cx} cy={cy} r={isSelected ? 5 : 3} fill={isSelected ? '#A5B4FC' : '#0a0a0a'} stroke="#A5B4FC" strokeWidth={2} />
                 {isSelected && (
                     <>
-                        <rect x={labelX} y={cy - 30} width={labelW} height={20} rx={10} fill="#818CF8" />
+                        <rect x={labelX} y={cy - 30} width={labelW} height={20} rx={10} fill="#A5B4FC" />
                         <text x={labelX + labelW / 2} y={cy - 16} textAnchor="middle" fill="#fff" fontSize={11} fontWeight={700}>{label}</text>
                     </>
                 )}
@@ -59,19 +59,19 @@ const WeeklyMeasurements = () => {
     const diffText  = weightDiff > 0 ? `+${weightDiff.toFixed(1)}` : weightDiff < 0 ? weightDiff.toFixed(1) : '0';
 
     if (loading) return (
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', background: '#000000', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '1rem' }}>
-            <div style={{ width: 32, height: 32, borderRadius: '50%', border: '3px solid rgba(255,255,255,0.1)', borderTopColor: '#818CF8', animation: 'spin 0.7s linear infinite' }} />
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', background: '#0a0a0a', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '1rem' }}>
+            <div style={{ width: 32, height: 32, borderRadius: '50%', border: '3px solid rgba(255,255,255,0.1)', borderTopColor: '#A5B4FC', animation: 'spin 0.7s linear infinite' }} />
         </div>
     );
 
     if (error) return (
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', background: '#000000', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '1rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', background: '#0a0a0a', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '1rem' }}>
             <p style={{ color: '#f87171', fontSize: '0.85rem' }}>{error}</p>
         </div>
     );
 
     return (
-        <div style={{ display: 'flex', flexDirection: 'column', height: '100%', background: '#000000', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '1rem', padding: '1rem' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', height: '100%', background: '#0a0a0a', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '1rem', padding: '1rem' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
                 <span style={{ fontSize: '0.65rem', fontWeight: 700, letterSpacing: '0.12em', color: '#a5b4fc', marginTop: '0.5rem' }}>WEIGHT PROGRESS</span>
             </div>
@@ -100,15 +100,15 @@ const WeeklyMeasurements = () => {
                             tickFormatter={v => v % 1 === 0 ? v : v.toFixed(1)}
                             tick={{ fontSize: 10, fill: '#555' }} tickLine={false} axisLine={false} width={36}
                         />
-                        <Line type="monotone" dataKey="weight" stroke="#818CF8" strokeWidth={2.5} fill="none" dot={renderDot} activeDot={false} isAnimationActive={false} />
+                        <Line type="monotone" dataKey="weight" stroke="#A5B4FC" strokeWidth={2.5} fill="none" dot={renderDot} activeDot={false} isAnimationActive={false} />
                         {weightGoal && (
                             <ReferenceLine
                                 y={weightGoal}
-                                stroke="#818CF8"
+                                stroke="#A5B4FC"
                                 strokeDasharray="6 4"
                                 strokeWidth={1.5}
                                 label={{ content: ({ viewBox }) => (
-                                    <text x={viewBox.x + viewBox.width - 4} y={viewBox.y - 5} textAnchor="end" fill="#818CF8" fontSize={10} fontWeight={700}>{weightGoal}kg goal</text>
+                                    <text x={viewBox.x + viewBox.width - 4} y={viewBox.y - 5} textAnchor="end" fill="#A5B4FC" fontSize={10} fontWeight={700}>{weightGoal}kg goal</text>
                                 )}}
                             />
                         )}

@@ -8,7 +8,7 @@ export const getMealsToday = async (req, res, next) => {
         const today = new Date().toISOString().split('T')[0];
 
         const meals = await sequelize.query(
-            `SELECT id, mealType, foodName, calories, protein, carbs, fat, createdAt
+            `SELECT id, mealType, foodName, calories, protein, carbs, fat, amount, unit, createdAt
              FROM Meals
              WHERE userId = :userId AND date = :date
              ORDER BY createdAt ASC`,
@@ -42,7 +42,7 @@ export const getMealsToday = async (req, res, next) => {
 export const addMeal = async (req, res, next) => {
     try {
         const userId = req.user.id;
-        const { mealType, foodName, calories, protein, carbs, fat } = req.body;
+        const { mealType, foodName, calories, protein, carbs, fat, amount, unit } = req.body;
         const today = new Date().toISOString().split('T')[0];
 
         if (!mealType || !foodName) {
@@ -59,8 +59,8 @@ export const addMeal = async (req, res, next) => {
         }
 
         await sequelize.query(
-            `INSERT INTO Meals (userId, date, mealType, foodName, calories, protein, carbs, fat, createdAt, updatedAt)
-             VALUES (:userId, :date, :mealType, :foodName, :calories, :protein, :carbs, :fat, NOW(), NOW())`,
+            `INSERT INTO Meals (userId, date, mealType, foodName, calories, protein, carbs, fat, amount, unit, createdAt, updatedAt)
+             VALUES (:userId, :date, :mealType, :foodName, :calories, :protein, :carbs, :fat, :amount, :unit, NOW(), NOW())`,
             {
                 replacements: {
                     userId,
@@ -71,6 +71,8 @@ export const addMeal = async (req, res, next) => {
                     protein: parseFloat(protein) || 0,
                     carbs: parseFloat(carbs) || 0,
                     fat: parseFloat(fat) || 0,
+                    amount: amount || null,
+                    unit: unit || null,
                 },
                 type: QueryTypes.INSERT
             }
@@ -78,7 +80,7 @@ export const addMeal = async (req, res, next) => {
 
         // Return updated meals
         const meals = await sequelize.query(
-            `SELECT id, mealType, foodName, calories, protein, carbs, fat, createdAt
+            `SELECT id, mealType, foodName, calories, protein, carbs, fat, amount, unit, createdAt
              FROM Meals WHERE userId = :userId AND date = :date ORDER BY createdAt ASC`,
             { replacements: { userId, date: today }, type: QueryTypes.SELECT }
         );

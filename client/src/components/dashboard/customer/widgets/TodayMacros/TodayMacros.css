@@ -1,5 +1,5 @@
 .tm-card {
-    background: #000000;
+    background: #0a0a0a;
     border: 1px solid rgba(255,255,255,0.08);
     border-radius: 1rem;
     padding: 1.25rem 1.25rem 1rem;
@@ -76,7 +76,7 @@
 
 .tm-bar-track {
     height: 7px;
-    background: #0a0a0a;
+    background: rgba(255,255,255,0.07);
     border-radius: 4px;
     overflow: hidden;
 }

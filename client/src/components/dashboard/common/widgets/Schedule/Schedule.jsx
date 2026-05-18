@@ -9,7 +9,7 @@ const DAY_ABBR = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 
 const EVENT_COLORS = [
     { id: 'event-1', bg: '#3d3d5c',  label: 'Dark' },
-    { id: 'event-2', bg: '#818CF8',  label: 'Purple' },
+    { id: 'event-2', bg: '#A5B4FC',  label: 'Purple' },
     { id: 'event-3', bg: '#38bdf8',  label: 'Cyan' },
     { id: 'event-4', bg: '#4ade80',  label: 'Green' },
     { id: 'event-5', bg: '#f87171',  label: 'Red' },
@@ -495,7 +495,7 @@ const Schedule = ({ onNavigate, fullPage, hideTitle, isTrainer, readOnly }) => {
 
     // ── Handlers ──
     const openNew = (date, startTime='09:00') => { if (readOnly) return; setModal({ date, startTime, isNew: true }); };
-    const openEdit = (ev) => { if (readOnly) return; if (!isTrainer && !ev.isOwn) return; setModal({ date: ev.date, event: ev, isNew: false }); };
+    const openEdit = (ev) => { if (readOnly) return; setModal({ date: ev.date, event: ev, isNew: false }); };
 
     const handleSave = async (data) => {
         try {
@@ -561,12 +561,6 @@ const Schedule = ({ onNavigate, fullPage, hideTitle, isTrainer, readOnly }) => {
                     {!isMobile && <button className="cd-schedule-today-btn" onClick={goToToday}>Today</button>}
                 </div>
 
-                {/* Add button — trainers always, customers always (not readOnly) */}
-                {!readOnly && (
-                    <button className="cd-schedule-add-btn" onClick={()=>openNew(dateStr(currentDate))}>
-                        <Plus size={15}/> ADD
-                    </button>
-                )}
             </div>
 
             {/* ── View ── */}
@@ -640,12 +634,12 @@ const ScheduleWidget = ({ onNavigate, hideTitle }) => {
                         {item.title && <div className="card-divider"/>}
                         {item.exercises.length>0 && (
                             <div className="card-exercises">
-                                {item.exercises.slice(0,4).map((ex,i)=>(
+                                {item.exercises.slice(0,3).map((ex,i)=>(
                                     <div key={i} className="card-exercise-row">
                                         <span className="card-ex-name">{ex.exerciseName}</span>
                                     </div>
                                 ))}
-                                {item.exercises.length>4 && <div className="card-ex-more">+{item.exercises.length-4} more</div>}
+                                {item.exercises.length>3 && <div className="card-ex-more">+{item.exercises.length-3} more</div>}
                             </div>
                         )}
                     </div>

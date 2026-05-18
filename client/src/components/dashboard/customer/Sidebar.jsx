@@ -68,7 +68,7 @@ const Sidebar = ({ activeTab = 'overview', onNavigate, onLogout, user }) => {
                                 flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center',
                                 justifyContent: 'center', gap: 3, padding: '10px 0',
                                 background: 'none', border: 'none', cursor: 'pointer',
-                                color: active ? '#818cf8' : 'rgba(255,255,255,0.35)',
+                                color: active ? '#A5B4FC' : 'rgba(255,255,255,0.35)',
                                 transition: 'color 0.15s',
                             }}
                         >
@@ -86,7 +86,7 @@ const Sidebar = ({ activeTab = 'overview', onNavigate, onLogout, user }) => {
             {/* Logo */}
             <div style={{ padding: '28px 20px 24px' }}>
                 <span style={{ fontWeight: 900, fontSize: '1.2rem', letterSpacing: '-0.02em', color: '#fff' }}>
-                    Gym<span style={{ color: '#818cf8' }}>Lit</span>
+                    Gym<span style={{ color: '#A5B4FC' }}>Lit</span>
                 </span>
             </div>
 

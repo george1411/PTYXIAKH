@@ -85,10 +85,10 @@ const WeightHistory = () => {
         if (isFirst) labelX = cx - 6;
         return (
             <g key={`dot-${index}`} style={{ cursor: 'pointer' }} onClick={() => setSelectedIdx(isSelected ? null : index)}>
-                <circle cx={cx} cy={cy} r={isSelected ? 5 : 3} fill={isSelected ? '#818CF8' : '#111'} stroke="#818CF8" strokeWidth={2} />
+                <circle cx={cx} cy={cy} r={isSelected ? 5 : 3} fill={isSelected ? '#A5B4FC' : '#111'} stroke="#A5B4FC" strokeWidth={2} />
                 {isSelected && (
                     <>
-                        <rect x={labelX} y={cy - 30} width={labelW} height={20} rx={10} fill="#818CF8" />
+                        <rect x={labelX} y={cy - 30} width={labelW} height={20} rx={10} fill="#A5B4FC" />
                         <text x={labelX + labelW / 2} y={cy - 16} textAnchor="middle" fill="#fff" fontSize={11} fontWeight={700}>{label}</text>
                     </>
                 )}
@@ -176,17 +176,17 @@ const WeightHistory = () => {
                                         }
                                     ]}
                                     tickFormatter={v => v % 1 === 0 ? v : v.toFixed(1)}
-                                    tick={{ fontSize: 11, fill: '#555' }} tickLine={false} axisLine={false} width={40}
+                                    tick={{ fontSize: 11, fill: '#555' }} tickLine={false} axisLine={false} width={28}
                                 />
-                                <Line type="monotone" dataKey="weight" stroke="#818CF8" strokeWidth={2.5} fill="none" dot={renderDot} activeDot={false} isAnimationActive={false} />
+                                <Line type="monotone" dataKey="weight" stroke="#A5B4FC" strokeWidth={2.5} fill="none" dot={renderDot} activeDot={false} isAnimationActive={false} />
                                 {weightGoal && (
                                     <ReferenceLine
                                         y={weightGoal}
-                                        stroke="#818CF8"
+                                        stroke="#A5B4FC"
                                         strokeDasharray="6 4"
                                         strokeWidth={1.5}
                                         label={{ content: ({ viewBox }) => (
-                                            <text x={viewBox.x + viewBox.width - 4} y={viewBox.y - 5} textAnchor="end" fill="#818CF8" fontSize={11} fontWeight={700}>{weightGoal}kg goal</text>
+                                            <text x={viewBox.x + viewBox.width - 4} y={viewBox.y - 5} textAnchor="end" fill="#A5B4FC" fontSize={11} fontWeight={700}>{weightGoal}kg goal</text>
                                         )}}
                                     />
                                 )}
@@ -215,7 +215,7 @@ function Sparkline({ values, width = 56, height = 18 }) {
     return (
         <svg width={width} height={height} viewBox={`0 0 ${width} ${height}`}
              style={{ flexShrink: 0 }} aria-hidden="true">
-            <polyline points={pts} fill="none" stroke="#818CF8" strokeWidth="1.5"
+            <polyline points={pts} fill="none" stroke="#A5B4FC" strokeWidth="1.5"
                       strokeLinecap="round" strokeLinejoin="round" opacity="0.85" />
             <circle cx={width} cy={lastY} r="2" fill="#a5b4fc" />
         </svg>
@@ -261,15 +261,16 @@ const ExerciseHistoryGraph = ({ exercise, onBack }) => {
     const pr = logs.reduce((max, l) => l.kg > max ? l.kg : max, 0);
 
     const makeDotLabel = (color) => (props) => {
-        const { cx, cy, value, active } = props;
-        if (!active) return <circle cx={cx} cy={cy} r={3} fill={color} stroke="none" />;
-        const label = `${value}kg`;
-        const w = label.length * 7 + 14;
+        const { cx, cy, value, payload } = props;
+        const dateLabel = payload?.date || '';
+        const kgLabel   = `${value} kg`;
+        const w = Math.max(kgLabel.length, dateLabel.length) * 7 + 20;
         return (
             <g>
                 <circle cx={cx} cy={cy} r={5} fill={color} />
-                <rect x={cx - w / 2} y={cy - 28} width={w} height={18} rx={9} fill={color} />
-                <text x={cx} y={cy - 15} textAnchor="middle" fill="#111" fontSize={10} fontWeight={700}>{label}</text>
+                <rect x={cx - w / 2} y={cy - 46} width={w} height={36} rx={8} fill="#1a1a2e" stroke={color} strokeWidth={1} />
+                <text x={cx} y={cy - 30} textAnchor="middle" fill={color} fontSize={11} fontWeight={700}>{kgLabel}</text>
+                <text x={cx} y={cy - 16} textAnchor="middle" fill="#888" fontSize={10}>{dateLabel}</text>
             </g>
         );
     };
@@ -296,9 +297,9 @@ const ExerciseHistoryGraph = ({ exercise, onBack }) => {
                             <LineChart data={chartData} margin={{ top: 30, right: 16, left: 0, bottom: 0 }}>
                                 <CartesianGrid stroke="rgba(255,255,255,0.05)" vertical={false} />
                                 <XAxis dataKey="date" tick={{ fontSize: 10, fill: '#555' }} tickLine={false} axisLine={false} interval="preserveStartEnd" />
-                                <YAxis tick={{ fontSize: 10, fill: '#555' }} tickLine={false} axisLine={false} width={36} tickFormatter={v => `${v}kg`} />
+                                <YAxis tick={{ fontSize: 10, fill: '#555' }} tickLine={false} axisLine={false} width={28} tickFormatter={v => `${v}kg`} />
                                 <Tooltip content={() => null} cursor={false} />
-                                <Line type="monotone" dataKey="max" stroke="#818CF8" strokeWidth={2} dot={{ r: 3, fill: '#818CF8', stroke: 'none' }} activeDot={makeDotLabel('#818CF8')} />
+                                <Line type="monotone" dataKey="max" stroke="#A5B4FC" strokeWidth={2} dot={{ r: 3, fill: '#A5B4FC', stroke: 'none' }} activeDot={makeDotLabel('#A5B4FC')} isAnimationActive={false} />
                             </LineChart>
                         </ResponsiveContainer>
                     </div>
@@ -505,7 +506,7 @@ export const ConsistencyCalendar = () => {
                     <div className="progress-heatmap-legend">
                         <span className="progress-heatmap-legend-text">Less</span>
                         <div className="progress-heatmap-legend-cell" style={{ background: '#2a2a2a' }} />
-                        <div className="progress-heatmap-legend-cell" style={{ background: '#818CF8' }} />
+                        <div className="progress-heatmap-legend-cell" style={{ background: '#A5B4FC' }} />
                         <span className="progress-heatmap-legend-text">More</span>
                     </div>
                 </div>
@@ -712,7 +713,7 @@ export const WeightPrediction = () => {
 // ─── BMI Calculator ──────────────────────────────────────────
 const BMI_CATEGORIES = [
     { label: 'Underweight', range: [0, 18.5], color: '#60a5fa', tip: 'Consider increasing your calorie intake with nutrient-dense foods.' },
-    { label: 'Normal', range: [18.5, 25], color: '#818CF8', tip: 'Great job! Maintain your healthy lifestyle.' },
+    { label: 'Normal', range: [18.5, 25], color: '#A5B4FC', tip: 'Great job! Maintain your healthy lifestyle.' },
     { label: 'Overweight', range: [25, 30], color: '#a78bfa', tip: 'Small changes in diet and activity can make a big difference.' },
     { label: 'Obese', range: [30, 100], color: '#c084fc', tip: 'Consult with your trainer for a personalized plan.' },
 ];
@@ -827,7 +828,7 @@ export const BMICalculator = () => {
                 {bmi !== null && (
                     <>
                         <line x1={cx} y1={cy} x2={nx} y2={ny} stroke="#a5b4fc" strokeWidth="2.5" strokeLinecap="round" />
-                        <circle cx={cx} cy={cy} r="5" fill="#818CF8" />
+                        <circle cx={cx} cy={cy} r="5" fill="#A5B4FC" />
                         <circle cx={cx} cy={cy} r="2.5" fill="#111" />
                     </>
                 )}

@@ -25,7 +25,7 @@ export const StepsWidget = () => {
             </div>
             <span className="mini-widget-goal">Goal: 10,000 steps</span>
             <div className="mini-widget-bar-track">
-                <div className="mini-widget-bar-fill" style={{ width: `${pct}%`, background: '#818CF8' }} />
+                <div className="mini-widget-bar-fill" style={{ width: `${pct}%`, background: '#A5B4FC' }} />
             </div>
         </div>
     );
