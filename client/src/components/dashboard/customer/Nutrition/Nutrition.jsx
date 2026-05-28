@@ -24,10 +24,10 @@ const RangeToggle = ({ value, onChange, options }) => (
 
 // ─── Macro field definitions (used in edit modal) ─────────────
 const MACRO_FIELDS = [
-    { key: 'cal',   label: 'Calories', unit: 'kcal', min: 500,  max: 6000 },
-    { key: 'prot',  label: 'Protein',  unit: 'g',    min: 10,   max: 500  },
-    { key: 'carbs', label: 'Carbs',    unit: 'g',    min: 10,   max: 1000 },
-    { key: 'fat',   label: 'Fat',      unit: 'g',    min: 5,    max: 300  },
+    { key: 'cal',   label: 'Calories', unit: 'kcal', min: 500,  max: 6000, color: '#e0e0e0' },
+    { key: 'prot',  label: 'Protein',  unit: 'g',    min: 10,   max: 500,  color: '#a5b4fc' },
+    { key: 'carbs', label: 'Carbs',    unit: 'g',    min: 10,   max: 1000, color: '#30a195' },
+    { key: 'fat',   label: 'Fat',      unit: 'g',    min: 5,    max: 300,  color: '#818929' },
 ];
 
 // ─── HeroDay — replaces DailyMacroTracker ────────────────────
@@ -84,10 +84,10 @@ const DailyMacroTracker = ({ mealsData, balanceData, loading, onGoalsUpdated }) 
     const CIRC = 2 * Math.PI * R;
 
     const macros = [
-        { label: 'Calories', cur: totals.calories, max: calTarget,     color: '#e0e0e0', unit: 'kcal' },
-        { label: 'Protein',  cur: totals.protein,  max: proteinTarget, color: '#a5b4fc', unit: 'g' },
-        { label: 'Carbs',    cur: totals.carbs,    max: carbsTarget,   color: '#30a195', unit: 'g' },
-        { label: 'Fat',      cur: totals.fat,      max: fatTarget,     color: '#A5B4FC', unit: 'g' },
+        { label: 'Calories', cur: totals.calories, max: calTarget,     color: '#e0e0e0', bg: 'linear-gradient(90deg, #2a2a2a, #e0e0e0)', unit: 'kcal' },
+        { label: 'Protein',  cur: totals.protein,  max: proteinTarget, color: '#a5b4fc', bg: 'linear-gradient(90deg, #334, #a5b4fc)',    unit: 'g' },
+        { label: 'Carbs',    cur: totals.carbs,    max: carbsTarget,   color: '#30a195', bg: 'linear-gradient(90deg, #0d2420, #30a195)', unit: 'g' },
+        { label: 'Fat',      cur: totals.fat,      max: fatTarget,     color: '#818929', bg: 'linear-gradient(90deg, #2a2d0a, #818929)', unit: 'g' },
     ];
 
     return (
@@ -120,8 +120,14 @@ const DailyMacroTracker = ({ mealsData, balanceData, loading, onGoalsUpdated }) 
                         }}>
                             {loading ? '—' : remaining.toLocaleString()}
                         </div>
-                        <div style={{ fontSize: 12, fontWeight: 700, color: '#555', letterSpacing: '0.06em', marginTop: 4 }}>
-                            kcal
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginTop: 4 }}>
+                            <span style={{ fontSize: 12, fontWeight: 700, color: '#555', letterSpacing: '0.06em' }}>kcal</span>
+                            <button onClick={openEdit} title="Edit nutrition goals"
+                                style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', color: 'rgba(255,255,255,0.25)', display: 'inline-flex', alignItems: 'center' }}
+                                onMouseEnter={e => e.currentTarget.style.color = '#f0f0f0'}
+                                onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.25)'}>
+                                <Pencil size={10} />
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -136,21 +142,8 @@ const DailyMacroTracker = ({ mealsData, balanceData, loading, onGoalsUpdated }) 
                         margin: 0, fontSize: 30, fontWeight: 800,
                         letterSpacing: '-0.025em', lineHeight: 1.1, color: '#f0f0f0',
                     }}>
-                        <span style={{ color: '#f0f0f0' }}>{loading ? '—' : Math.round(totals.calories).toLocaleString()} kcal</span> <span style={{ color: '#A5B4FC' }}>consumed today</span>
+                        <span style={{ color: '#e0e0e0' }}>{loading ? '—' : Math.round(totals.calories).toLocaleString()} kcal</span> <span style={{ color: '#A5B4FC' }}>consumed today</span>
                     </h1>
-                    <div style={{ fontSize: 14, color: '#888', fontWeight: 500, marginTop: 10, fontVariantNumeric: 'tabular-nums' }}>
-                        <span style={{ color: '#a5b4fc', fontWeight: 700 }}>{Math.round(totals.protein)}g</span> protein
-                        {' · '}
-                        <span style={{ color: '#30a195', fontWeight: 700 }}>{Math.round(totals.carbs)}g</span> carbs
-                        {' · '}
-                        <span style={{ color: '#f0f0f0', fontWeight: 700 }}>{Math.round(totals.fat)}g</span> fat
-                        <button onClick={openEdit} title="Edit nutrition goals"
-                            style={{ background: 'none', border: 'none', padding: '0 0 0 6px', cursor: 'pointer', color: 'rgba(255,255,255,0.3)', display: 'inline-flex', alignItems: 'center', verticalAlign: 'middle' }}
-                            onMouseEnter={e => e.currentTarget.style.color = '#f0f0f0'}
-                            onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.3)'}>
-                            <Pencil size={11} />
-                        </button>
-                    </div>
                 </div>
             </div>
 
@@ -168,7 +161,7 @@ const DailyMacroTracker = ({ mealsData, balanceData, loading, onGoalsUpdated }) 
                                 </span>
                             </div>
                             <div style={{ height: 6, background: 'rgba(255,255,255,0.05)', borderRadius: 999, overflow: 'hidden' }}>
-                                <div style={{ width: `${mp * 100}%`, height: '100%', background: m.color, borderRadius: 999, transition: 'width 0.4s ease' }} />
+                                <div style={{ width: `${mp * 100}%`, height: '100%', background: m.bg, borderRadius: 999, transition: 'width 0.4s ease' }} />
                             </div>
                         </div>
                     );
@@ -185,12 +178,12 @@ const DailyMacroTracker = ({ mealsData, balanceData, loading, onGoalsUpdated }) 
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
                         {MACRO_FIELDS.map(f => (
                             <div key={f.key}>
-                                <label style={{ fontSize: '0.7rem', fontWeight: 600, color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', marginBottom: 5 }}>{f.label} ({f.unit})</label>
+                                <label style={{ fontSize: '0.7rem', fontWeight: 700, color: f.color, textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', marginBottom: 5 }}>{f.label} ({f.unit})</label>
                                 <input
                                     type="number" min={f.min} max={f.max}
                                     value={draft[f.key]}
                                     onChange={e => setDraft(prev => ({ ...prev, [f.key]: e.target.value }))}
-                                    style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 7, padding: '7px 10px', color: '#f0f0f0', fontSize: '0.85rem', outline: 'none', boxSizing: 'border-box' }}
+                                    style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: `1px solid ${f.color}40`, borderRadius: 7, padding: '7px 10px', color: '#f0f0f0', fontSize: '0.85rem', outline: 'none', boxSizing: 'border-box' }}
                                 />
                             </div>
                         ))}
@@ -261,8 +254,8 @@ const NutritionHistoryChart = () => {
                             <Bar dataKey="Calories" fill="#e0e0e0" radius={[3, 3, 0, 0]}>
                                 <LabelList dataKey="Calories" position="top" style={{ fill: '#e0e0e0', fontSize: 10, fontWeight: 600 }} />
                             </Bar>
-                            <Bar dataKey="Protein" fill="#A5B4FC" radius={[3, 3, 0, 0]}>
-                                <LabelList dataKey="Protein" position="top" style={{ fill: '#A5B4FC', fontSize: 10, fontWeight: 600 }} />
+                            <Bar dataKey="Protein" fill="#a5b4fc" radius={[3, 3, 0, 0]}>
+                                <LabelList dataKey="Protein" position="top" style={{ fill: '#a5b4fc', fontSize: 10, fontWeight: 600 }} />
                             </Bar>
                         </BarChart>
                     </ResponsiveContainer>
@@ -428,7 +421,7 @@ export const WaterIntakeTracker = () => {
                             <div key={i} style={{
                                 width: 7, height: 7,
                                 borderRadius: '50%',
-                                background: i < glasses ? '#38bdf8' : 'rgba(255,255,255,0.08)',
+                                background: i < glasses ? '#a5b4fc' : 'rgba(255,255,255,0.08)',
                                 transition: 'background 0.3s',
                             }} />
                         ))}
@@ -478,8 +471,52 @@ const UNITS = [
 const EMPTY_FORM = { mealType: 'breakfast', food: '', amount: '100', unit: 'g', foodName: '', calories: '', protein: '', carbs: '', fat: '' };
 
 // ─── Meal Timeline Row ────────────────────────────────────────
-const MealsTimelineRow = ({ type, items, openModal, handleDelete, recentMeals = [], onGhostClick, onGhostRemove, onMoveToType }) => {
+const MealDetailPopup = ({ meal, onClose }) => (
+    <div
+        style={{ position: 'fixed', inset: 0, zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+        onClick={onClose}
+    >
+        <div
+            onClick={e => e.stopPropagation()}
+            style={{
+                background: '#111', border: '1px solid rgba(255,255,255,0.1)',
+                borderRadius: 16, padding: '22px 24px', width: 280,
+                boxShadow: '0 12px 40px rgba(0,0,0,0.7)',
+            }}
+        >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
+                <div>
+                    <div style={{ fontSize: 16, fontWeight: 800, color: '#f0f0f0', marginBottom: 3 }}>{meal.foodName}</div>
+                    {meal.amount && (
+                        <div style={{ fontSize: 12, color: '#666' }}>
+                            {meal.amount}{meal.unit && meal.unit !== 'qty' ? meal.unit : ''}
+                        </div>
+                    )}
+                </div>
+                <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.3)', cursor: 'pointer', padding: 0, display: 'flex' }}>
+                    <X size={16} />
+                </button>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                {[
+                    { label: 'Calories', value: `${Math.round(meal.calories || 0)} kcal`, color: '#e0e0e0' },
+                    { label: 'Protein',  value: `${Math.round(meal.protein  || 0)} g`,   color: '#a5b4fc' },
+                    { label: 'Carbs',    value: `${Math.round(meal.carbs    || 0)} g`,   color: '#30a195' },
+                    { label: 'Fat',      value: `${Math.round(meal.fat      || 0)} g`,   color: '#818929' },
+                ].map(item => (
+                    <div key={item.label} style={{ background: 'rgba(255,255,255,0.04)', borderRadius: 10, padding: '10px 12px' }}>
+                        <div style={{ fontSize: 10, fontWeight: 700, color: '#555', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 4 }}>{item.label}</div>
+                        <div style={{ fontSize: 18, fontWeight: 800, color: item.color, fontVariantNumeric: 'tabular-nums' }}>{item.value}</div>
+                    </div>
+                ))}
+            </div>
+        </div>
+    </div>
+);
+
+const MealsTimelineRow = ({ type, items, openModal, handleDelete, recentMeals = [], allItems = [], onGhostClick, onGhostRemove, onMoveToType }) => {
     const [isDragOver, setIsDragOver] = useState(false);
+    const [detailMeal, setDetailMeal] = useState(null);
     const isEmpty = items.length === 0;
     const totals = items.reduce((s, m) => ({
         calories: s.calories + (m.calories || 0),
@@ -487,7 +524,10 @@ const MealsTimelineRow = ({ type, items, openModal, handleDelete, recentMeals = 
         carbs:    s.carbs    + (m.carbs    || 0),
         fat:      s.fat      + (m.fat      || 0),
     }), { calories: 0, protein: 0, carbs: 0, fat: 0 });
-    const ghosts = recentMeals.filter(r => r.mealType === type).slice(0, 3);
+    const loggedNames = new Set(allItems.map(m => (m.foodName || '').toLowerCase()));
+    const ghosts = recentMeals
+        .filter(r => r.mealType === type && !loggedNames.has((r.foodName || r.food || '').toLowerCase()))
+        .slice(0, 3);
 
     const handleDragOver = (e) => { e.preventDefault(); setIsDragOver(true); };
     const handleDragLeave = (e) => { if (!e.currentTarget.contains(e.relatedTarget)) setIsDragOver(false); };
@@ -520,13 +560,13 @@ const MealsTimelineRow = ({ type, items, openModal, handleDelete, recentMeals = 
                 </span>
                 {!isEmpty && (
                     <span style={{ fontSize: 11, fontWeight: 600, color: '#555', fontVariantNumeric: 'tabular-nums', letterSpacing: '0.01em' }}>
-                        <span style={{ color: '#f0f0f0', fontWeight: 700 }}>{Math.round(totals.calories)}</span> kcal
+                        <span style={{ color: '#e0e0e0', fontWeight: 700 }}>{Math.round(totals.calories)}</span> kcal
                         {' · '}
                         <span style={{ color: '#a5b4fc', fontWeight: 700 }}>{Math.round(totals.protein)}g</span> prot
                         {' · '}
                         <span style={{ color: '#30a195', fontWeight: 700 }}>{Math.round(totals.carbs)}g</span> carbs
                         {' · '}
-                        <span style={{ color: '#A5B4FC', fontWeight: 700 }}>{Math.round(totals.fat)}g</span> fat
+                        <span style={{ color: '#818929', fontWeight: 700 }}>{Math.round(totals.fat)}g</span> fat
                     </span>
                 )}
             </div>
@@ -534,88 +574,98 @@ const MealsTimelineRow = ({ type, items, openModal, handleDelete, recentMeals = 
             {!isEmpty && (
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
                     {items.map(meal => (
-                        <div key={meal.id}
-                            draggable
-                            onDragStart={e => {
-                                e.dataTransfer.setData('mealId', meal.id);
-                                e.dataTransfer.setData('fromType', type);
-                                e.dataTransfer.effectAllowed = 'move';
-                            }}
-                            style={{
-                                display: 'inline-flex', alignItems: 'center', gap: 6,
-                                padding: '6px 10px 6px 13px',
-                                background: 'rgba(255,255,255,0.05)',
-                                border: '1px solid rgba(255,255,255,0.1)',
-                                borderRadius: 999,
-                                cursor: 'grab',
-                            }}>
-                            <span style={{ fontSize: 13, fontWeight: 700, color: '#f0f0f0' }}>
-                                {meal.foodName}
-                            </span>
-                            {meal.amount && (
-                                <span style={{ fontSize: 12, fontWeight: 500, color: '#666', fontVariantNumeric: 'tabular-nums' }}>
-                                    {meal.amount}{meal.unit && meal.unit !== 'qty' ? meal.unit : ''}
+                        <div key={meal.id} style={{ flexBasis: 'calc(50% - 4px)', flexGrow: 0, flexShrink: 0, minWidth: 0, display: 'flex' }}>
+                            <div
+                                draggable
+                                onDragStart={e => {
+                                    e.dataTransfer.setData('mealId', meal.id);
+                                    e.dataTransfer.setData('fromType', type);
+                                    e.dataTransfer.effectAllowed = 'move';
+                                }}
+                                onClick={() => setDetailMeal(meal)}
+                                style={{
+                                    display: 'inline-flex', alignItems: 'center', gap: 6,
+                                    padding: '6px 10px 6px 13px',
+                                    background: 'rgba(255,255,255,0.05)',
+                                    border: '1px solid rgba(255,255,255,0.1)',
+                                    borderRadius: 999,
+                                    cursor: 'pointer',
+                                    maxWidth: '100%',
+                                    overflow: 'hidden',
+                                }}>
+                                <span style={{ fontSize: 13, fontWeight: 700, color: '#f0f0f0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', minWidth: 0 }}>
+                                    {meal.foodName}
                                 </span>
-                            )}
-                            <span style={{ fontSize: 12, fontWeight: 700, color: '#A5B4FC', fontVariantNumeric: 'tabular-nums' }}>
-                                {Math.round(meal.calories || 0)}kcal
-                            </span>
-                            <button onClick={() => handleDelete(meal.id)}
-                                style={{ background: 'transparent', border: 0, padding: 0, marginLeft: 2, color: '#444', cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
-                                <X size={10} />
-                            </button>
+                                {meal.amount && (
+                                    <span style={{ fontSize: 12, fontWeight: 500, color: '#666', fontVariantNumeric: 'tabular-nums', flexShrink: 0 }}>
+                                        {meal.amount}{meal.unit && meal.unit !== 'qty' ? meal.unit : ''}
+                                    </span>
+                                )}
+                                <span style={{ fontSize: 12, fontWeight: 700, color: '#e0e0e0', fontVariantNumeric: 'tabular-nums', flexShrink: 0 }}>
+                                    {Math.round(meal.calories || 0)}kcal
+                                </span>
+                                <button onClick={e => { e.stopPropagation(); handleDelete(meal.id); }}
+                                    style={{ background: 'transparent', border: 0, padding: 0, marginLeft: 2, color: '#444', cursor: 'pointer', display: 'flex', alignItems: 'center', flexShrink: 0 }}>
+                                    <X size={10} />
+                                </button>
+                            </div>
                         </div>
                     ))}
                 </div>
             )}
 
-            {isEmpty && ghosts.length > 0 && (
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 7 }}>
+            {ghosts.length > 0 && (
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 7, marginTop: isEmpty ? 0 : 8 }}>
                     {ghosts.map((meal, i) => (
-                        <div
-                            key={i}
-                            style={{
-                                display: 'inline-flex', alignItems: 'center', gap: 5,
-                                padding: '5px 10px 5px 11px',
-                                background: 'transparent',
-                                border: '1px solid rgba(255,255,255,0.1)',
-                                borderRadius: 999,
-                                opacity: 0.3,
-                                transition: 'opacity 0.15s',
-                                userSelect: 'none',
-                            }}
-                            onMouseEnter={e => e.currentTarget.style.opacity = '0.75'}
-                            onMouseLeave={e => e.currentTarget.style.opacity = '0.3'}
-                        >
+                        <div key={i} style={{ flexBasis: 'calc(50% - 4px)', flexGrow: 0, flexShrink: 0, minWidth: 0, display: 'flex' }}>
                             <div
-                                onClick={() => onGhostClick(meal, type)}
-                                style={{ display: 'inline-flex', alignItems: 'center', gap: 5, cursor: 'pointer' }}
+                                style={{
+                                    display: 'inline-flex', alignItems: 'center', gap: 5,
+                                    padding: '5px 10px 5px 11px',
+                                    background: 'transparent',
+                                    border: '1px solid rgba(255,255,255,0.1)',
+                                    borderRadius: 999,
+                                    opacity: 0.3,
+                                    transition: 'opacity 0.15s',
+                                    userSelect: 'none',
+                                    maxWidth: '100%',
+                                    overflow: 'hidden',
+                                }}
+                                onMouseEnter={e => e.currentTarget.style.opacity = '0.75'}
+                                onMouseLeave={e => e.currentTarget.style.opacity = '0.3'}
                             >
-                                <span style={{ fontSize: 12, fontWeight: 700, color: '#f0f0f0' }}>
-                                    {meal.foodName || meal.food}
-                                </span>
-                                {meal.amount && (
-                                    <span style={{ fontSize: 11, fontWeight: 500, color: '#888', fontVariantNumeric: 'tabular-nums' }}>
-                                        {meal.amount}{meal.unit && meal.unit !== 'qty' ? meal.unit : ''}
+                                <div
+                                    onClick={() => onGhostClick(meal, type)}
+                                    style={{ display: 'inline-flex', alignItems: 'center', gap: 5, cursor: 'pointer', overflow: 'hidden' }}
+                                >
+                                    <span style={{ fontSize: 12, fontWeight: 700, color: '#f0f0f0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', minWidth: 0 }}>
+                                        {meal.foodName || meal.food}
                                     </span>
-                                )}
-                                <span style={{ fontSize: 11, fontWeight: 700, color: '#A5B4FC', fontVariantNumeric: 'tabular-nums' }}>
-                                    {Math.round(meal.calories || 0)}kcal
-                                </span>
-                                <Plus size={9} style={{ color: '#666', flexShrink: 0 }} />
+                                    {meal.amount && (
+                                        <span style={{ fontSize: 11, fontWeight: 500, color: '#888', fontVariantNumeric: 'tabular-nums', flexShrink: 0 }}>
+                                            {meal.amount}{meal.unit && meal.unit !== 'qty' ? meal.unit : ''}
+                                        </span>
+                                    )}
+                                    <span style={{ fontSize: 11, fontWeight: 700, color: '#e0e0e0', fontVariantNumeric: 'tabular-nums', flexShrink: 0 }}>
+                                        {Math.round(meal.calories || 0)}kcal
+                                    </span>
+                                    <Plus size={9} style={{ color: '#666', flexShrink: 0 }} />
+                                </div>
+                                <button
+                                    onClick={e => { e.stopPropagation(); onGhostRemove(meal); }}
+                                    style={{ background: 'transparent', border: 0, padding: 0, marginLeft: 2, color: '#555', cursor: 'pointer', display: 'flex', alignItems: 'center', transition: 'color 0.15s', flexShrink: 0 }}
+                                    onMouseEnter={e => e.currentTarget.style.color = '#ef4444'}
+                                    onMouseLeave={e => e.currentTarget.style.color = '#555'}
+                                >
+                                    <X size={9} />
+                                </button>
                             </div>
-                            <button
-                                onClick={e => { e.stopPropagation(); onGhostRemove(meal); }}
-                                style={{ background: 'transparent', border: 0, padding: 0, marginLeft: 2, color: '#555', cursor: 'pointer', display: 'flex', alignItems: 'center', transition: 'color 0.15s' }}
-                                onMouseEnter={e => e.currentTarget.style.color = '#ef4444'}
-                                onMouseLeave={e => e.currentTarget.style.color = '#555'}
-                            >
-                                <X size={9} />
-                            </button>
                         </div>
                     ))}
                 </div>
             )}
+
+            {detailMeal && <MealDetailPopup meal={detailMeal} onClose={() => setDetailMeal(null)} />}
         </div>
     );
 };
@@ -826,6 +876,7 @@ const MealLogger = ({ mealsData, onUpdate, loading, userId }) => {
     };
 
     const grouped = mealsData?.meals || { breakfast: [], lunch: [], dinner: [], snack: [] };
+    const allItems = Object.values(grouped).flat();
 
     return (
         <div className="nutrition-card" style={{ display: 'flex', flexDirection: 'column', gap: 14, padding: '18px 18px 16px', height: '100%', boxSizing: 'border-box' }}>
@@ -857,6 +908,7 @@ const MealLogger = ({ mealsData, onUpdate, loading, userId }) => {
                             openModal={openModal}
                             handleDelete={handleDelete}
                             recentMeals={recent}
+                            allItems={allItems}
                             onGhostClick={addMealDirectly}
                             onGhostRemove={removeRecent}
                             onMoveToType={handleMoveToType}
@@ -912,6 +964,7 @@ const MealLogger = ({ mealsData, onUpdate, loading, userId }) => {
                                 )}
                             </div>
                         )}
+
 
                         <form onSubmit={handleAdd} className="meal-form">
                             <div className="meal-form-field">
