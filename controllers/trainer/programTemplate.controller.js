@@ -6,7 +6,7 @@ export const listTemplates = async (req, res, next) => {
     try {
         const trainerId = req.user.id;
         const { type } = req.query;
-        let query = `SELECT id, name, type, createdAt FROM WorkoutTemplates WHERE trainerId = :trainerId`;
+        let query = `SELECT id, name, type, createdAt, programData FROM WorkoutTemplates WHERE trainerId = :trainerId`;
         const replacements = { trainerId };
         if (type) {
             query += ` AND type = :type`;
@@ -14,7 +14,15 @@ export const listTemplates = async (req, res, next) => {
         }
         query += ` ORDER BY createdAt DESC`;
         const rows = await sequelize.query(query, { replacements, type: QueryTypes.SELECT });
-        res.status(200).json({ success: true, data: rows });
+        const data = rows.map(row => {
+            const pd = typeof row.programData === 'string' ? JSON.parse(row.programData) : (row.programData || []);
+            const dayCount = Array.isArray(pd)
+                ? pd.filter(w => w.day && (w.name || (w.exercises && w.exercises.length > 0))).length
+                : 0;
+            const { programData: _, ...rest } = row;
+            return { ...rest, dayCount };
+        });
+        res.status(200).json({ success: true, data });
     } catch (error) {
         next(error);
     }

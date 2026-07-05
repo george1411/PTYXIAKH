@@ -21,7 +21,7 @@ const NAV_TABS = [
 ];
 
 // ─── Notification Bell ────────────────────────────────────────
-const NotificationBell = ({ onNavigateToMessages }) => {
+const NotificationBell = ({ onNavigateToMessages, onNavigateToClient }) => {
     const [unreadCount, setUnreadCount] = useState(0);
     const [convos, setConvos]           = useState([]);
     const [open, setOpen]               = useState(false);
@@ -93,7 +93,7 @@ const NotificationBell = ({ onNavigateToMessages }) => {
                                     style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}
                                     onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.04)'}
                                     onMouseLeave={e => e.currentTarget.style.background = ''}
-                                    onClick={() => { setOpen(false); onNavigateToMessages(); }}
+                                    onClick={() => { setOpen(false); onNavigateToClient(c.id); }}
                                 >
                                     <div className="w-8 h-8 rounded-full text-xs font-bold flex items-center justify-center flex-shrink-0 mt-0.5" style={{ background: 'rgba(255,255,255,0.08)', color: '#e0e0e0' }}>
                                         {c.name?.charAt(0).toUpperCase()}
@@ -135,6 +135,7 @@ const NotificationBell = ({ onNavigateToMessages }) => {
 const TrainerDashboard = ({ user, onLogout, onUserUpdate }) => {
     const [activeTab, setActiveTab]           = useState('overview');
     const [targetClientId, setTargetClientId] = useState(null);
+    const [targetClientTab, setTargetClientTab] = useState(null);
     const [targetProgramId, setTargetProgramId] = useState(null);
     const isMobile = useIsMobile();
 
@@ -178,6 +179,13 @@ const TrainerDashboard = ({ user, onLogout, onUserUpdate }) => {
 
     const navigateToClient = (clientId) => {
         setTargetClientId(clientId);
+        setTargetClientTab(null);
+        setActiveTab('clients');
+    };
+
+    const navigateToClientMessages = (clientId) => {
+        setTargetClientId(clientId);
+        setTargetClientTab('messages');
         setActiveTab('clients');
     };
 
@@ -301,7 +309,10 @@ const TrainerDashboard = ({ user, onLogout, onUserUpdate }) => {
                                 </div>
                             )}
                         </div>
-                        <NotificationBell onNavigateToMessages={() => setActiveTab('clients')} />
+                        <NotificationBell
+                            onNavigateToMessages={() => setActiveTab('clients')}
+                            onNavigateToClient={navigateToClientMessages}
+                        />
                     </div>
                 </div>
             </header>
@@ -316,7 +327,7 @@ const TrainerDashboard = ({ user, onLogout, onUserUpdate }) => {
                         ) : activeTab === 'overview' ? (
                             <TrainerOverview user={user} onNavigate={setActiveTab} />
                         ) : activeTab === 'clients' ? (
-                            <TrainerClients initialClientId={targetClientId} />
+                            <TrainerClients initialClientId={targetClientId} initialTab={targetClientTab} />
                         ) : activeTab === 'groups' ? (
                             <TrainerGroups user={user} onNavigate={setActiveTab} onNavigateToClient={navigateToClient} />
                         ) : activeTab === 'programs' ? (

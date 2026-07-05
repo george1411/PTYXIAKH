@@ -133,9 +133,9 @@ const Sidebar = ({ activeTab = 'overview', onNavigate, onLogout, user }) => {
                             </button>
                             <button
                                 onClick={() => { onLogout(); setMenuOpen(false); }}
-                                style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px', background: 'none', border: 'none', borderTop: '1px solid rgba(255,255,255,0.06)', cursor: 'pointer', fontSize: '0.83rem', color: 'rgba(255,255,255,0.5)', transition: 'background 0.15s, color 0.15s' }}
-                                onMouseEnter={e => { e.currentTarget.style.background = 'rgba(239,68,68,0.08)'; e.currentTarget.style.color = '#f87171'; }}
-                                onMouseLeave={e => { e.currentTarget.style.background = ''; e.currentTarget.style.color = 'rgba(255,255,255,0.5)'; }}
+                                style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px', background: 'none', border: 'none', borderTop: '1px solid rgba(255,255,255,0.06)', cursor: 'pointer', fontSize: '0.83rem', color: '#f87171', transition: 'background 0.15s, color 0.15s' }}
+                                onMouseEnter={e => { e.currentTarget.style.background = 'rgba(239,68,68,0.12)'; }}
+                                onMouseLeave={e => { e.currentTarget.style.background = ''; }}
                             >
                                 <LogOut size={14} /> Sign Out
                             </button>

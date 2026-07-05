@@ -433,7 +433,6 @@ const ProgramPanel = ({ clientId }) => {
                 alert('This program has no days configured yet. Add workouts to it in the Programs tab first.');
                 return;
             }
-            let loaded = 0;
             for (const w of days) {
                 try {
                     await axios.post(
@@ -441,7 +440,6 @@ const ProgramPanel = ({ clientId }) => {
                         { day: w.day, name: w.name || w.day, exercises: w.exercises || [] },
                         { withCredentials: true }
                     );
-                    loaded++;
                 } catch (dayErr) {
                     console.error(`Failed to load ${w.day}:`, dayErr);
                 }
@@ -658,7 +656,9 @@ const ProgramPanel = ({ clientId }) => {
                                 {templates.map(t => (
                                     <div key={t.id} className="tc-tpl-item" onClick={() => handleLoadTemplate(t.id)}>
                                         <span className="tc-tpl-item-name">{t.name}</span>
-                                        <span className="tc-tpl-item-date">{new Date(t.createdAt).toLocaleDateString()}</span>
+                                        <span className="tc-tpl-item-date">
+                                            {t.dayCount > 0 ? `${t.dayCount} day${t.dayCount > 1 ? 's' : ''}` : 'empty'} · {new Date(t.createdAt).toLocaleDateString()}
+                                        </span>
                                     </div>
                                 ))}
                             </div>
@@ -1176,7 +1176,7 @@ const InvitePanel = () => {
 };
 
 // ─── Main Component ───────────────────────────────────────────
-const TrainerClients = ({ initialClientId }) => {
+const TrainerClients = ({ initialClientId, initialTab }) => {
     const [clients, setClients]           = useState([]);
     const [loading, setLoading]           = useState(true);
     const [search, setSearch]             = useState('');
@@ -1193,15 +1193,15 @@ const TrainerClients = ({ initialClientId }) => {
                 setLoading(false);
                 if (initialClientId) {
                     const target = list.find(c => c.id === initialClientId);
-                    if (target) selectClient(target);
+                    if (target) selectClient(target, initialTab);
                 }
             })
             .catch(() => setLoading(false));
     }, [initialClientId]);
 
-    const selectClient = async (client) => {
+    const selectClient = async (client, tab = 'overview') => {
         setSelectedId(client.id);
-        setActiveTab('overview');
+        setActiveTab(tab);
         setDetail(null);
         setLoadingDetail(true);
         try {

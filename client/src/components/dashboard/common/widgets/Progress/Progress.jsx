@@ -118,7 +118,7 @@ const WeightHistory = () => {
                                     type="number"
                                     min="20"
                                     max="300"
-                                    step="0.1"
+                                    step="0.01"
                                     placeholder="kg"
                                     value={logValue}
                                     onChange={e => setLogValue(e.target.value)}

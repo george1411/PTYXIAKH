@@ -1,3 +1,8 @@
+/* ─── Meal Row ───────────────────────────────────────────────── */
+.meal-row:hover { background: rgba(255,255,255,0.03); border-radius: 6px; }
+.meal-row:hover .meal-row-delete { opacity: 1 !important; color: #666 !important; }
+.meal-row-delete:hover { color: #ef4444 !important; }
+
 /* ─── Nutrition Page Layout ──────────────────────────────────── */
 .nutrition-page {
     width: 100%;

@@ -198,10 +198,10 @@ const TrainerOverview = ({ user, onNavigate }) => {
             {/* Main Grid — Today's Schedule + Recent Activity + Clients */}
             <div className="to-main-grid">
                 {/* Today's Schedule */}
-                <div style={{ background: '#000000', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 16, overflow: 'hidden' }}>
+                <div style={{ background: '#0a0a0a', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 16, overflow: 'hidden' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 18px 14px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
                         <div>
-                            <div style={{ fontSize: 15, fontWeight: 800, color: '#f0f0f0' }}>Today's Schedule</div>
+                            <div style={{ fontSize: 15, fontWeight: 800, color: '#a5b4fc' }}>Today's Schedule</div>
                             <div style={{ fontSize: 11, color: '#555', marginTop: 2 }}>
                                 {new Date().toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })} · {todayEvents.length} session{todayEvents.length !== 1 ? 's' : ''}
                             </div>
@@ -251,10 +251,10 @@ const TrainerOverview = ({ user, onNavigate }) => {
                 </div>
 
                 {/* Recent Messages */}
-                <div style={{ background: '#000000', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 16, overflow: 'hidden' }}>
+                <div style={{ background: '#0a0a0a', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 16, overflow: 'hidden' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 18px 14px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
                         <div>
-                            <div style={{ fontSize: 15, fontWeight: 800, color: '#f0f0f0' }}>Recent Messages</div>
+                            <div style={{ fontSize: 15, fontWeight: 800, color: '#a5b4fc' }}>Recent Messages</div>
                             <div style={{ fontSize: 11, color: '#555', marginTop: 2 }}>{recentActivity.length} conversation{recentActivity.length !== 1 ? 's' : ''}</div>
                         </div>
                         <button onClick={() => onNavigate('clients')} style={{ background: 'transparent', border: 'none', color: '#818CF8', fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
@@ -301,7 +301,7 @@ const TrainerOverview = ({ user, onNavigate }) => {
                         <button className="to-card-link" onClick={() => onNavigate('clients')}>View All →</button>
                     </div>
                     {clientStats.length > 0 ? (
-                        <div className="to-ct-wrap" style={{ background: '#000000', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 14, overflow: 'hidden', padding: 0 }}>
+                        <div className="to-ct-wrap" style={{ background: '#0a0a0a', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 14, overflow: 'hidden', padding: 0 }}>
                             <table className="to-ct-table">
                                 <thead>
                                     <tr>

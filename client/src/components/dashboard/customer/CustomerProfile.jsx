@@ -162,8 +162,9 @@ const CustomerProfile = ({ user, onLogout, onUserUpdate }) => {
                         <button
                             className="cp-btn-signout"
                             onClick={onLogout}
-                            onMouseEnter={e => { e.currentTarget.style.color = 'rgba(255,255,255,0.7)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.25)'; }}
-                            onMouseLeave={e => { e.currentTarget.style.color = 'rgba(255,255,255,0.35)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'; }}
+                            style={{ color: '#f87171' }}
+                            onMouseEnter={e => { e.currentTarget.style.background = 'rgba(248,113,113,0.1)'; e.currentTarget.style.borderColor = 'rgba(248,113,113,0.5)'; }}
+                            onMouseLeave={e => { e.currentTarget.style.background = ''; e.currentTarget.style.borderColor = 'rgba(248,113,113,0.3)'; }}
                         >
                             Sign out
                         </button>

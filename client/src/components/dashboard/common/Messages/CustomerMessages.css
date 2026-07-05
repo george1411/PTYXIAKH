@@ -906,6 +906,11 @@
 .cm-bubble-wrap {
     display: flex;
     flex-direction: column;
+    max-width: 65%;
+    min-width: 0;
+}
+
+.cm-bubble-wrap .cm-bubble {
     max-width: 100%;
 }
 .cm-sender-name {

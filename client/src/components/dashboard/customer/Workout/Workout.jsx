@@ -185,21 +185,28 @@ const GroupWorkout = ({ activeTab, onTabChange }) => {
     const [timerSeconds, setTimerSeconds] = useState(0);
     const [timerRunning, setTimerRunning] = useState(false);
     const [submitting,   setSubmitting]   = useState(false);
-    const timerRef = useRef(null);
+    const timerRef    = useRef(null);
+    const startRef    = useRef(null); // wall-clock start timestamp
+    const baseRef     = useRef(0);    // seconds already elapsed before last start
 
     const day = G_DAYS[dayIdx];
 
     useEffect(() => {
         if (timerRunning) {
-            timerRef.current = setInterval(() => setTimerSeconds(s => s + 1), 1000);
+            startRef.current = Date.now();
+            timerRef.current = setInterval(() => {
+                const elapsed = Math.floor((Date.now() - startRef.current) / 1000);
+                setTimerSeconds(baseRef.current + elapsed);
+            }, 500);
         } else {
             clearInterval(timerRef.current);
+            baseRef.current = timerSeconds;
         }
         return () => clearInterval(timerRef.current);
     }, [timerRunning]);
 
     const toggleTimer = () => setTimerRunning(p => !p);
-    const resetTimer  = () => { setTimerRunning(false); setTimerSeconds(0); };
+    const resetTimer  = () => { setTimerRunning(false); setTimerSeconds(0); baseRef.current = 0; };
     const formatTime  = (s) => `${Math.floor(s / 60).toString().padStart(2, '0')}:${(s % 60).toString().padStart(2, '0')}`;
 
     useEffect(() => {
@@ -495,7 +502,9 @@ const Workout = () => {
     const [selectedExercise, setSelectedExercise] = useState(null);
     const [timerSeconds, setTimerSeconds] = useState(0);
     const [timerRunning, setTimerRunning] = useState(false);
-    const timerRef = useRef(null);
+    const timerRef  = useRef(null);
+    const startRef2 = useRef(null);
+    const baseRef2  = useRef(0);
     const [dayOffset, setDayOffset] = useState(0);
     const saveDebounceRef = useRef(null);
 
@@ -533,20 +542,23 @@ const Workout = () => {
             .catch(() => { setExHistory([]); setExHistoryPr(0); });
     }, [selectedExercise?.id, activeTab]);
 
-    // Timer logic
+    // Timer logic — uses wall-clock so it keeps running when tab is inactive
     useEffect(() => {
         if (timerRunning) {
+            startRef2.current = Date.now();
             timerRef.current = setInterval(() => {
-                setTimerSeconds(prev => prev + 1);
-            }, 1000);
+                const elapsed = Math.floor((Date.now() - startRef2.current) / 1000);
+                setTimerSeconds(baseRef2.current + elapsed);
+            }, 500);
         } else {
             clearInterval(timerRef.current);
+            baseRef2.current = timerSeconds;
         }
         return () => clearInterval(timerRef.current);
     }, [timerRunning]);
 
     const toggleTimer = () => setTimerRunning(prev => !prev);
-    const resetTimer = () => { setTimerRunning(false); setTimerSeconds(0); };
+    const resetTimer = () => { setTimerRunning(false); setTimerSeconds(0); baseRef2.current = 0; };
 
     const formatTime = (totalSeconds) => {
         const mins = Math.floor(totalSeconds / 60).toString().padStart(2, '0');

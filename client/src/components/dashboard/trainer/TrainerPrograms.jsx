@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import {
     Plus, Trash2, Save, X, Loader2, Search,
-    Upload, Download, Pencil, GripVertical
+    Upload, Download, Pencil, GripVertical, BookMarked
 } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import './TrainerPrograms.css';
@@ -45,6 +45,11 @@ const TrainerPrograms = ({ initialProgramId }) => {
     // ── Week: Drag ──
     const [draggingId, setDraggingId]   = useState(null);
     const [dropHover, setDropHover]     = useState(false);
+
+    // ── Load Day modal (week editor) ──
+    const [showLoadDayModal, setShowLoadDayModal]   = useState(false);
+    const [loadDayTemplates, setLoadDayTemplates]   = useState([]);
+    const [loadingDayTpls, setLoadingDayTpls]       = useState(false);
 
     // ── New program modal ──
     const [showNewModal, setShowNewModal] = useState(false);
@@ -192,6 +197,28 @@ const TrainerPrograms = ({ initialProgramId }) => {
         document.addEventListener('mousedown', handler);
         return () => document.removeEventListener('mousedown', handler);
     }, []);
+
+    // ── Load Day into week editor ──
+    const fetchLoadDayTemplates = async () => {
+        setLoadingDayTpls(true);
+        try {
+            const res = await axios.get('/api/v1/trainer/templates?type=day', { withCredentials: true });
+            setLoadDayTemplates(res.data.data || []);
+        } catch (e) { console.error(e); }
+        finally { setLoadingDayTpls(false); }
+    };
+
+    const handleLoadDayIntoWeek = async (tplId) => {
+        try {
+            const res = await axios.get(`/api/v1/trainer/templates/${tplId}`, { withCredentials: true });
+            const pd = res.data.data.programData;
+            const exercises = (pd.exercises || []).map(({ _conflict, ...ex }) => ex);
+            const name = pd.name || res.data.data.name || '';
+            setEditState(prev => ({ ...prev, name: name || prev.name, exercises }));
+            setDirty(true);
+            setShowLoadDayModal(false);
+        } catch (e) { console.error(e); }
+    };
 
     // ── Save day to local program state ──
     const saveDayToProgram = () => {
@@ -588,9 +615,7 @@ const TrainerPrograms = ({ initialProgramId }) => {
                                             </div>
                                         )}
                                         <div className="tp-editor-actions">
-                                            <input ref={importRef} type="file" accept=".xlsx,.xls" style={{ display: 'none' }} onChange={handleImport} />
-                                            <button className="tp-action-btn" onClick={() => importRef.current?.click()} title="Import from Excel"><Upload size={14} /> Import</button>
-                                            <button className="tp-action-btn" onClick={handleExport} title="Export as Excel"><Download size={14} /> Export</button>
+                                            <button className="tp-action-btn" onClick={() => { fetchLoadDayTemplates(); setShowLoadDayModal(true); }} title="Load a day program into this day"><BookMarked size={14} /> Load Day</button>
                                             <button className="tp-save-btn" onClick={handleSaveTemplate} disabled={saving}>
                                                 {saving ? <Loader2 size={14} className="tp-spin" /> : <Save size={14} />} Save
                                             </button>
@@ -814,6 +839,40 @@ const TrainerPrograms = ({ initialProgramId }) => {
                                     </div>
                                 </div>
                             </>
+                        )}
+                    </div>
+                </div>
+            )}
+
+            {/* ── Load Day into week editor modal ── */}
+            {showLoadDayModal && (
+                <div className="tp-modal-overlay" onClick={() => setShowLoadDayModal(false)}>
+                    <div className="tp-modal" onClick={e => e.stopPropagation()}>
+                        <div className="tp-modal-header">
+                            <span>Load Day Program</span>
+                            <button onClick={() => setShowLoadDayModal(false)}><X size={16} /></button>
+                        </div>
+                        <p className="tp-modal-hint">Select a day program to load into {selectedDay}.</p>
+                        {loadingDayTpls ? (
+                            <div style={{ display: 'flex', justifyContent: 'center', padding: '20px 0' }}>
+                                <Loader2 size={20} className="tp-spin" />
+                            </div>
+                        ) : loadDayTemplates.length === 0 ? (
+                            <div className="tp-modal-hint" style={{ color: 'rgba(255,255,255,0.25)', marginTop: 8 }}>No 1-day programs yet. Create one in the 1-Day Programs tab.</div>
+                        ) : (
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 4, marginTop: 8 }}>
+                                {loadDayTemplates.map(t => (
+                                    <div key={t.id}
+                                        onClick={() => handleLoadDayIntoWeek(t.id)}
+                                        style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '9px 12px', borderRadius: 8, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)', cursor: 'pointer', transition: 'background 0.15s' }}
+                                        onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.08)'}
+                                        onMouseLeave={e => e.currentTarget.style.background = 'rgba(255,255,255,0.04)'}
+                                    >
+                                        <span style={{ fontSize: 13, fontWeight: 600, color: '#e0e0e0' }}>{t.name}</span>
+                                        <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.3)' }}>{new Date(t.createdAt).toLocaleDateString()}</span>
+                                    </div>
+                                ))}
+                            </div>
                         )}
                     </div>
                 </div>

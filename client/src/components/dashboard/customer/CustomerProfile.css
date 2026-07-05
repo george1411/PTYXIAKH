@@ -127,9 +127,9 @@
 .cp-btn-signout {
     font-size: 0.78rem;
     font-weight: 600;
-    color: rgba(255,255,255,0.35);
+    color: #f87171;
     background: none;
-    border: 1px solid rgba(255,255,255,0.1);
+    border: 1px solid rgba(248,113,113,0.3);
     border-radius: 8px;
     padding: 6px 14px;
     cursor: pointer;
