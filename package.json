@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node app.js",
     "dev": "nodemon app.js",
-    "build": "cd client && npm install && npm run build"
+    "build": "cd client && npm install --include=dev && npm run build"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.93.0",
