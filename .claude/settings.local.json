@@ -100,7 +100,8 @@
       "PowerShell(Start-Sleep:*)",
       "PowerShell(Get-Process -Name node -ErrorAction SilentlyContinue | Stop-Process -Force)",
       "Bash(git add *)",
-      "Bash(git commit -m 'meal logger + fixes *)"
+      "Bash(git commit -m 'meal logger + fixes *)",
+      "Bash(git commit -m 'support DB port + SSL for cloud database *)"
     ],
     "additionalDirectories": [
       "c:\\Users\\georg\\Downloads"

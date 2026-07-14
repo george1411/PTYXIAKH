@@ -9,6 +9,8 @@ export const {
     DB_USER,
     DB_PASSWORD,
     DB_NAME,
+    DB_PORT,
+    DB_SSL,
     JWT_SECRET,
     JWT_EXPIRES_IN,
     ARCJET_ENV,
