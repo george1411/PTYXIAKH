@@ -499,9 +499,11 @@
     display: flex;
     align-items: center;
     gap: 10px;
-    min-width: 180px;
-    flex-shrink: 0;
+    flex: 0 0 190px;
+    width: 190px;
+    overflow: hidden;
 }
+.tp-exercise-name-col > div { min-width: 0; }
 
 .tp-exercise-idx {
     width: 22px;
@@ -521,11 +523,17 @@
     font-size: 0.85rem;
     font-weight: 600;
     color: var(--text);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 .tp-exercise-muscles {
     font-size: 0.72rem;
     color: rgba(255,255,255,0.35);
     margin-top: 1px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .tp-exercise-fields {
