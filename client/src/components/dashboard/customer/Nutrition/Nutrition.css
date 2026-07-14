@@ -1,7 +1,19 @@
+/* ─── Chat typing indicator ──────────────────────────────────── */
+@keyframes chat-bounce {
+    0%, 80%, 100% { transform: translateY(0); opacity: 0.35; }
+    40%           { transform: translateY(-5px); opacity: 1; }
+}
+
 /* ─── Meal Row ───────────────────────────────────────────────── */
 .meal-row:hover { background: rgba(255,255,255,0.03); border-radius: 6px; }
 .meal-row:hover .meal-row-delete { opacity: 1 !important; color: #666 !important; }
 .meal-row-delete:hover { color: #ef4444 !important; }
+
+/* ─── Meal Log Row (chat feed) ──────────────────────────────── */
+.meal-log-card-wrap { border-radius: 8px; transition: background 0.15s; }
+.meal-log-card-wrap:hover { background: rgba(255,255,255,0.03); }
+.meal-log-card-wrap:hover .meal-log-card-delete { opacity: 1 !important; }
+.meal-log-card-delete:hover { color: #ef4444 !important; }
 
 /* ─── Nutrition Page Layout ──────────────────────────────────── */
 .nutrition-page {

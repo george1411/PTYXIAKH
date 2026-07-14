@@ -144,8 +144,15 @@ const CustomerDashboard = ({ user, onLogout, onUserUpdate }) => {
     const [searchConvos, setSearchConvos]       = useState([]);
     const [showSearchDrop, setShowSearchDrop]   = useState(false);
     const [progressExercise, setProgressExercise] = useState(null);
+    // Keep Workout mounted (hidden) after first visit so its timer and
+    // in-progress set/reps inputs survive tab switches
+    const [workoutVisited, setWorkoutVisited] = useState(false);
     const searchRef = useRef(null);
     const isMobile = useIsMobile();
+
+    useEffect(() => {
+        if (activeTab === 'workout') setWorkoutVisited(true);
+    }, [activeTab]);
 
     useEffect(() => {
         axios.get('/api/v1/stats/exercise-history', { withCredentials: true })
@@ -336,8 +343,13 @@ const CustomerDashboard = ({ user, onLogout, onUserUpdate }) => {
 
 
                     <div className="max-w-7xl mx-auto relative z-10 h-full">
+                        {(workoutVisited || activeTab === 'workout') && (
+                            <div style={{ display: activeTab === 'workout' ? 'block' : 'none', height: '100%' }}>
+                                <Workout />
+                            </div>
+                        )}
                         {activeTab === 'workout' ? (
-                            <Workout />
+                            null
                         ) : activeTab === 'schedule' ? (
                             <Schedule onNavigate={setActiveTab} fullPage={true} />
                         ) : activeTab === 'progress' ? (

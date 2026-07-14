@@ -17,5 +17,6 @@ export const {
     FITBIT_CLIENT_SECRET,
     FITBIT_REDIRECT_URI,
     EMAIL_USER,
-    EMAIL_PASS
+    EMAIL_PASS,
+    ANTHROPIC_API_KEY,
 } = process.env;

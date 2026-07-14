@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { Plus, X, Search, AlertCircle, CheckCircle, Bookmark, BookmarkCheck, Pencil } from 'lucide-react';
+import { X, Pencil, Trash2 } from 'lucide-react';
 import {
     BarChart, Bar, XAxis, YAxis, LabelList, Tooltip,
     ResponsiveContainer, CartesianGrid, Legend
@@ -432,651 +432,314 @@ export const WaterIntakeTracker = () => {
     );
 };
 
-// ─── Meal Logger ──────────────────────────────────────────────
-const MEAL_TYPES  = ['breakfast', 'lunch', 'dinner', 'snack'];
-const MEAL_LABELS = { breakfast: 'Breakfast', lunch: 'Lunch', dinner: 'Dinner', snack: 'Snack' };
-const MEAL_TIMES  = { breakfast: '08:30', lunch: '13:00', dinner: '19:30', snack: '16:00' };
+// ─── Chat-style Meal Logger (Claude-powered) ──────────────────
+const CHAT_MEAL_TYPES   = ['breakfast', 'lunch', 'dinner', 'snack'];
+const CHAT_MEAL_LABELS  = { breakfast: 'Breakfast', lunch: 'Lunch', dinner: 'Dinner', snack: 'Snack' };
 
-// ─── localStorage helpers ─────────────────────────────────────
-const recentKey = (uid) => `gymlit_recent_foods_${uid}`;
-const savedKey  = (uid) => `gymlit_saved_foods_${uid}`;
+const MealLogger = ({ mealsData, onUpdate, loading }) => {
+    const [input,     setInput]     = useState('');
+    const [mealType,  setMealType]  = useState('breakfast');
+    const [sending,   setSending]   = useState(false);
+    const [pending,   setPending]   = useState(null);   // text currently being parsed
+    const [errorMsg,  setErrorMsg]  = useState(null);
+    const feedRef = useRef(null);
 
-const getRecent = (uid) => { try { return JSON.parse(localStorage.getItem(recentKey(uid))) || []; } catch { return []; } };
-const getSaved  = (uid) => { try { return JSON.parse(localStorage.getItem(savedKey(uid)))  || []; } catch { return []; } };
-
-const pushRecent = (uid, entry) => {
-    const list = getRecent(uid).filter(f => f.food.toLowerCase() !== entry.food.toLowerCase());
-    localStorage.setItem(recentKey(uid), JSON.stringify([entry, ...list].slice(0, 8)));
-};
-
-const toggleSavedFood = (uid, entry) => {
-    const list = getSaved(uid);
-    const exists = list.find(f => f.food.toLowerCase() === entry.food.toLowerCase());
-    if (exists) localStorage.setItem(savedKey(uid), JSON.stringify(list.filter(f => f.food.toLowerCase() !== entry.food.toLowerCase())));
-    else        localStorage.setItem(savedKey(uid), JSON.stringify([entry, ...list]));
-};
-
-const isSaved = (uid, food) => getSaved(uid).some(f => f.food.toLowerCase() === food.toLowerCase());
-
-const UNITS = [
-    { value: 'qty', label: 'qty' },
-    { value: 'g',   label: 'g' },
-    { value: 'ml',  label: 'ml' },
-    { value: 'oz',  label: 'oz' },
-    { value: 'cup', label: 'cup' },
-    { value: 'tbsp',label: 'tbsp' },
-    { value: 'tsp', label: 'tsp' },
-];
-
-const EMPTY_FORM = { mealType: 'breakfast', food: '', amount: '100', unit: 'g', foodName: '', calories: '', protein: '', carbs: '', fat: '' };
-
-// ─── Meal Timeline Row ────────────────────────────────────────
-const MealDetailPopup = ({ meal, anchor, onClose }) => {
-    const W = 210, GAP = 6;
-    const vw = window.innerWidth, vh = window.innerHeight;
-    let top = anchor.bottom + GAP;
-    let left = anchor.left;
-    if (top + 160 > vh) top = anchor.top - 160 - GAP;
-    if (left + W > vw) left = vw - W - 8;
-    if (left < 8) left = 8;
-    return (
-        <>
-            <div style={{ position: 'fixed', inset: 0, zIndex: 199 }} onClick={onClose} />
-            <div
-                onClick={e => e.stopPropagation()}
-                style={{
-                    position: 'fixed', top, left, zIndex: 200, width: W,
-                    background: '#161616', border: '1px solid rgba(255,255,255,0.12)',
-                    borderRadius: 12, padding: '12px 14px',
-                    boxShadow: '0 8px 24px rgba(0,0,0,0.8)',
-                }}
-            >
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
-                    <div>
-                        <div style={{ fontSize: 13, fontWeight: 800, color: '#f0f0f0' }}>{meal.foodName}</div>
-                        {meal.amount && (
-                            <div style={{ fontSize: 11, color: '#555', marginTop: 1 }}>
-                                {meal.amount}{meal.unit && meal.unit !== 'qty' ? meal.unit : ''}
-                            </div>
-                        )}
-                    </div>
-                    <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.3)', cursor: 'pointer', padding: 0, display: 'flex' }}>
-                        <X size={13} />
-                    </button>
-                </div>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
-                    {[
-                        { label: 'Calories', value: `${Math.round(meal.calories || 0)} kcal`, color: '#e0e0e0' },
-                        { label: 'Protein',  value: `${Math.round(meal.protein  || 0)}`,     color: '#a5b4fc' },
-                        { label: 'Carbs',    value: `${Math.round(meal.carbs    || 0)}`,     color: '#c4b5fd' },
-                        { label: 'Fat',      value: `${Math.round(meal.fat      || 0)}`,     color: '#d8b4fe' },
-                    ].map(item => (
-                        <div key={item.label} style={{ background: 'rgba(255,255,255,0.04)', borderRadius: 8, padding: '7px 9px' }}>
-                            <div style={{ fontSize: 9, fontWeight: 700, color: '#555', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 3 }}>{item.label}</div>
-                            <div style={{ fontSize: 14, fontWeight: 800, color: item.color, fontVariantNumeric: 'tabular-nums' }}>{item.value}</div>
-                        </div>
-                    ))}
-                </div>
-            </div>
-        </>
-    );
-};
-
-const MealsTimelineRow = ({ type, items, openModal, handleDelete, recentMeals = [], allItems = [], onGhostClick, onGhostRemove, onMoveToType }) => {
-    const [isDragOver, setIsDragOver] = useState(false);
-    const [detail, setDetail] = useState(null); // { meal, anchor }
-    const isEmpty = items.length === 0;
-    const totals = items.reduce((s, m) => ({
-        calories: s.calories + (m.calories || 0),
-        protein:  s.protein  + (m.protein  || 0),
-        carbs:    s.carbs    + (m.carbs    || 0),
-        fat:      s.fat      + (m.fat      || 0),
-    }), { calories: 0, protein: 0, carbs: 0, fat: 0 });
-    const loggedNames = new Set(allItems.map(m => (m.foodName || '').toLowerCase()));
-    const ghosts = recentMeals
-        .filter(r => r.mealType === type && !loggedNames.has((r.foodName || r.food || '').toLowerCase()))
-        .slice(0, 3);
-
-    const handleDragOver = (e) => { e.preventDefault(); setIsDragOver(true); };
-    const handleDragLeave = (e) => { if (!e.currentTarget.contains(e.relatedTarget)) setIsDragOver(false); };
-    const handleDrop = (e) => {
-        e.preventDefault();
-        setIsDragOver(false);
-        const mealId = e.dataTransfer.getData('mealId');
-        const fromType = e.dataTransfer.getData('fromType');
-        if (mealId && fromType !== type) onMoveToType(mealId, type);
-    };
-
-    return (
-        <div
-            onDragOver={handleDragOver}
-            onDragLeave={handleDragLeave}
-            onDrop={handleDrop}
-            style={{
-                background: '#0a0a0a',
-                border: isDragOver ? '1px solid rgba(165,180,252,0.45)' : '1px solid rgba(255,255,255,0.07)',
-                borderRadius: 14,
-                padding: '16px 18px',
-                flex: 1,
-                minHeight: 0,
-                transition: 'border-color 0.15s',
-                boxShadow: isDragOver ? '0 0 0 3px rgba(165,180,252,0.08)' : 'none',
-            }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: (isEmpty && ghosts.length === 0) ? 0 : 12, flexWrap: 'wrap', gap: 6 }}>
-                <span style={{ fontSize: 14, fontWeight: 800, color: '#f0f0f0' }}>
-                    {MEAL_LABELS[type]}
-                </span>
-                {!isEmpty && (
-                    <span style={{ fontSize: 11, fontWeight: 600, color: '#555', fontVariantNumeric: 'tabular-nums', letterSpacing: '0.01em' }}>
-                        <span style={{ color: '#e0e0e0', fontWeight: 700 }}>{Math.round(totals.calories)}</span> kcal
-                        {' · '}
-                        <span style={{ color: '#a5b4fc', fontWeight: 700 }}>{Math.round(totals.protein)}g</span> prot
-                        {' · '}
-                        <span style={{ color: '#c4b5fd', fontWeight: 700 }}>{Math.round(totals.carbs)}g</span> carbs
-                        {' · '}
-                        <span style={{ color: '#d8b4fe', fontWeight: 700 }}>{Math.round(totals.fat)}g</span> fat
-                    </span>
-                )}
-            </div>
-
-            {!isEmpty && (
-                <div style={{ display: 'flex', flexDirection: 'column' }}>
-                    {items.map((meal, idx) => (
-                        <div
-                            key={meal.id}
-                            className="meal-row"
-                            draggable
-                            onDragStart={e => {
-                                e.dataTransfer.setData('mealId', meal.id);
-                                e.dataTransfer.setData('fromType', type);
-                                e.dataTransfer.effectAllowed = 'move';
-                            }}
-                            onClick={e => setDetail({ meal, anchor: e.currentTarget.getBoundingClientRect() })}
-                            style={{
-                                display: 'flex', alignItems: 'center',
-                                padding: '6px 2px',
-                                borderTop: idx === 0 ? 'none' : '1px solid rgba(255,255,255,0.05)',
-                                cursor: 'pointer',
-                                position: 'relative',
-                            }}
-                        >
-                            <span style={{ fontSize: 13, fontWeight: 600, color: '#e0e0e0', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                                {meal.foodName}
-                            </span>
-                            {meal.amount && (
-                                <span style={{ fontSize: 12, color: '#555', marginLeft: 8, flexShrink: 0, fontVariantNumeric: 'tabular-nums' }}>
-                                    {meal.amount}{meal.unit && meal.unit !== 'qty' ? meal.unit : ''}
-                                </span>
-                            )}
-                            <span style={{ fontSize: 12, fontWeight: 700, color: '#e0e0e0', marginLeft: 12, flexShrink: 0, fontVariantNumeric: 'tabular-nums', minWidth: 52, textAlign: 'right' }}>
-                                {Math.round(meal.calories || 0)} kcal
-                            </span>
-                            <button
-                                className="meal-row-delete"
-                                onClick={e => { e.stopPropagation(); handleDelete(meal.id); }}
-                                style={{ background: 'transparent', border: 0, padding: '0 0 0 8px', color: '#333', cursor: 'pointer', display: 'flex', alignItems: 'center', flexShrink: 0, opacity: 0, transition: 'opacity 0.15s' }}>
-                                <X size={11} />
-                            </button>
-                        </div>
-                    ))}
-                </div>
-            )}
-
-            {ghosts.length > 0 && (
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 7, marginTop: isEmpty ? 0 : 8 }}>
-                    {ghosts.map((meal, i) => (
-                        <div key={i} style={{ flexBasis: 'calc(50% - 4px)', flexGrow: 0, flexShrink: 0, minWidth: 0, display: 'flex' }}>
-                            <div
-                                style={{
-                                    display: 'inline-flex', alignItems: 'center', gap: 5,
-                                    padding: '5px 10px 5px 11px',
-                                    background: 'transparent',
-                                    border: '1px solid rgba(255,255,255,0.1)',
-                                    borderRadius: 999,
-                                    opacity: 0.3,
-                                    transition: 'opacity 0.15s',
-                                    userSelect: 'none',
-                                    maxWidth: '100%',
-                                    overflow: 'hidden',
-                                }}
-                                onMouseEnter={e => e.currentTarget.style.opacity = '0.75'}
-                                onMouseLeave={e => e.currentTarget.style.opacity = '0.3'}
-                            >
-                                <div
-                                    onClick={() => onGhostClick(meal, type)}
-                                    style={{ display: 'inline-flex', alignItems: 'center', gap: 5, cursor: 'pointer', overflow: 'hidden' }}
-                                >
-                                    <span style={{ fontSize: 12, fontWeight: 700, color: '#f0f0f0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', minWidth: 0 }}>
-                                        {meal.foodName || meal.food}
-                                    </span>
-                                    {meal.amount && (
-                                        <span style={{ fontSize: 11, fontWeight: 500, color: '#888', fontVariantNumeric: 'tabular-nums', flexShrink: 0 }}>
-                                            {meal.amount}{meal.unit && meal.unit !== 'qty' ? meal.unit : ''}
-                                        </span>
-                                    )}
-                                    <Plus size={9} style={{ color: '#666', flexShrink: 0 }} />
-                                </div>
-                                <button
-                                    onClick={e => { e.stopPropagation(); onGhostRemove(meal); }}
-                                    style={{ background: 'transparent', border: 0, padding: 0, marginLeft: 2, color: '#555', cursor: 'pointer', display: 'flex', alignItems: 'center', transition: 'color 0.15s', flexShrink: 0 }}
-                                    onMouseEnter={e => e.currentTarget.style.color = '#ef4444'}
-                                    onMouseLeave={e => e.currentTarget.style.color = '#555'}
-                                >
-                                    <X size={9} />
-                                </button>
-                            </div>
-                        </div>
-                    ))}
-                </div>
-            )}
-
-            {detail && <MealDetailPopup meal={detail.meal} anchor={detail.anchor} onClose={() => setDetail(null)} />}
-        </div>
-    );
-};
-
-const MealLogger = ({ mealsData, onUpdate, loading, userId }) => {
-    const [showModal, setShowModal]   = useState(false);
-    const [form, setForm]             = useState(EMPTY_FORM);
-    const [lookupState, setLookup]    = useState('idle');
-    const [lookupMsg, setLookupMsg]   = useState('');
-    const [submitting, setSubmitting] = useState(false);
-    const [recent, setRecent]         = useState([]);
-    const [saved, setSaved]           = useState([]);
-    const foodRef = useRef(null);
-    const skipLookupRef      = useRef(false);
-    const nutritionLockedRef = useRef(false);
-    const prevFoodRef        = useRef('');
-
+    // Auto-scroll feed to bottom on change
     useEffect(() => {
-        if (userId) setRecent(getRecent(userId));
-    }, [userId]);
+        if (feedRef.current) feedRef.current.scrollTop = feedRef.current.scrollHeight;
+    }, [mealsData, sending, errorMsg]);
 
-    const openModal = (type) => {
-        setRecent(getRecent(userId));
-        setSaved(getSaved(userId));
-        setForm({ ...EMPTY_FORM, mealType: type ?? EMPTY_FORM.mealType });
-        setShowModal(true);
-        setTimeout(() => foodRef.current?.focus(), 50);
-    };
-
-    const closeModal = () => {
-        setShowModal(false);
-        setForm(EMPTY_FORM);
-        setLookup('idle');
-        setLookupMsg('');
-        skipLookupRef.current      = false;
-        nutritionLockedRef.current = false;
-        prevFoodRef.current        = '';
-    };
-
-    const fillFromFood = (entry) => {
-        skipLookupRef.current      = true;
-        nutritionLockedRef.current = false;
-        prevFoodRef.current        = entry.food;
-        setForm(f => ({
-            ...f,
-            food:     entry.food,
-            amount:   String(entry.amount),
-            unit:     entry.unit,
-            foodName: entry.foodName || entry.food,
-            calories: String(entry.calories),
-            protein:  String(entry.protein),
-            carbs:    String(entry.carbs),
-            fat:      String(entry.fat),
-        }));
-        setLookup('found');
-        setLookupMsg(`Loaded "${entry.food}"`);
-    };
-
-    const handleToggleSave = (entry) => {
-        toggleSavedFood(userId, entry);
-        setSaved(getSaved(userId));
-    };
-
-    const buildQuery = (food, amount, unit) => {
-        if (!food?.trim()) return '';
-        const amt = parseFloat(amount);
-        if (!amt) return food.trim();
-        if (unit === 'qty') return `${amt} ${food.trim()}`;
-        return `${amt}${unit} ${food.trim()}`;
-    };
-
-    useEffect(() => {
-        if (!form.food?.trim()) {
-            setLookup('idle');
-            setLookupMsg('');
-            nutritionLockedRef.current = false;
-            prevFoodRef.current = '';
-            return;
-        }
-        if (form.food !== prevFoodRef.current) {
-            nutritionLockedRef.current = false;
-            prevFoodRef.current = form.food;
-        }
-        if (skipLookupRef.current) { skipLookupRef.current = false; return; }
-        if (nutritionLockedRef.current) return;
-
-        setLookup('loading');
-        const isQty = form.unit === 'qty';
-        const q = isQty ? form.food.trim() : buildQuery(form.food, form.amount, form.unit);
-        const qty = isQty ? (parseFloat(form.amount) || 1) : 1;
-        const timer = setTimeout(() => runLookup(q, isQty, qty), 500);
-        return () => clearTimeout(timer);
-    }, [form.food, form.amount, form.unit]);
-
-    const runLookup = async (q, isQty, qty = 1) => {
+    const handleSend = async () => {
+        const text = input.trim();
+        if (!text || sending) return;
+        setInput('');
+        setErrorMsg(null);
+        setPending(text);
+        setSending(true);
         try {
-            const res = await axios.get(`/api/v1/nutrition/lookup?query=${encodeURIComponent(q)}`, { withCredentials: true });
-            const d = res.data.data;
-            const round = (v) => Math.round(v * qty * 10) / 10;
-            setForm(f => ({
-                ...f,
-                foodName: d.foodName,
-                calories: String(round(d.calories)),
-                protein:  String(round(d.protein)),
-                carbs:    String(round(d.carbs)),
-                fat:      String(round(d.fat)),
-            }));
-            setLookup('found');
-            const label = isQty ? `${qty} × ${d.foodName}` : `${d.grams} g of ${d.foodName}`;
-            setLookupMsg(`Found "${d.foodName}"${d.assumed ? ' — assumed 100 g' : ` for ${label}`}`);
+            await axios.post('/api/v1/meals/parse', { text, mealType }, { withCredentials: true });
+            onUpdate();
         } catch (err) {
-            setLookup('error');
-            setLookupMsg(err.response?.data?.message || 'Not found — you can still enter values manually.');
-            setForm(f => ({ ...f, foodName: q, calories: '', protein: '', carbs: '', fat: '' }));
+            setErrorMsg(err.response?.data?.message || 'Could not parse your meal. Try again.');
+        } finally {
+            setSending(false);
+            setPending(null);
         }
     };
 
-    const handleDelete = async (id) => {
+    const handleKey = (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); }
+    };
+
+    const handleDeleteItem = async (mealId) => {
         try {
-            await axios.delete(`/api/v1/meals/${id}`, { withCredentials: true });
+            await axios.delete(`/api/v1/meals/${mealId}`, { withCredentials: true });
             onUpdate();
         } catch (err) {
             console.error('Delete meal error:', err);
         }
     };
 
-    const handleAdd = async (e) => {
-        e.preventDefault();
-        const name = form.foodName.trim() || form.food.trim();
-        if (!name) return;
-        setSubmitting(true);
+    const handleClearAll = async () => {
+        if (!window.confirm("Clear all of today's meals? This can't be undone.")) return;
         try {
-            const cal  = parseFloat(form.calories) || 0;
-            const prot = parseFloat(form.protein)  || 0;
-            const carb = parseFloat(form.carbs)    || 0;
-            const fat  = parseFloat(form.fat)      || 0;
-
-            await axios.post('/api/v1/meals', {
-                mealType: form.mealType,
-                foodName: name,
-                calories: cal,
-                protein:  prot,
-                carbs:    carb,
-                fat:      fat,
-                amount:   form.amount || null,
-                unit:     form.unit !== 'qty' ? form.unit : null,
-            }, { withCredentials: true });
-
-            const entry = {
-                food:     form.food || name,
-                foodName: name,
-                mealType: form.mealType,
-                amount:   form.amount,
-                unit:     form.unit,
-                calories: cal,
-                protein:  prot,
-                carbs:    carb,
-                fat:      fat,
-            };
-            pushRecent(userId, entry);
-            setRecent(getRecent(userId));
-
-            if (isSaved(userId, entry.food)) {
-                const list = getSaved(userId).map(f =>
-                    f.food.toLowerCase() === entry.food.toLowerCase() ? { ...f, ...entry } : f
-                );
-                localStorage.setItem(savedKey(userId), JSON.stringify(list));
-            }
-
-            closeModal();
+            await axios.delete('/api/v1/meals/today', { withCredentials: true });
+            setErrorMsg(null);
             onUpdate();
         } catch (err) {
-            console.error('Add meal error:', err);
-        } finally {
-            setSubmitting(false);
+            console.error('Clear meals error:', err);
         }
     };
 
-    const handleMoveToType = async (mealId, newType) => {
-        try {
-            await axios.patch(`/api/v1/meals/${mealId}/type`, { mealType: newType }, { withCredentials: true });
-            onUpdate();
-        } catch { /* silent */ }
-    };
-
-    const removeRecent = (entry) => {
-        const list = getRecent(userId).filter(f => f.food.toLowerCase() !== entry.food.toLowerCase());
-        localStorage.setItem(recentKey(userId), JSON.stringify(list));
-        setRecent(list);
-    };
-
-    const addMealDirectly = async (entry, mealType) => {
-        try {
-            await axios.post('/api/v1/meals', {
-                mealType,
-                foodName: entry.foodName || entry.food,
-                calories: entry.calories || 0,
-                protein:  entry.protein  || 0,
-                carbs:    entry.carbs    || 0,
-                fat:      entry.fat      || 0,
-                amount:   entry.amount   || null,
-                unit:     entry.unit !== 'qty' ? entry.unit : null,
-            }, { withCredentials: true });
-            pushRecent(userId, { ...entry, mealType });
-            setRecent(getRecent(userId));
-            onUpdate();
-        } catch { /* silent */ }
-    };
-
     const grouped = mealsData?.meals || { breakfast: [], lunch: [], dinner: [], snack: [] };
-    const allItems = Object.values(grouped).flat();
+    const totalItems = Object.values(grouped).reduce((s, arr) => s + arr.length, 0);
+    const canSend = input.trim().length > 0 && !sending;
 
     return (
-        <div className="nutrition-card" style={{ display: 'flex', flexDirection: 'column', gap: 14, padding: '18px 18px 16px', height: '100%', boxSizing: 'border-box' }}>
-            <div className="nutrition-card-header" style={{ marginBottom: 0 }}>
+        <div className="nutrition-card" style={{
+            display: 'flex', flexDirection: 'column',
+            height: '100%', padding: 0, overflow: 'hidden',
+        }}>
+            {/* ── Header ── */}
+            <div style={{
+                padding: '16px 20px',
+                borderBottom: '1px solid rgba(255,255,255,0.07)',
+                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                flexShrink: 0,
+            }}>
                 <span className="nutrition-section-label">TODAY'S MEALS</span>
-                <button onClick={() => openModal()}
-                    style={{
-                        display: 'flex', alignItems: 'center', gap: 6,
-                        padding: '7px 14px',
-                        background: 'rgba(165,180,252,0.12)',
-                        border: '1px solid rgba(165,180,252,0.25)',
-                        borderRadius: 999, color: '#a5b4fc',
-                        fontSize: 12, fontWeight: 700, fontFamily: 'inherit',
-                        cursor: 'pointer', letterSpacing: '0.02em',
-                    }}>
-                    <Plus size={12} /> Add meal
-                </button>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    {totalItems > 0 && (
+                        <span style={{
+                            fontSize: 11, fontWeight: 700, color: '#555',
+                            background: 'rgba(255,255,255,0.06)',
+                            padding: '3px 10px', borderRadius: 999,
+                            fontVariantNumeric: 'tabular-nums',
+                        }}>
+                            {totalItems} item{totalItems !== 1 ? 's' : ''}
+                        </span>
+                    )}
+                    {totalItems > 0 && (
+                        <button
+                            onClick={handleClearAll}
+                            title="Clear all of today's meals"
+                            style={{
+                                background: 'none', border: 'none', padding: 4,
+                                color: '#444', cursor: 'pointer',
+                                display: 'flex', alignItems: 'center',
+                                transition: 'color 0.15s',
+                            }}
+                            onMouseEnter={e => e.currentTarget.style.color = '#ef4444'}
+                            onMouseLeave={e => e.currentTarget.style.color = '#444'}
+                        >
+                            <Trash2 size={14} />
+                        </button>
+                    )}
+                </div>
             </div>
 
-            {loading ? (
-                <div className="nutrition-loading"><div className="nutrition-spinner" /></div>
-            ) : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 10, flex: 1, minHeight: 0 }}>
-                    {MEAL_TYPES.map(type => (
-                        <MealsTimelineRow
-                            key={type}
-                            type={type}
-                            items={grouped[type] || []}
-                            openModal={openModal}
-                            handleDelete={handleDelete}
-                            recentMeals={recent}
-                            allItems={allItems}
-                            onGhostClick={addMealDirectly}
-                            onGhostRemove={removeRecent}
-                            onMoveToType={handleMoveToType}
-                        />
-                    ))}
-                </div>
-            )}
+            {/* ── Feed ── */}
+            <div ref={feedRef} style={{
+                flex: 1, overflowY: 'auto',
+                padding: '6px 14px 14px',
+                display: 'flex', flexDirection: 'column',
+                minHeight: 0,
+            }}>
+                {loading && (
+                    <div style={{ display: 'flex', justifyContent: 'center', paddingTop: 28 }}>
+                        <div className="nutrition-spinner" />
+                    </div>
+                )}
+                {!loading && totalItems === 0 && !sending && !errorMsg && (
+                    <div style={{
+                        textAlign: 'center', paddingTop: 36,
+                        color: '#3a3a3a', fontSize: 13, fontWeight: 500,
+                    }}>
+                        Describe what you ate to log a meal
+                    </div>
+                )}
 
-            {/* Add Meal Modal */}
-            {showModal && (
-                <div className="meal-modal-overlay">
-                    <div className="meal-modal" onClick={e => e.stopPropagation()}>
-                        <div className="meal-modal-header">
-                            <h4>Add Meal</h4>
-                            <button className="meal-modal-close" onClick={closeModal}><X size={18} /></button>
-                        </div>
-
-                        {(recent.length > 0 || saved.length > 0) && (
-                            <div className="meal-quick-sections">
-                                {saved.length > 0 && (
-                                    <div className="meal-quick-section">
-                                        <span className="meal-quick-label"><BookmarkCheck size={12} /> Saved</span>
-                                        <div className="meal-quick-list">
-                                            {saved.map((f, i) => (
-                                                <div key={i} className="meal-quick-chip saved" onClick={() => fillFromFood(f)}>
-                                                    <span className="meal-quick-chip-name">{f.food}</span>
-                                                    {f.amount && <span className="meal-quick-chip-amt">{f.amount}{f.unit && f.unit !== 'qty' ? f.unit : ''}</span>}
-                                                    {f.calories > 0 && <span className="meal-quick-chip-cal">{Math.round(f.calories)}kcal</span>}
-                                                    <button className="meal-quick-unsave" title="Unsave" onClick={e => { e.stopPropagation(); handleToggleSave(f); }}>
-                                                        <X size={10} />
-                                                    </button>
-                                                </div>
-                                            ))}
+                {/* Grouped by meal category */}
+                {!loading && CHAT_MEAL_TYPES.map(type => {
+                    const items = grouped[type] || [];
+                    if (items.length === 0) return null;
+                    const kcal = items.reduce((s, m) => s + (m.calories || 0), 0);
+                    return (
+                        <div key={type} style={{ marginTop: 14 }}>
+                            <div style={{
+                                display: 'flex', alignItems: 'baseline', justifyContent: 'space-between',
+                                marginBottom: 2, padding: '0 4px',
+                            }}>
+                                <span style={{
+                                    fontSize: 10.5, fontWeight: 800, letterSpacing: '0.14em',
+                                    color: '#a5b4fc', textTransform: 'uppercase',
+                                }}>
+                                    {CHAT_MEAL_LABELS[type]}
+                                </span>
+                                <span style={{
+                                    fontSize: 11, fontWeight: 700, color: '#555',
+                                    fontVariantNumeric: 'tabular-nums',
+                                }}>
+                                    {Math.round(kcal)} kcal
+                                </span>
+                            </div>
+                            {items.map(it => (
+                                <div key={it.id} className="meal-log-card-wrap" style={{
+                                    display: 'flex', alignItems: 'center', gap: 10,
+                                    padding: '9px 4px 9px 8px',
+                                    borderBottom: '1px solid rgba(255,255,255,0.06)',
+                                }}>
+                                    <div style={{ flex: 1, minWidth: 0 }}>
+                                        <div style={{
+                                            fontSize: 14, fontWeight: 600, color: '#e0e0e0',
+                                            overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                                        }}>
+                                            {it.foodName}
                                         </div>
+                                        {it.amount && (
+                                            <div style={{
+                                                fontSize: 11, color: '#555', fontWeight: 500, marginTop: 2,
+                                                overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                                            }}>
+                                                {it.amount}{it.unit && it.unit !== 'qty' ? it.unit : ''}
+                                            </div>
+                                        )}
                                     </div>
-                                )}
-                                {recent.length > 0 && (
-                                    <div className="meal-quick-section">
-                                        <span className="meal-quick-label">Recent</span>
-                                        <div className="meal-quick-list">
-                                            {recent.map((f, i) => (
-                                                <div key={i} className="meal-quick-chip" onClick={() => fillFromFood(f)}>
-                                                    <span className="meal-quick-chip-name">{f.food}</span>
-                                                    {f.amount && <span className="meal-quick-chip-amt">{f.amount}{f.unit && f.unit !== 'qty' ? f.unit : ''}</span>}
-                                                    {f.calories > 0 && <span className="meal-quick-chip-cal">{Math.round(f.calories)}kcal</span>}
-                                                    <button className="meal-quick-save" title={isSaved(userId, f.food) ? 'Saved' : 'Save'} onClick={e => { e.stopPropagation(); handleToggleSave(f); setSaved(getSaved(userId)); }}>
-                                                        {isSaved(userId, f.food) ? <BookmarkCheck size={11} /> : <Bookmark size={11} />}
-                                                    </button>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
-                        )}
-
-
-                        <form onSubmit={handleAdd} className="meal-form">
-                            <div className="meal-form-field">
-                                <label>Meal Type</label>
-                                <select
-                                    value={form.mealType}
-                                    onChange={e => setForm(f => ({ ...f, mealType: e.target.value }))}
-                                    className="meal-form-select"
-                                >
-                                    {MEAL_TYPES.map(t => <option key={t} value={t}>{MEAL_LABELS[t]}</option>)}
-                                </select>
-                            </div>
-
-                            <div className="meal-form-field">
-                                <label>Food</label>
-                                <div className="meal-search-wrap">
-                                    <input
-                                        ref={foodRef}
-                                        type="text"
-                                        className={`meal-form-input meal-search-input ${lookupState}`}
-                                        placeholder="e.g. Chicken breast, Eggs, Oats"
-                                        value={form.food}
-                                        onChange={e => setForm(f => ({ ...f, food: e.target.value }))}
-                                        autoComplete="off"
-                                    />
-                                    <div className="meal-search-icon">
-                                        {lookupState === 'loading' && <div className="meal-search-spinner" />}
-                                        {lookupState === 'found'   && <CheckCircle size={16} className="lookup-ok"  />}
-                                        {lookupState === 'error'   && <AlertCircle  size={16} className="lookup-err" />}
-                                        {lookupState === 'idle'    && <Search size={16} style={{ color: '#bbb' }} />}
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div className="meal-amount-row">
-                                <div className="meal-form-field" style={{ flex: 1 }}>
-                                    <label>Amount</label>
-                                    <input
-                                        type="number"
-                                        className="meal-form-input"
-                                        placeholder="e.g. 3 or 300"
-                                        min="0"
-                                        step="any"
-                                        value={form.amount}
-                                        onChange={e => setForm(f => ({ ...f, amount: e.target.value }))}
-                                    />
-                                </div>
-                                <div className="meal-form-field" style={{ flex: 1 }}>
-                                    <label>Unit</label>
-                                    <select
-                                        className="meal-form-select"
-                                        value={form.unit}
-                                        onChange={e => {
-                                            const newUnit = e.target.value;
-                                            setForm(f => ({
-                                                ...f,
-                                                unit: newUnit,
-                                                amount: !f.amount && newUnit !== 'qty' ? '100' : f.amount,
-                                            }));
+                                    <span style={{
+                                        fontSize: 12, fontWeight: 700, color: '#888',
+                                        fontVariantNumeric: 'tabular-nums', flexShrink: 0,
+                                    }}>
+                                        {Math.round(it.calories || 0)} kcal
+                                    </span>
+                                    <button
+                                        className="meal-log-card-delete"
+                                        onClick={() => handleDeleteItem(it.id)}
+                                        title="Remove"
+                                        style={{
+                                            background: 'none', border: 'none', padding: 2,
+                                            color: '#444', cursor: 'pointer',
+                                            display: 'flex', alignItems: 'center', flexShrink: 0,
+                                            opacity: 0, transition: 'opacity 0.15s, color 0.15s',
                                         }}
                                     >
-                                        {UNITS.map(u => <option key={u.value} value={u.value}>{u.label}</option>)}
-                                    </select>
+                                        <X size={13} />
+                                    </button>
                                 </div>
-                            </div>
+                            ))}
+                        </div>
+                    );
+                })}
 
-                            {lookupMsg && (
-                                <div className={`lookup-msg ${lookupState}`}>{lookupMsg}</div>
-                            )}
-                            <div className="meal-search-hint">
-                                Nutrition is looked up automatically. Use "qty" for pieces (eggs, apples…).
-                            </div>
-
-                            <div className="meal-form-row">
-                                <div className="meal-form-field">
-                                    <label>Calories (kcal)</label>
-                                    <input type="number" className="meal-form-input" placeholder="—" min="0" step="any"
-                                        value={form.calories} onChange={e => { nutritionLockedRef.current = true; setForm(f => ({ ...f, calories: e.target.value })); }} />
-                                </div>
-                                <div className="meal-form-field">
-                                    <label>Protein (g)</label>
-                                    <input type="number" className="meal-form-input" placeholder="—" min="0" step="any"
-                                        value={form.protein} onChange={e => { nutritionLockedRef.current = true; setForm(f => ({ ...f, protein: e.target.value })); }} />
-                                </div>
-                                <div className="meal-form-field">
-                                    <label>Carbs (g)</label>
-                                    <input type="number" className="meal-form-input" placeholder="—" min="0" step="any"
-                                        value={form.carbs} onChange={e => { nutritionLockedRef.current = true; setForm(f => ({ ...f, carbs: e.target.value })); }} />
-                                </div>
-                                <div className="meal-form-field">
-                                    <label>Fat (g)</label>
-                                    <input type="number" className="meal-form-input" placeholder="—" min="0" step="any"
-                                        value={form.fat} onChange={e => { nutritionLockedRef.current = true; setForm(f => ({ ...f, fat: e.target.value })); }} />
-                                </div>
-                            </div>
-
-                            <button
-                                type="submit"
-                                className="meal-form-submit"
-                                disabled={submitting || (!form.food?.trim())}
-                            >
-                                {submitting ? 'Adding...' : 'Add Meal'}
-                            </button>
-                        </form>
+                {/* Pending send: subtle inline loading (no chat bubble) */}
+                {sending && (
+                    <div style={{
+                        display: 'flex', alignItems: 'center', gap: 10,
+                        marginTop: 14, padding: '9px 8px',
+                        color: '#666',
+                    }}>
+                        <div style={{ display: 'flex', gap: 5, alignItems: 'center' }}>
+                            {[0, 1, 2].map(i => (
+                                <div key={i} style={{
+                                    width: 6, height: 6, borderRadius: '50%',
+                                    background: '#555',
+                                    animation: `chat-bounce 1s ${i * 0.16}s ease-in-out infinite`,
+                                }} />
+                            ))}
+                        </div>
+                        <span style={{
+                            fontSize: 12, fontWeight: 500, color: '#555',
+                            overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                        }}>
+                            Adding “{pending}”…
+                        </span>
                     </div>
+                )}
+
+                {/* Error bubble */}
+                {errorMsg && !sending && (
+                    <div style={{ display: 'flex', justifyContent: 'flex-start', marginTop: 14 }}>
+                        <div style={{
+                            background: 'rgba(239,68,68,0.1)',
+                            border: '1px solid rgba(239,68,68,0.22)',
+                            borderRadius: '4px 16px 16px 16px',
+                            padding: '9px 14px', maxWidth: '85%',
+                            fontSize: 12, fontWeight: 600,
+                            color: '#f87171', lineHeight: 1.4,
+                        }}>
+                            {errorMsg}
+                        </div>
+                    </div>
+                )}
+            </div>
+
+            {/* ── Composer ── */}
+            <div style={{
+                padding: '10px 12px 14px',
+                borderTop: '1px solid rgba(255,255,255,0.07)',
+                flexShrink: 0, display: 'flex', flexDirection: 'column', gap: 9,
+            }}>
+                {/* Meal-type buttons */}
+                <div style={{ display: 'flex', gap: 6 }}>
+                    {CHAT_MEAL_TYPES.map(t => (
+                        <button key={t} onClick={() => setMealType(t)} style={{
+                            flex: 1, padding: '5px 0',
+                            border: mealType === t
+                                ? '1px solid rgba(165,180,252,0.5)'
+                                : '1px solid rgba(255,255,255,0.08)',
+                            background: mealType === t
+                                ? 'rgba(165,180,252,0.12)'
+                                : 'transparent',
+                            borderRadius: 8,
+                            color: mealType === t ? '#a5b4fc' : '#555',
+                            fontSize: 11, fontWeight: 700, fontFamily: 'inherit',
+                            cursor: 'pointer', transition: 'all 0.15s',
+                        }}>
+                            {CHAT_MEAL_LABELS[t]}
+                        </button>
+                    ))}
                 </div>
-            )}
+
+                {/* Text input + send */}
+                <div style={{ display: 'flex', gap: 8, alignItems: 'flex-end' }}>
+                    <textarea
+                        value={input}
+                        onChange={e => setInput(e.target.value)}
+                        onKeyDown={handleKey}
+                        placeholder="e.g. 2 eggs and toast with butter…"
+                        rows={1}
+                        style={{
+                            flex: 1,
+                            background: 'rgba(255,255,255,0.05)',
+                            border: '1px solid rgba(255,255,255,0.1)',
+                            borderRadius: 12, padding: '10px 13px',
+                            color: '#f0f0f0', fontSize: 13,
+                            fontFamily: 'inherit', resize: 'none',
+                            outline: 'none', lineHeight: 1.4,
+                            maxHeight: 80, overflowY: 'auto',
+                        }}
+                    />
+                    <button
+                        onClick={handleSend}
+                        disabled={!canSend}
+                        style={{
+                            width: 40, height: 40, borderRadius: 12, flexShrink: 0,
+                            background: canSend ? '#a5b4fc' : 'rgba(165,180,252,0.12)',
+                            border: 'none',
+                            cursor: canSend ? 'pointer' : 'not-allowed',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            color: canSend ? '#0a0a0a' : '#444',
+                            transition: 'background 0.15s, color 0.15s',
+                        }}
+                    >
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" strokeWidth="2.5"
+                            strokeLinecap="round" strokeLinejoin="round">
+                            <line x1="22" y1="2" x2="11" y2="13" />
+                            <polygon points="22 2 15 22 11 13 2 9 22 2" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
         </div>
     );
 };
@@ -1137,7 +800,6 @@ const Nutrition = ({ userId: userIdProp }) => {
                     mealsData={mealsData}
                     onUpdate={handleMealUpdate}
                     loading={loadingMeals}
-                    userId={userId}
                 />
             </div>
         </div>

@@ -86,7 +86,21 @@
       "Bash(echo \"client started with PID $!\")",
       "Bash(awk '{print $5}')",
       "Bash(xargs -I{} kill -9 {})",
-      "Bash(mysql -u root -ppassword123! gymapp -e \"SELECT id, name, email FROM Users WHERE email LIKE '%georgemarkakis7%' OR name LIKE '%George Markakis%';\")"
+      "Bash(mysql -u root -ppassword123! gymapp -e \"SELECT id, name, email FROM Users WHERE email LIKE '%georgemarkakis7%' OR name LIKE '%George Markakis%';\")",
+      "Skill(claude-api)",
+      "Skill(claude-api:*)",
+      "PowerShell(Get-Process -Name node -ErrorAction SilentlyContinue)",
+      "PowerShell(Stop-Process -Force)",
+      "PowerShell(\"Node processes stopped.\")",
+      "PowerShell(\"waited\")",
+      "Bash(kill bf9bqk5fc *)",
+      "PowerShell(\"cleaned\")",
+      "Bash(cd:*)",
+      "Bash(kill:*)",
+      "PowerShell(Start-Sleep:*)",
+      "PowerShell(Get-Process -Name node -ErrorAction SilentlyContinue | Stop-Process -Force)",
+      "Bash(git add *)",
+      "Bash(git commit -m 'meal logger + fixes *)"
     ],
     "additionalDirectories": [
       "c:\\Users\\georg\\Downloads"
