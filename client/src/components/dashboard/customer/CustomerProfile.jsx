@@ -158,6 +158,18 @@ const CustomerProfile = ({ user, onLogout, onUserUpdate }) => {
                     </div>
                 </div>
                 <div className="cp-header-actions">
+                    {!editing && (
+                        <button
+                            className="cp-btn-signout"
+                            onClick={() => { const base = axios.defaults.baseURL || ''; window.location.href = `${base}/api/v1/fitbit/switch`; }}
+                            title="Log in with a different Fitbit account"
+                            style={{ color: '#4cc2c4', borderColor: 'rgba(76,194,196,0.3)' }}
+                            onMouseEnter={e => { e.currentTarget.style.background = 'rgba(76,194,196,0.1)'; e.currentTarget.style.borderColor = 'rgba(76,194,196,0.5)'; }}
+                            onMouseLeave={e => { e.currentTarget.style.background = ''; e.currentTarget.style.borderColor = 'rgba(76,194,196,0.3)'; }}
+                        >
+                            Switch Fitbit
+                        </button>
+                    )}
                     {!editing && onLogout && (
                         <button
                             className="cp-btn-signout"
