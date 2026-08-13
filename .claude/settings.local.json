@@ -101,7 +101,13 @@
       "PowerShell(Get-Process -Name node -ErrorAction SilentlyContinue | Stop-Process -Force)",
       "Bash(git add *)",
       "Bash(git commit -m 'meal logger + fixes *)",
-      "Bash(git commit -m 'support DB port + SSL for cloud database *)"
+      "Bash(git commit -m 'support DB port + SSL for cloud database *)",
+      "Read(//c/Program Files/Google/Chrome/Application/**)",
+      "Read(//c/Program Files \\\\\\(x86\\\\\\)/Microsoft/Edge/Application/**)",
+      "Bash(python -c \"import fpdf\")",
+      "Bash(python -c \"import weasyprint\")",
+      "Bash(python -c \"import reportlab\")",
+      "Bash(\"/c/Program Files/Google/Chrome/Application/chrome.exe\" --headless --disable-gpu --no-pdf-header-footer --print-to-pdf=\"/c/Users/georg/Downloads/PTYXIAKH/REPORT_PTYXIAKHS_Trainer.pdf\" --print-to-pdf-no-header \"file:///C:/Users/georg/AppData/Local/Temp/claude/c--Users-georg-Downloads-PTYXIAKH/e78b3be4-6a26-4770-9d3d-e2e067fa3907/scratchpad/trainer_report.html\")"
     ],
     "additionalDirectories": [
       "c:\\Users\\georg\\Downloads"

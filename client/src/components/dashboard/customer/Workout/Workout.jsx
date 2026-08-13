@@ -519,6 +519,19 @@ const Workout = () => {
     const [groupLoading,   setGroupLoading]   = useState(false);
     const [selectedEx,     setSelectedEx]     = useState(null);
     const [groupSubmitting,setGroupSubmitting]= useState(false);
+    const groupSaveDebounceRef = useRef(null);
+
+    // Real calendar date for the selected group weekday (Monday-anchored current week),
+    // so the nav header reads like "Friday, Aug 7" the same way My Program does.
+    const groupViewedDate = useMemo(() => {
+        const d = new Date();
+        const mondayOffset = d.getDay() === 0 ? 6 : d.getDay() - 1;
+        d.setDate(d.getDate() - mondayOffset + groupDayIdx);
+        return d;
+    }, [groupDayIdx]);
+    const groupViewedDateLabel = useMemo(() => (
+        groupViewedDate.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })
+    ), [groupViewedDate]);
 
     // Exercise history for My Program right pane
     const [exHistory,    setExHistory]    = useState([]);
@@ -762,6 +775,22 @@ const Workout = () => {
         } catch { return []; }
     }, [selProg, grpDay]);
 
+    // Auto-select the first exercise when the visible day/program changes,
+    // mirroring how My Program selects the first exercise on load (see fetchWorkoutForDay).
+    useEffect(() => {
+        setSelectedEx(groupExercises[0]
+            ? (() => {
+                const ex = groupExercises[0];
+                const numSets = parseInt(ex.sets) || 3;
+                return {
+                    exName: ex.exerciseName || ex.name || 'Exercise',
+                    sets: Array.from({ length: numSets }, (_, i) => ({ id: i + 1, kg: '', reps: '', targetKg: ex.weight || null, targetReps: ex.reps || null })),
+                };
+            })()
+            : null);
+        resetTimer();
+    }, [groupDayIdx, selProg]);
+
     // ─── Group functions ──────────────────────────────────────
     const getGroupLog = (exName) => groupLogs.find(l => l.dayLabel === grpDay && l.exerciseName === exName) || null;
 
@@ -771,32 +800,38 @@ const Workout = () => {
         resetTimer();
     };
 
+    // Debounced auto-save — fires 800ms after the last keystroke, same pattern as My Program,
+    // so a set logs itself without needing an explicit "Save" button.
     const handleGroupSetChange = (setId, field, value) => {
-        setSelectedEx(prev => ({ ...prev, sets: prev.sets.map(s => s.id === setId ? { ...s, [field]: value } : s) }));
+        setSelectedEx(prev => {
+            const updated = { ...prev, sets: prev.sets.map(s => s.id === setId ? { ...s, [field]: value } : s) };
+            clearTimeout(groupSaveDebounceRef.current);
+            groupSaveDebounceRef.current = setTimeout(() => saveGroupExercise(updated), 800);
+            return updated;
+        });
     };
 
-    const saveGroupExercise = async () => {
-        if (!selGroup || !selProg || !selectedEx) return;
+    const saveGroupExercise = async (exOverride) => {
+        const ex = exOverride || selectedEx;
+        if (!selGroup || !selProg || !ex) return;
         setGroupSubmitting(true);
         try {
             await axios.post(`/api/v1/groups/${selGroup.id}/programs/${selProg.id}/log`, {
-                dayLabel: grpDay, exerciseName: selectedEx.exName,
-                setsCompleted: selectedEx.sets.length,
-                repsCompleted: selectedEx.sets[0]?.reps || null,
-                weight: selectedEx.sets[0]?.kg || null,
+                dayLabel: grpDay, exerciseName: ex.exName,
+                setsCompleted: ex.sets.length,
+                repsCompleted: ex.sets[0]?.reps || null,
+                weight: ex.sets[0]?.kg || null,
             }, { withCredentials: true });
             const res = await axios.get(`/api/v1/groups/${selGroup.id}/programs/${selProg.id}/logs`, { withCredentials: true });
             setGroupLogs(res.data.data || []);
         } catch { /* silent */ }
         setGroupSubmitting(false);
-        setSelectedEx(null);
-        resetTimer();
     };
 
     // ─── Unified render ───────────────────────────────────────
     const isGroup = activeTab === 'group';
 
-    const navLabel   = isGroup ? G_DAYS[groupDayIdx] : viewedDayLabel;
+    const navLabel   = isGroup ? groupViewedDateLabel : viewedDayLabel;
     const navPrev    = isGroup ? () => setGroupDayIdx(i => (i + 6) % 7) : () => setDayOffset(p => p - 1);
     const navNext    = isGroup ? () => setGroupDayIdx(i => (i + 1) % 7) : () => setDayOffset(p => p + 1);
 
@@ -888,13 +923,6 @@ const Workout = () => {
                     ? Math.max(0, ...(groupLogs || []).filter(l => l.exerciseName === selectedEx?.exName && l.weight).map(l => Number(l.weight)))
                     : exHistoryPr}
             />
-            {isGroup && canEdit && (
-                <button disabled={groupSubmitting} onClick={saveGroupExercise}
-                    style={{ width: '100%', background: '#fff', color: '#0a0a0a', border: 0, borderRadius: 12, padding: '13px 0', fontSize: 13, fontWeight: 800, fontFamily: 'inherit', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-                    {groupSubmitting ? 'Saving…' : 'Save & next exercise'}
-                </button>
-            )}
         </>
     );
 
@@ -914,13 +942,14 @@ const Workout = () => {
                         <div style={{ flex: 1, textAlign: 'center' }}>
                             <div style={{ fontSize: 18, fontWeight: 800, letterSpacing: '-0.02em' }}>{navLabel}</div>
                             {!isGroup && !isToday && <button onClick={() => setDayOffset(0)} style={{ fontSize: 10, fontWeight: 700, color: '#a5b4fc', background: 'none', border: 'none', cursor: 'pointer', marginTop: 2 }}>Today</button>}
+                            {isGroup && groupDayIdx !== todayGrpIdx && <button onClick={() => setGroupDayIdx(todayGrpIdx)} style={{ fontSize: 10, fontWeight: 700, color: '#a5b4fc', background: 'none', border: 'none', cursor: 'pointer', marginTop: 2 }}>Today</button>}
                         </div>
                         <button className="workout-day-nav-btn" onClick={navNext}><ChevronRight size={16} /></button>
                     </div>
                     {/* progress */}
                     <div>
                         <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, fontWeight: 700, color: '#555', marginBottom: 6 }}>
-                            <span>{isGroup ? grpDay : (isToday ? 'Today' : viewedDayName)}</span>
+                            <span>{isGroup ? (groupDayIdx === todayGrpIdx ? 'Today' : grpDay) : (isToday ? 'Today' : viewedDayName)}</span>
                             <span><span style={{ color: '#a5b4fc' }}>{doneCount}</span> / {totalCount}</span>
                         </div>
                         <div style={{ height: 2, background: 'rgba(255,255,255,0.06)', borderRadius: 999, overflow: 'hidden' }}>
