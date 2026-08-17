@@ -893,6 +893,7 @@ const ChatPanel = ({ clientId, clientName, trainerId }) => {
                 setMessages(fetched);
                 if (isInitialLoadRef.current) isInitialLoadRef.current = false;
             }
+            axios.post('/api/v1/chat/mark-read', { partnerId: clientId }, { withCredentials: true }).catch(() => {});
         } catch (e) {
             console.error(e);
         } finally {

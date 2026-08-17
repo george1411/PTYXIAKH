@@ -44,6 +44,21 @@ const NotificationBell = ({ onNavigateToMessages, onNavigateToClient }) => {
         return () => clearInterval(pollRef.current);
     }, [fetchData]);
 
+    const handleToggle = async () => {
+        const willOpen = !open;
+        setOpen(willOpen);
+        if (willOpen && unreadCount > 0) {
+            const partnerIds = convos.filter(c => c.unread > 0).map(c => c.id);
+            setUnreadCount(0);
+            setConvos(prev => prev.map(c => ({ ...c, unread: 0 })));
+            try {
+                await Promise.all(partnerIds.map(id =>
+                    axios.post('/api/v1/chat/mark-read', { partnerId: id }, { withCredentials: true })
+                ));
+            } catch { /* silent */ }
+        }
+    };
+
     const formatTime = (dateStr) => {
         if (!dateStr) return '';
         const diff = Math.floor((Date.now() - new Date(dateStr)) / 60000);
@@ -61,12 +76,12 @@ const NotificationBell = ({ onNavigateToMessages, onNavigateToClient }) => {
                 style={{ color: 'rgba(255,255,255,0.4)' }}
                 onMouseEnter={e => e.currentTarget.style.color = '#ffffff'}
                 onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.4)'}
-                onClick={() => setOpen(prev => !prev)}
+                onClick={handleToggle}
                 title="Notifications"
             >
                 <Bell className="w-5 h-5" />
                 {unreadCount > 0 && (
-                    <span className="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] text-[10px] font-bold rounded-full flex items-center justify-center px-1 leading-none" style={{ background: '#e0e0e0', color: '#000' }}>
+                    <span className="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] text-[10px] font-bold rounded-full flex items-center justify-center px-1 leading-none" style={{ background: '#ef4444', color: '#fff' }}>
                         {unreadCount > 99 ? '99+' : unreadCount}
                     </span>
                 )}
@@ -108,7 +123,7 @@ const NotificationBell = ({ onNavigateToMessages, onNavigateToClient }) => {
                                         </p>
                                     </div>
                                     {c.unread > 0 && (
-                                        <span className="min-w-[18px] h-[18px] text-[10px] font-bold rounded-full flex items-center justify-center px-1 flex-shrink-0 mt-0.5" style={{ background: '#e0e0e0', color: '#000' }}>
+                                        <span className="min-w-[18px] h-[18px] text-[10px] font-bold rounded-full flex items-center justify-center px-1 flex-shrink-0 mt-0.5" style={{ background: '#ef4444', color: '#fff' }}>
                                             {c.unread}
                                         </span>
                                     )}
